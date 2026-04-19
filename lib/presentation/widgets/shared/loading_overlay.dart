@@ -19,8 +19,8 @@ class LoadingOverlay extends StatelessWidget {
         child,
         if (isLoading) ...[
           Positioned.fill(
-            child: IgnorePointer(
-              ignoring: false,
+            child: AbsorbPointer(
+              absorbing: true,
               child: Container(
                 color: const Color(0x990F172A),
               ),

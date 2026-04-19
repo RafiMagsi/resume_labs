@@ -37,10 +37,10 @@ class PdfRepositoryImpl implements PdfRepository {
       await file.writeAsBytes(pdfBytes, flush: true);
 
       return Right(file.path);
-    } on FileSystemException catch (e) {
-      return Left(PdfFailure('Failed to save PDF file: ${e.message}'));
     } on PathNotFoundException catch (e) {
       return Left(PdfFailure('Save location not found: ${e.message}'));
+    } on FileSystemException catch (e) {
+      return Left(PdfFailure('Failed to save PDF file: ${e.message}'));
     } catch (e) {
       return Left(PdfFailure('Failed to export PDF: $e'));
     }

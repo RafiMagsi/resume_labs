@@ -94,37 +94,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _submit() async {
     FocusScope.of(context).unfocus();
 
+    if (ref.read(signInProvider).isLoading) return;
     if (!_formKey.currentState!.validate()) return;
 
     await ref.read(signInProvider.notifier).signIn(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
-  }
-
-  String _mapErrorToMessage(Object error) {
-    final text = error.toString().replaceFirst('AsyncError: ', '').trim();
-    if (text.isEmpty) return 'Unable to sign in right now. Please try again.';
-    return text;
-  }
-
-  Future<void> _showErrorDialog({
-    required String title,
-    required String message,
-  }) {
-    return showDialog<void>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -190,7 +166,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       text: 'Forgot Password?',
                       variant: AppButtonVariant.text,
                       expand: false,
-                      onPressed: () {
+                      onPressed: signInState.isLoading
+                          ? null
+                          : () {
                         context.push(PasswordResetScreen.routePath);
                       },
                     ),
@@ -205,7 +183,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   AppButton(
                     text: 'Create Account',
                     variant: AppButtonVariant.secondary,
-                    onPressed: () {
+                    onPressed: signInState.isLoading
+                        ? null
+                        : () {
                       context.push(RegisterScreen.routePath);
                     },
                   ),

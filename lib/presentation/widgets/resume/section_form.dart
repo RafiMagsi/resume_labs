@@ -225,7 +225,7 @@ class EducationSectionForm extends StatelessWidget {
   }
 }
 
-class SkillsSectionForm extends StatelessWidget {
+class SkillsSectionForm extends StatefulWidget {
   final List<Skill> items;
   final ValueChanged<Skill> onAdd;
   final void Function(int index, Skill item) onUpdate;
@@ -246,6 +246,13 @@ class SkillsSectionForm extends StatelessWidget {
   });
 
   @override
+  State<SkillsSectionForm> createState() => _SkillsSectionFormState();
+}
+
+class _SkillsSectionFormState extends State<SkillsSectionForm> {
+  bool _isSuggesting = false;
+
+  @override
   Widget build(BuildContext context) {
     return SectionForm(
       title: 'Skills',
@@ -258,21 +265,28 @@ class SkillsSectionForm extends StatelessWidget {
             expand: false,
             variant: AppButtonVariant.secondary,
             icon: Icons.auto_awesome_rounded,
-            onPressed: onSuggestSkills == null
+            isLoading: _isSuggesting,
+            onPressed: (widget.onSuggestSkills == null || _isSuggesting)
                 ? null
                 : () async {
-                    final results = await onSuggestSkills!.call();
-                    if (results == null || results.isEmpty || !context.mounted) return;
+	                    setState(() => _isSuggesting = true);
+	                    try {
+	                      final results = await widget.onSuggestSkills!.call();
+	                      if (!context.mounted) return;
+	                      if (results == null || results.isEmpty) return;
 
-                    await _showSuggestedSkillsDialog(
-                      context,
-                      suggestions: results,
-                      onAccept: (skillName) {
-                        if (onAcceptSuggestedSkill != null) {
-                          onAcceptSuggestedSkill!(skillName);
-                        }
-                      },
-                    );
+	                      await _showSuggestedSkillsDialog(
+	                        context,
+	                        suggestions: results,
+	                        onAccept: (skillName) {
+                          if (widget.onAcceptSuggestedSkill != null) {
+                            widget.onAcceptSuggestedSkill!(skillName);
+                          }
+                        },
+                      );
+                    } finally {
+                      if (mounted) setState(() => _isSuggesting = false);
+                    }
                   },
           ),
           const SizedBox(width: 8),
@@ -282,7 +296,7 @@ class SkillsSectionForm extends StatelessWidget {
             icon: Icons.add,
             onPressed: () => _showSkillSheet(
               context,
-              onSave: onAdd,
+              onSave: widget.onAdd,
             ),
           ),
         ],
@@ -290,7 +304,7 @@ class SkillsSectionForm extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (items.isEmpty)
+          if (widget.items.isEmpty)
             const _EmptySectionState(
               message: 'No skills added yet.',
             )
@@ -299,22 +313,22 @@ class SkillsSectionForm extends StatelessWidget {
               spacing: 10,
               runSpacing: 10,
               children: List.generate(
-                items.length,
+                widget.items.length,
                 (index) => _SkillChip(
-                  item: items[index],
+                  item: widget.items[index],
                   onEdit: () => _showSkillSheet(
                     context,
-                    initialValue: items[index],
-                    onSave: (value) => onUpdate(index, value),
+                    initialValue: widget.items[index],
+                    onSave: (value) => widget.onUpdate(index, value),
                   ),
-                  onDelete: () => onRemove(index),
+                  onDelete: () => widget.onRemove(index),
                 ),
               ),
             ),
-          if (errorText != null) ...[
+          if (widget.errorText != null) ...[
             const SizedBox(height: 12),
             Text(
-              errorText!,
+              widget.errorText!,
               style: const TextStyle(
                 color: Color(0xFFDC2626),
                 fontSize: 13,
@@ -634,6 +648,7 @@ Future<void> _showWorkExperienceSheet(
   final bullets = [...?initialValue?.bulletPoints];
   final formKey = GlobalKey<FormState>();
   bool isCurrentRole = initialValue?.isCurrentRole ?? false;
+  bool isImprovingBullet = false;
 
   await showModalBottomSheet<void>(
     context: context,
@@ -754,21 +769,32 @@ Future<void> _showWorkExperienceSheet(
                               expand: false,
                               variant: AppButtonVariant.secondary,
                               icon: Icons.auto_awesome_rounded,
-                              onPressed: onImproveBullet == null
+                              isLoading: isImprovingBullet,
+                              onPressed: (onImproveBullet == null || isImprovingBullet)
                                   ? null
                                   : () async {
                                       final text = bulletController.text.trim();
                                       if (text.isEmpty) return;
 
-                                      final improved = await onImproveBullet(text);
-                                      if (improved == null || improved.trim().isEmpty || !context.mounted) {
-                                        return;
-                                      }
+                                      setState(() => isImprovingBullet = true);
+                                      try {
+                                        final improved = await onImproveBullet(text);
+                                        if (improved == null ||
+                                            improved.trim().isEmpty ||
+                                            !context.mounted) {
+                                          return;
+                                        }
 
-                                      bulletController.text = improved;
-                                      bulletController.selection = TextSelection.fromPosition(
-                                        TextPosition(offset: bulletController.text.length),
-                                      );
+                                        bulletController.text = improved;
+                                        bulletController.selection =
+                                            TextSelection.fromPosition(
+                                          TextPosition(offset: bulletController.text.length),
+                                        );
+                                      } finally {
+                                        if (context.mounted) {
+                                          setState(() => isImprovingBullet = false);
+                                        }
+                                      }
                                     },
                             ),
                             const SizedBox(height: 8),

@@ -293,6 +293,8 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
   Widget build(BuildContext context) {
     final formState = ref.watch(resumeFormProvider);
     final formNotifier = ref.read(resumeFormProvider.notifier);
+    final aiState = ref.watch(aiSuggestionsProvider);
+    final isAiLoading = aiState.isLoading;
 
     _syncControllers();
 
@@ -316,6 +318,7 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
                 summaryController: _summaryController,
                 titleFocusNode: _titleFocusNode,
                 summaryFocusNode: _summaryFocusNode,
+                isAiLoading: isAiLoading,
                 onNext: _handleNext,
                 onBack: _handleBack,
                 onSave: _handleSave,
@@ -378,6 +381,7 @@ class _BuilderFormContent extends StatelessWidget {
   final TextEditingController summaryController;
   final FocusNode titleFocusNode;
   final FocusNode summaryFocusNode;
+  final bool isAiLoading;
   final Future<void> Function() onNext;
   final VoidCallback onBack;
   final Future<void> Function() onSave;
@@ -392,6 +396,7 @@ class _BuilderFormContent extends StatelessWidget {
     required this.summaryController,
     required this.titleFocusNode,
     required this.summaryFocusNode,
+    required this.isAiLoading,
     required this.onNext,
     required this.onBack,
     required this.onSave,
@@ -430,7 +435,8 @@ class _BuilderFormContent extends StatelessWidget {
             expand: false,
             variant: AppButtonVariant.secondary,
             icon: Icons.auto_awesome_rounded,
-            onPressed: onGenerateSummary,
+            isLoading: isAiLoading,
+            onPressed: (formState.isLoading || isAiLoading) ? null : onGenerateSummary,
           ),
           child: Column(
             children: [

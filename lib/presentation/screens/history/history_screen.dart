@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:resume_labs/injection/injection_container.dart';
-import 'package:resume_labs/presentation/widgets/shared/error_dialog.dart';
 
 import '../../../domain/entities/resume.dart';
 import '../../providers/resume/resume_form_provider.dart';
@@ -10,7 +9,6 @@ import '../../providers/resume/resume_list_provider.dart';
 import '../../widgets/shared/app_button.dart';
 import '../resume_builder/builder_screen.dart';
 import '../resume_builder/preview_screen.dart';
-import '../../../core/errors/failure.dart';
 import '../../widgets/shared/error_dialog.dart';
 
 class HistoryScreen extends ConsumerWidget {

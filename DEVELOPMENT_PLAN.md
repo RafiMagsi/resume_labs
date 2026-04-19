@@ -352,7 +352,7 @@
 - [ ] Network-related failures show Retry action that re-triggers the failed provider action or invalidates the provider
 - [ ] Timeout failures show a clear user-facing message such as `Request timed out. Please try again.` and do not expose raw exception text
 
-### 15.3 Input Validation
+### 15.3 Input Validation - done
 - [ ] Email validation in auth screens
 - [ ] Password strength in auth screens (min 8 chars)
 - [ ] Required fields in resume form (validate before Save)

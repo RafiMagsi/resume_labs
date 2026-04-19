@@ -60,6 +60,7 @@ class _PasswordResetScreenState extends ConsumerState<PasswordResetScreen> {
   Future<void> _submit() async {
     FocusScope.of(context).unfocus();
 
+    if (ref.read(resetPasswordProvider).isLoading) return;
     if (!_formKey.currentState!.validate()) return;
 
     await ref.read(resetPasswordProvider.notifier).resetPassword(

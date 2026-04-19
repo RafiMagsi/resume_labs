@@ -106,6 +106,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Future<void> _submit() async {
     FocusScope.of(context).unfocus();
 
+    if (ref.read(signUpProvider).isLoading) return;
     if (!_formKey.currentState!.validate()) return;
 
     await ref.read(signUpProvider.notifier).signUp(
@@ -118,33 +119,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     return InputValidators.confirmPassword(
       value,
       _passwordController.text.trim(),
-    );
-  }
-
-  String _mapErrorToMessage(Object error) {
-    final text = error.toString().replaceFirst('AsyncError: ', '').trim();
-    if (text.isEmpty) {
-      return 'Unable to create your account right now. Please try again.';
-    }
-    return text;
-  }
-
-  Future<void> _showErrorDialog({
-    required String title,
-    required String message,
-  }) {
-    return showDialog<void>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
     );
   }
 
@@ -226,7 +200,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   AppButton(
                     text: 'Back to Sign In',
                     variant: AppButtonVariant.secondary,
-                    onPressed: () => context.pop(),
+                    onPressed: signUpState.isLoading ? null : () => context.pop(),
                   ),
                 ],
               ),

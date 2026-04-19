@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,8 +27,6 @@ class PreviewScreen extends ConsumerStatefulWidget {
 }
 
 class _PreviewScreenState extends ConsumerState<PreviewScreen> {
-
-
   Failure _mapProviderErrorToFailure(Object error) {
     final message = error.toString().replaceFirst('AsyncError: ', '').trim();
 
@@ -114,42 +111,6 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
           resume: resume,
           template: template,
         );
-  }
-
-  String _mapErrorToMessage(Object error) {
-    final text = error.toString().replaceFirst('AsyncError: ', '').trim();
-    if (text.isEmpty) {
-      return 'Unable to export PDF right now. Please try again.';
-    }
-    return text;
-  }
-
-  Future<void> _showErrorDialog({
-    required String title,
-    required String message,
-    VoidCallback? onRetry,
-  }) {
-    return showDialog<void>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          if (onRetry != null)
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                onRetry();
-              },
-              child: const Text('Retry'),
-            ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Dismiss'),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -289,7 +250,7 @@ class _PreviewControls extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           DropdownButtonFormField<ResumeTemplate>(
-            value: selectedTemplate,
+            initialValue: selectedTemplate,
             items: ResumeTemplate.values
                 .map(
                   (template) => DropdownMenuItem(

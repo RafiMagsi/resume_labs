@@ -185,7 +185,15 @@ class ResumeFormNotifier extends Notifier<ResumeFormState> {
   }
 
   Future<bool> save() async {
-    if (!validateAll()) return false;
+    if (!validateAll()) {
+      final errors = state.validationErrors;
+      state = state.copyWith(
+        currentStep: _firstInvalidStep(errors),
+        errorMessage: 'Please complete the required fields before saving.',
+        clearSuccessMessage: true,
+      );
+      return false;
+    }
     if (state.userId == null || state.userId!.trim().isEmpty) {
       state = state.copyWith(
         errorMessage: 'User not found. Please sign in again.',
@@ -240,6 +248,16 @@ class ResumeFormNotifier extends Notifier<ResumeFormState> {
 
   String _generateResumeId() {
     return DateTime.now().microsecondsSinceEpoch.toString();
+  }
+
+  int _firstInvalidStep(Map<String, String> errors) {
+    if (errors.containsKey('title') || errors.containsKey('personalSummary')) {
+      return 0;
+    }
+    if (errors.containsKey('workExperiences')) return 1;
+    if (errors.containsKey('educations')) return 2;
+    if (errors.containsKey('skills')) return 3;
+    return state.currentStep;
   }
 }
 
