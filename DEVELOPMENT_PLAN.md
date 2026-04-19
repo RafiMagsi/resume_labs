@@ -384,7 +384,7 @@
 
 ## Phase 17: Unit & Widget Testing (2–3 days)
 
-### 17.1 Domain Layer Tests
+### 17.1 Domain Layer Tests - done
 - [ ] All use cases: success and failure paths
 - [ ] Mock repositories
 
@@ -531,3 +531,4 @@ Phase 19–21 (Build, Testing, Deployment)
 # Replace all colors codes with Colors in the AppColors file, if color is missing in the file then add the colors in the file and use the new constant color name
 # Extract all components where you can
 # Move all string constants or messages to AppStrings
+# Update theme as Apple iOS style, use small border radius
