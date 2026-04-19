@@ -4,6 +4,7 @@ class AppTextField extends StatelessWidget {
   final TextEditingController controller;
   final String labelText;
   final String? hintText;
+  final String? semanticsLabel;
   final String? Function(String?)? validator;
   final TextInputType keyboardType;
   final TextInputAction textInputAction;
@@ -19,12 +20,14 @@ class AppTextField extends StatelessWidget {
   final FocusNode? focusNode;
   final FocusNode? nextFocusNode;
   final AutovalidateMode autovalidateMode;
+  final List<String>? autofillHints;
 
   const AppTextField({
     super.key,
     required this.controller,
     required this.labelText,
     this.hintText,
+    this.semanticsLabel,
     this.validator,
     this.keyboardType = TextInputType.text,
     this.textInputAction = TextInputAction.next,
@@ -40,40 +43,48 @@ class AppTextField extends StatelessWidget {
     this.focusNode,
     this.nextFocusNode,
     this.autovalidateMode = AutovalidateMode.onUserInteraction,
+    this.autofillHints,
   });
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      validator: validator,
-      keyboardType: keyboardType,
-      textInputAction: textInputAction,
-      obscureText: obscureText,
-      enabled: enabled,
-      maxLines: obscureText ? 1 : maxLines,
-      minLines: obscureText ? 1 : minLines,
-      focusNode: focusNode,
-      autovalidateMode: autovalidateMode,
-      onChanged: onChanged,
-      onEditingComplete: onEditingComplete,
-      onFieldSubmitted: (value) {
-        if (onFieldSubmitted != null) {
-          onFieldSubmitted!(value);
-          return;
-        }
+    return Semantics(
+      textField: true,
+      label: semanticsLabel ?? labelText,
+      child: TextFormField(
+        controller: controller,
+        validator: validator,
+        keyboardType: keyboardType,
+        textInputAction: textInputAction,
+        obscureText: obscureText,
+        enabled: enabled,
+        maxLines: obscureText ? 1 : maxLines,
+        minLines: obscureText ? 1 : minLines,
+        focusNode: focusNode,
+        autovalidateMode: autovalidateMode,
+        onChanged: onChanged,
+        onEditingComplete: onEditingComplete,
+        onFieldSubmitted: (value) {
+          if (onFieldSubmitted != null) {
+            onFieldSubmitted!(value);
+            return;
+          }
 
-        if (nextFocusNode != null) {
-          FocusScope.of(context).requestFocus(nextFocusNode);
-        } else {
-          FocusScope.of(context).unfocus();
-        }
-      },
-      decoration: InputDecoration(
-        labelText: labelText,
-        hintText: hintText,
-        prefixIcon: prefixIcon,
-        suffixIcon: suffixIcon,
+          if (nextFocusNode != null) {
+            FocusScope.of(context).requestFocus(nextFocusNode);
+          } else {
+            FocusScope.of(context).unfocus();
+          }
+        },
+        autofillHints: autofillHints,
+        autocorrect: !obscureText,
+        enableSuggestions: !obscureText,
+        decoration: InputDecoration(
+          labelText: labelText,
+          hintText: hintText,
+          prefixIcon: prefixIcon,
+          suffixIcon: suffixIcon,
+        ),
       ),
     );
   }

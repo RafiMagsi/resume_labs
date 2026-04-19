@@ -369,7 +369,7 @@
 - [ ] All fonts ≥12px for readability
 - [ ] Color contrast ≥4.5:1 (WCAG AA)
 
-### 16.2 Accessibility
+### 16.2 Accessibility - done
 - [ ] Semantic widgets, proper labels for form fields
 - [ ] Keyboard navigation support
 - [ ] Test with screen reader (iOS VoiceOver or Android TalkBack)

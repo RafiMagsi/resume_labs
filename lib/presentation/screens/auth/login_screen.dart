@@ -122,18 +122,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: SingleChildScrollView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               padding: const EdgeInsets.all(20),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Welcome back',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
+              child: FocusTraversalGroup(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 16),
+                      Semantics(
+                        header: true,
+                        child: Text(
+                          'Welcome back',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
-                    ),
                     const SizedBox(height: 8),
                     const Text(
                       'Sign in to continue building your resume',
@@ -149,6 +153,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       validator: InputValidators.email,
                       focusNode: _emailFocusNode,
                       nextFocusNode: _passwordFocusNode,
+                      autofillHints: const [AutofillHints.email],
                       prefixIcon: const Icon(Icons.email_outlined),
                     ),
                     const SizedBox(height: 16),
@@ -160,6 +165,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       textInputAction: TextInputAction.done,
                       validator: InputValidators.password,
                       focusNode: _passwordFocusNode,
+                      autofillHints: const [AutofillHints.password],
                       prefixIcon: const Icon(Icons.lock_outline),
                       onFieldSubmitted: (_) => _submit(),
                     ),
@@ -193,7 +199,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               context.push(RegisterScreen.routePath);
                             },
                     ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

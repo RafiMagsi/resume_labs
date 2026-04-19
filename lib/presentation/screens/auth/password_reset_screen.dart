@@ -106,18 +106,22 @@ class _PasswordResetScreenState extends ConsumerState<PasswordResetScreen> {
             child: SingleChildScrollView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               padding: const EdgeInsets.all(20),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Reset your password',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
+              child: FocusTraversalGroup(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 16),
+                      Semantics(
+                        header: true,
+                        child: Text(
+                          'Reset your password',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
-                    ),
                     const SizedBox(height: 8),
                     const Text(
                       'Enter your email and we will send you a password reset link.',
@@ -132,6 +136,7 @@ class _PasswordResetScreenState extends ConsumerState<PasswordResetScreen> {
                       textInputAction: TextInputAction.done,
                       validator: InputValidators.email,
                       focusNode: _emailFocusNode,
+                      autofillHints: const [AutofillHints.email],
                       prefixIcon: const Icon(Icons.email_outlined),
                       onFieldSubmitted: (_) => _submit(),
                     ),
@@ -141,7 +146,8 @@ class _PasswordResetScreenState extends ConsumerState<PasswordResetScreen> {
                       isLoading: resetState.isLoading,
                       onPressed: _submit,
                     ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

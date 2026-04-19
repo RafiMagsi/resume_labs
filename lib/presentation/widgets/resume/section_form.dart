@@ -48,12 +48,15 @@ class SectionForm extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF0F172A),
+                    Semantics(
+                      header: true,
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF0F172A),
+                        ),
                       ),
                     ),
                     if (subtitle != null) ...[
@@ -581,12 +584,20 @@ class _SkillChip extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            GestureDetector(
-              onTap: onDelete,
-              child: const Icon(
-                Icons.close_rounded,
-                size: 16,
-                color: Color(0xFF7C3AED),
+            Semantics(
+              button: true,
+              label: 'Remove skill ${item.name}',
+              child: IconButton(
+                tooltip: 'Remove skill',
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                onPressed: onDelete,
+                icon: const Icon(
+                  Icons.close_rounded,
+                  size: 16,
+                  color: Color(0xFF7C3AED),
+                ),
               ),
             ),
           ],
@@ -612,11 +623,13 @@ class _ItemActionButtons extends StatelessWidget {
         IconButton(
           visualDensity: VisualDensity.compact,
           onPressed: onEdit,
+          tooltip: 'Edit',
           icon: const Icon(Icons.edit_outlined),
         ),
         IconButton(
           visualDensity: VisualDensity.compact,
           onPressed: onDelete,
+          tooltip: 'Delete',
           icon: const Icon(
             Icons.delete_outline,
             color: Color(0xFFDC2626),
@@ -717,6 +730,7 @@ Future<void> _showWorkExperienceSheet(
                       controller: startDateController,
                       labelText: 'Start Date (YYYY-MM-DD)',
                       suffixIcon: IconButton(
+                        tooltip: 'Pick start date',
                         onPressed: () => pickDate(startDateController),
                         icon: const Icon(Icons.calendar_today_outlined),
                       ),
@@ -742,6 +756,7 @@ Future<void> _showWorkExperienceSheet(
                       labelText: 'End Date (YYYY-MM-DD)',
                       enabled: !isCurrentRole,
                       suffixIcon: IconButton(
+                        tooltip: 'Pick end date',
                         onPressed: isCurrentRole
                             ? null
                             : () => pickDate(endDateController),
@@ -823,6 +838,7 @@ Future<void> _showWorkExperienceSheet(
                           contentPadding: EdgeInsets.zero,
                           title: Text(bullets[index]),
                           trailing: IconButton(
+                            tooltip: 'Remove bullet',
                             onPressed: () {
                               setState(() {
                                 bullets.removeAt(index);

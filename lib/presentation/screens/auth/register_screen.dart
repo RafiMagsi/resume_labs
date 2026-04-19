@@ -141,18 +141,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             child: SingleChildScrollView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               padding: const EdgeInsets.all(20),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Create your account',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
+              child: FocusTraversalGroup(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 16),
+                      Semantics(
+                        header: true,
+                        child: Text(
+                          'Create your account',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
-                    ),
                     const SizedBox(height: 8),
                     const Text(
                       'Start building and saving professional resumes',
@@ -168,6 +172,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       validator: InputValidators.email,
                       focusNode: _emailFocusNode,
                       nextFocusNode: _passwordFocusNode,
+                      autofillHints: const [AutofillHints.email],
                       prefixIcon: const Icon(Icons.email_outlined),
                     ),
                     const SizedBox(height: 16),
@@ -180,6 +185,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       validator: InputValidators.password,
                       focusNode: _passwordFocusNode,
                       nextFocusNode: _confirmPasswordFocusNode,
+                      autofillHints: const [AutofillHints.newPassword],
                       prefixIcon: const Icon(Icons.lock_outline),
                     ),
                     const SizedBox(height: 16),
@@ -191,6 +197,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       textInputAction: TextInputAction.done,
                       validator: _confirmPasswordValidator,
                       focusNode: _confirmPasswordFocusNode,
+                      autofillHints: const [AutofillHints.newPassword],
                       prefixIcon: const Icon(Icons.lock_outline),
                       onFieldSubmitted: (_) => _submit(),
                     ),
@@ -207,7 +214,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       onPressed:
                           signUpState.isLoading ? null : () => context.pop(),
                     ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
