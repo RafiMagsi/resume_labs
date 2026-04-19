@@ -57,15 +57,21 @@ class ResumeFormNotifier extends Notifier<ResumeFormState> {
   }
 
   void updateTitle(String value) {
-    state = state.copyWith(title: value, validationErrors: {
-      ...state.validationErrors..remove('title'),
-    });
+    final updatedErrors = Map<String, String>.of(state.validationErrors)
+      ..remove('title');
+    state = state.copyWith(
+      title: value,
+      validationErrors: updatedErrors,
+    );
   }
 
   void updatePersonalSummary(String value) {
-    state = state.copyWith(personalSummary: value, validationErrors: {
-      ...state.validationErrors..remove('personalSummary'),
-    });
+    final updatedErrors = Map<String, String>.of(state.validationErrors)
+      ..remove('personalSummary');
+    state = state.copyWith(
+      personalSummary: value,
+      validationErrors: updatedErrors,
+    );
   }
 
   void addWorkExperience(WorkExperience experience) {

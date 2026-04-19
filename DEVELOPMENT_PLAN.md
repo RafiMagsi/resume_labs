@@ -393,7 +393,7 @@
 - [ ] Repository impls: success, failure, cache fallback scenarios
 - [ ] Mock datasources and external APIs
 
-### 17.3 Presentation Layer Tests
+### 17.3 Presentation Layer Tests - done
 - [ ] All providers: loading, success, error states
 - [ ] Mock use cases
 - [ ] Screens: basic rendering and navigation (if flutter_test supports)
@@ -532,3 +532,4 @@ Phase 19–21 (Build, Testing, Deployment)
 # Extract all components where you can
 # Move all string constants or messages to AppStrings
 # Update theme as Apple iOS style, use small border radius
+# Aim for >80% coverage overall, >95% on mappers
