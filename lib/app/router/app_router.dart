@@ -64,19 +64,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         PasswordResetScreen.routePath,
       };
 
-      final isGoingToPublicRoute = publicPaths.contains(location);
+      final isPublicRoute = publicPaths.contains(location);
 
       return authState.when(
         loading: () {
-          // While auth state is resolving, keep the user on splash.
           if (location == SplashScreen.routePath) return null;
           return SplashScreen.routePath;
         },
         error: (_, __) {
-          // If auth stream fails, force user to login unless already on public page.
-          if (location == LoginScreen.routePath ||
-              location == RegisterScreen.routePath ||
-              location == PasswordResetScreen.routePath) {
+          if (isPublicRoute && location != SplashScreen.routePath) {
             return null;
           }
           return LoginScreen.routePath;
@@ -85,19 +81,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final isAuthenticated = user != null;
 
           if (!isAuthenticated) {
-            // Unauthenticated users can only access public routes.
-            if (isGoingToPublicRoute) {
-              // Do not keep them on splash forever once auth is resolved.
-              if (location == SplashScreen.routePath) {
-                return LoginScreen.routePath;
-              }
+            if (location == SplashScreen.routePath) {
+              return LoginScreen.routePath;
+            }
+
+            if (isPublicRoute) {
               return null;
             }
 
             return LoginScreen.routePath;
           }
 
-          // Authenticated users should not stay on auth screens or splash.
+          // Default authenticated landing screen
           if (location == SplashScreen.routePath ||
               location == LoginScreen.routePath ||
               location == RegisterScreen.routePath ||
