@@ -374,7 +374,7 @@
 - [ ] Keyboard navigation support
 - [ ] Test with screen reader (iOS VoiceOver or Android TalkBack)
 
-### 16.3 Polish
+### 16.3 Polish - done
 - [ ] Smooth transitions between screens
 - [ ] Loading overlays with progress indicators
 - [ ] Proper error messages
@@ -530,3 +530,4 @@ Phase 19–21 (Build, Testing, Deployment)
 ### TASKS
 # Replace all colors codes with Colors in the AppColors file, if color is missing in the file then add the colors in the file and use the new constant color name
 # Extract all components where you can
+# Move all string constants or messages to AppStrings

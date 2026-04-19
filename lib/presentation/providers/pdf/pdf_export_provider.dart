@@ -28,7 +28,7 @@ class PdfExportNotifier extends AsyncNotifier<PdfExportState> {
     );
 
     state = result.match(
-      (failure) => AsyncError(failure.message, StackTrace.current),
+      (failure) => AsyncError(failure, StackTrace.current),
       (filePath) => AsyncData(
         PdfExportState(
           exportedFilePath: filePath,

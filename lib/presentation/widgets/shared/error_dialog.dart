@@ -126,6 +126,8 @@ class ErrorDialog extends StatelessWidget {
   }
 
   String _mapFailureToMessage(Failure failure) {
+    if (failure.message.trim().isNotEmpty) return failure.message.trim();
+
     switch (failure) {
       case AuthFailure():
         return AppStrings.authError;
@@ -136,13 +138,9 @@ class ErrorDialog extends StatelessWidget {
       case CacheFailure():
         return AppStrings.cacheError;
       case ValidationFailure():
-        return failure.message.isNotEmpty
-            ? failure.message
-            : AppStrings.fieldRequired;
+        return AppStrings.fieldRequired;
       case PdfFailure():
-        return failure.message.isNotEmpty
-            ? failure.message
-            : AppStrings.unexpectedError;
+        return AppStrings.unexpectedError;
       case UnknownFailure():
         return AppStrings.unexpectedError;
     }

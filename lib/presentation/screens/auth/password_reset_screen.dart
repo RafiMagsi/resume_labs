@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/errors/failure.dart';
 import '../../../core/utils/input_validators.dart';
 import '../../providers/auth/reset_password_provider.dart';
 import '../../widgets/shared/app_button.dart';
@@ -41,9 +42,12 @@ class _PasswordResetScreenState extends ConsumerState<PasswordResetScreen> {
         },
         error: (error, _) {
           if (!mounted) return;
+          final message = error is Failure
+              ? error.message
+              : error.toString().replaceFirst('AsyncError: ', '');
           _showDialog(
             title: 'Reset Failed',
-            message: error.toString().replaceFirst('AsyncError: ', ''),
+            message: message,
           );
         },
       );

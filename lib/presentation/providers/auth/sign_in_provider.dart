@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/errors/failure.dart';
 import '../../../injection/injection_container.dart';
 
 final signInProvider =
@@ -23,12 +22,8 @@ class SignInNotifier extends AsyncNotifier<void> {
     );
 
     state = result.match(
-      (failure) => AsyncError(_mapFailureToMessage(failure), StackTrace.current),
+      (failure) => AsyncError(failure, StackTrace.current),
       (_) => const AsyncData(null),
     );
-  }
-
-  String _mapFailureToMessage(Failure failure) {
-    return failure.message;
   }
 }

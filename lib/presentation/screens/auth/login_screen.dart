@@ -33,6 +33,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   late final FocusNode _passwordFocusNode;
 
   Failure _mapProviderErrorToFailure(Object error) {
+    if (error is Failure) return error;
+
     final message = error.toString().replaceFirst('AsyncError: ', '').trim();
 
     if (message.toLowerCase().contains('timeout')) {

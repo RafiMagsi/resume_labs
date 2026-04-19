@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/errors/failure.dart';
 import '../../../injection/injection_container.dart';
 
 final resetPasswordProvider = AsyncNotifierProvider<ResetPasswordNotifier, void>(
@@ -20,12 +19,8 @@ class ResetPasswordNotifier extends AsyncNotifier<void> {
     final result = await useCase(email: email);
 
     state = result.match(
-      (failure) => AsyncError(_mapFailureToMessage(failure), StackTrace.current),
+      (failure) => AsyncError(failure, StackTrace.current),
       (_) => const AsyncData(null),
     );
-  }
-
-  String _mapFailureToMessage(Failure failure) {
-    return failure.message;
   }
 }

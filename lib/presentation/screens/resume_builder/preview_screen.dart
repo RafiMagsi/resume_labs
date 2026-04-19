@@ -28,6 +28,7 @@ class PreviewScreen extends ConsumerStatefulWidget {
 
 class _PreviewScreenState extends ConsumerState<PreviewScreen> {
   Failure _mapProviderErrorToFailure(Object error) {
+    if (error is Failure) return error;
     final message = error.toString().replaceFirst('AsyncError: ', '').trim();
 
     if (message.toLowerCase().contains('timeout')) {

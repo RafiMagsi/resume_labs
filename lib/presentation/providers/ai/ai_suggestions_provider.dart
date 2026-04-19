@@ -28,7 +28,7 @@ class AiSuggestionsNotifier extends AsyncNotifier<AiSuggestionsState> {
     );
 
     state = result.match(
-      (failure) => AsyncError(failure.message, StackTrace.current),
+      (failure) => AsyncError(failure, StackTrace.current),
       (summary) => AsyncData(
         AiSuggestionsState(
           generatedSummary: summary,
@@ -50,7 +50,7 @@ class AiSuggestionsNotifier extends AsyncNotifier<AiSuggestionsState> {
     );
 
     state = result.match(
-      (failure) => AsyncError(failure.message, StackTrace.current),
+      (failure) => AsyncError(failure, StackTrace.current),
       (improvedBullet) => AsyncData(
         AiSuggestionsState(
           improvedBullet: improvedBullet,
@@ -74,7 +74,7 @@ class AiSuggestionsNotifier extends AsyncNotifier<AiSuggestionsState> {
     );
 
     state = result.match(
-      (failure) => AsyncError(failure.message, StackTrace.current),
+      (failure) => AsyncError(failure, StackTrace.current),
       (suggestedSkills) => AsyncData(
         AiSuggestionsState(
           suggestedSkills: suggestedSkills,

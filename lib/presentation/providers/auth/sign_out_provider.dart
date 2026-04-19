@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/errors/failure.dart';
 import '../../../injection/injection_container.dart';
 
 final signOutProvider =
@@ -17,12 +16,8 @@ class SignOutNotifier extends AsyncNotifier<void> {
     final result = await useCase();
 
     state = result.match(
-      (failure) => AsyncError(_mapFailureToMessage(failure), StackTrace.current),
+      (failure) => AsyncError(failure, StackTrace.current),
       (_) => const AsyncData(null),
     );
-  }
-
-  String _mapFailureToMessage(Failure failure) {
-    return failure.message;
   }
 }

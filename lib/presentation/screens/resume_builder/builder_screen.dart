@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:resume_labs/domain/entities/skill.dart';
 
 import '../../../core/utils/input_validators.dart';
+import '../../../core/errors/failure.dart';
 import '../../providers/auth/auth_provider.dart';
 import '../../providers/resume/resume_form_provider.dart';
 import '../../widgets/resume/resume_preview.dart';
@@ -12,6 +13,7 @@ import '../../widgets/shared/app_text_field.dart';
 import '../../widgets/shared/loading_overlay.dart';
 import '../../providers/ai/ai_suggestions_provider.dart';
 import '../../widgets/ai/ai_suggestion_dialog.dart';
+import '../../widgets/shared/error_dialog.dart';
 
 class BuilderScreen extends ConsumerStatefulWidget {
   const BuilderScreen({super.key});
@@ -143,12 +145,14 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
     if (!mounted) return;
 
     if (suggestion == null || suggestion.trim().isEmpty) {
-      final error = aiState.hasError
-          ? aiState.error.toString()
-          : 'Unable to generate AI summary.';
-      await _showErrorDialog(
+      final failure = aiState.error is Failure
+          ? aiState.error as Failure
+          : const ServerFailure('Unable to generate AI summary.');
+      await ErrorDialog.show(
+        context,
+        failure: failure,
+        onRetry: _handleGenerateSummary,
         title: 'AI Suggestion Failed',
-        message: error,
       );
       return;
     }
@@ -181,12 +185,14 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
     if (!mounted) return null;
 
     if (suggestion == null || suggestion.trim().isEmpty) {
-      final error = aiState.hasError
-          ? aiState.error.toString()
-          : 'Unable to improve bullet.';
-      await _showErrorDialog(
+      final failure = aiState.error is Failure
+          ? aiState.error as Failure
+          : const ServerFailure('Unable to improve bullet.');
+      await ErrorDialog.show(
+        context,
+        failure: failure,
+        onRetry: () async => _handleImproveBullet(bullet),
         title: 'AI Suggestion Failed',
-        message: error,
       );
       return null;
     }
@@ -223,12 +229,14 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
     if (!mounted) return null;
 
     if (suggestions.isEmpty) {
-      final error = aiState.hasError
-          ? aiState.error.toString()
-          : 'Unable to suggest skills.';
-      await _showErrorDialog(
+      final failure = aiState.error is Failure
+          ? aiState.error as Failure
+          : const ServerFailure('Unable to suggest skills.');
+      await ErrorDialog.show(
+        context,
+        failure: failure,
+        onRetry: _handleSuggestSkills,
         title: 'AI Suggestion Failed',
-        message: error,
       );
       return null;
     }

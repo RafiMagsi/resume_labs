@@ -14,6 +14,36 @@ import '../../presentation/screens/splash/splash_screen.dart';
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
 
+  CustomTransitionPage<T> buildPageWithDefaultTransition<T>({
+    required GoRouterState state,
+    required Widget child,
+  }) {
+    return CustomTransitionPage<T>(
+      key: state.pageKey,
+      child: child,
+      transitionDuration: const Duration(milliseconds: 220),
+      reverseTransitionDuration: const Duration(milliseconds: 180),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+          reverseCurve: Curves.easeInCubic,
+        );
+
+        final fade = FadeTransition(opacity: curved, child: child);
+        final slide = SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0.02, 0.0),
+            end: Offset.zero,
+          ).animate(curved),
+          child: fade,
+        );
+
+        return slide;
+      },
+    );
+  }
+
   return GoRouter(
     initialLocation: SplashScreen.routePath,
     debugLogDiagnostics: true,
@@ -21,37 +51,58 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: SplashScreen.routePath,
         name: SplashScreen.routeName,
-        builder: (context, state) => const SplashScreen(),
+        pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+          state: state,
+          child: const SplashScreen(),
+        ),
       ),
       GoRoute(
         path: LoginScreen.routePath,
         name: LoginScreen.routeName,
-        builder: (context, state) => const LoginScreen(),
+        pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+          state: state,
+          child: const LoginScreen(),
+        ),
       ),
       GoRoute(
         path: RegisterScreen.routePath,
         name: RegisterScreen.routeName,
-        builder: (context, state) => const RegisterScreen(),
+        pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+          state: state,
+          child: const RegisterScreen(),
+        ),
       ),
       GoRoute(
         path: PasswordResetScreen.routePath,
         name: PasswordResetScreen.routeName,
-        builder: (context, state) => const PasswordResetScreen(),
+        pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+          state: state,
+          child: const PasswordResetScreen(),
+        ),
       ),
       GoRoute(
         path: HistoryScreen.routePath,
         name: HistoryScreen.routeName,
-        builder: (context, state) => const HistoryScreen(),
+        pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+          state: state,
+          child: const HistoryScreen(),
+        ),
       ),
       GoRoute(
         path: BuilderScreen.routePath,
         name: BuilderScreen.routeName,
-        builder: (context, state) => const BuilderScreen(),
+        pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+          state: state,
+          child: const BuilderScreen(),
+        ),
       ),
       GoRoute(
         path: PreviewScreen.routePath,
         name: PreviewScreen.routeName,
-        builder: (context, state) => const PreviewScreen(),
+        pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+          state: state,
+          child: const PreviewScreen(),
+        ),
       ),
     ],
     redirect: (context, state) {
@@ -105,8 +156,49 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       );
     },
     errorBuilder: (context, state) => Scaffold(
-      body: Center(
-        child: Text('Route not found: ${state.error}'),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.error_outline_rounded,
+                    size: 64,
+                    color: Color(0xFFDC2626),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Page not found',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    state.error?.toString() ?? 'The requested route is unavailable.',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF64748B),
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  FilledButton(
+                    onPressed: () => context.go(HistoryScreen.routePath),
+                    child: const Text('Go to Home'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     ),
   );

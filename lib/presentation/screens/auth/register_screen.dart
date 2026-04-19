@@ -33,6 +33,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   late final FocusNode _confirmPasswordFocusNode;
 
   Failure _mapProviderErrorToFailure(Object error) {
+    if (error is Failure) return error;
+
     final message = error.toString().replaceFirst('AsyncError: ', '').trim();
 
     if (message.toLowerCase().contains('timeout')) {
