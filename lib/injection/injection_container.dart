@@ -24,6 +24,16 @@ import '../domain/usecases/resume/get_all_resumes_usecase.dart';
 import '../domain/usecases/resume/get_resume_usecase.dart';
 import '../domain/usecases/resume/update_resume_usecase.dart';
 
+import 'package:http/http.dart' as http;
+
+import '../data/datasources/remote/openai_datasource.dart';
+import '../data/datasources/remote/openai_datasource_impl.dart';
+import '../data/repositories/ai_repository_impl.dart';
+import '../domain/repositories/ai_repository.dart';
+import '../domain/usecases/ai/generate_summary_usecase.dart';
+import '../domain/usecases/ai/improve_bullet_usecase.dart';
+import '../domain/usecases/ai/suggest_skills_usecase.dart';
+
 final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
   return FirebaseAuth.instance;
 });
@@ -114,4 +124,33 @@ final getResumeUseCaseProvider = Provider<GetResumeUseCase>((ref) {
 final getAllResumesUseCaseProvider = Provider<GetAllResumesUseCase>((ref) {
   final repository = ref.watch(resumeRepositoryProvider);
   return GetAllResumesUseCase(repository);
+});
+
+final httpClientProvider = Provider<http.Client>((ref) {
+  return http.Client();
+});
+
+final openAiDataSourceProvider = Provider<OpenAiDataSource>((ref) {
+  final client = ref.watch(httpClientProvider);
+  return OpenAiDataSourceImpl(client);
+});
+
+final aiRepositoryProvider = Provider<AiRepository>((ref) {
+  final dataSource = ref.watch(openAiDataSourceProvider);
+  return AiRepositoryImpl(dataSource);
+});
+
+final generateSummaryUseCaseProvider = Provider<GenerateSummaryUseCase>((ref) {
+  final repository = ref.watch(aiRepositoryProvider);
+  return GenerateSummaryUseCase(repository);
+});
+
+final improveBulletUseCaseProvider = Provider<ImproveBulletUseCase>((ref) {
+  final repository = ref.watch(aiRepositoryProvider);
+  return ImproveBulletUseCase(repository);
+});
+
+final suggestSkillsUseCaseProvider = Provider<SuggestSkillsUseCase>((ref) {
+  final repository = ref.watch(aiRepositoryProvider);
+  return SuggestSkillsUseCase(repository);
 });
