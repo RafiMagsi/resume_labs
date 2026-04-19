@@ -1,16 +1,20 @@
+import 'package:fpdart/fpdart.dart';
+
+import '../../core/errors/failure.dart';
+
 abstract interface class AiRepository {
-  Future<String> generateSummary({
+  Future<Either<Failure, String>> generateSummary({
     required String jobTitle,
     required List<String> skills,
     required List<String> workHighlights,
   });
 
-  Future<String> improveBullet({
+  Future<Either<Failure, String>> improveBullet({
     required String bullet,
     String? jobTitle,
   });
 
-  Future<List<String>> suggestSkills({
+  Future<Either<Failure, List<String>>> suggestSkills({
     required String jobTitle,
     required List<String> existingSkills,
     String? personalSummary,

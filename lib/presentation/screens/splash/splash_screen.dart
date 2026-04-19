@@ -38,7 +38,6 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text("This is Splash", style: TextStyle(color: AppColors.info),),
             CircularProgressIndicator(color: AppColors.secondary),
           ],
         ),

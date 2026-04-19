@@ -1,13 +1,16 @@
+import 'package:fpdart/fpdart.dart';
+
+import '../../core/errors/failure.dart';
 import '../entities/resume.dart';
 
 abstract interface class ResumeRepository {
-  Future<Resume> createResume(Resume resume);
+  Future<Either<Failure, Resume>> createResume(Resume resume);
 
-  Future<Resume> updateResume(Resume resume);
+  Future<Either<Failure, Resume>> updateResume(Resume resume);
 
-  Future<void> deleteResume(String resumeId);
+  Future<Either<Failure, void>> deleteResume(String resumeId);
 
-  Future<Resume?> getResumeById(String resumeId);
+  Future<Either<Failure, Resume?>> getResumeById(String resumeId);
 
-  Future<List<Resume>> getResumesByUserId(String userId);
+  Future<Either<Failure, List<Resume>>> getResumesByUserId(String userId);
 }
