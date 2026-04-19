@@ -61,4 +61,3 @@ void main() {
     expect(result, const Left(AuthFailure('Invalid credentials')));
   });
 }
-

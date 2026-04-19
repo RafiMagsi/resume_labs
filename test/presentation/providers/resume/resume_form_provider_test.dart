@@ -41,7 +41,8 @@ void main() {
     updateUseCase = MockUpdateResumeUseCase();
   });
 
-  test('save returns false and sets currentStep to first invalid step', () async {
+  test('save returns false and sets currentStep to first invalid step',
+      () async {
     final container = ProviderContainer(
       overrides: [
         createResumeUseCaseProvider.overrideWithValue(createUseCase),
@@ -64,7 +65,8 @@ void main() {
 
   test('save uses create use case when not editing', () async {
     when(() => createUseCase(any())).thenAnswer(
-      (invocation) async => Right(invocation.positionalArguments.first as Resume),
+      (invocation) async =>
+          Right(invocation.positionalArguments.first as Resume),
     );
 
     final container = ProviderContainer(

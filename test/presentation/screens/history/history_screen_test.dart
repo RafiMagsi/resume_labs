@@ -23,4 +23,3 @@ void main() {
     expect(find.text('New Resume'), findsOneWidget);
   });
 }
-

@@ -27,7 +27,8 @@ abstract final class ErrorHandler {
         error: details.exception,
         stackTrace: details.stack,
         title: 'UI crashed',
-        message: 'A widget failed while building. This custom screen replaced the default Flutter red error screen.',
+        message:
+            'A widget failed while building. This custom screen replaced the default Flutter red error screen.',
         onRetry: null,
       );
     };

@@ -224,7 +224,8 @@ class HistoryScreen extends ConsumerWidget {
                     context,
                     failure: failure,
                     onRetry: () async {
-                      final deleteUseCase = ref.read(deleteResumeUseCaseProvider);
+                      final deleteUseCase =
+                          ref.read(deleteResumeUseCaseProvider);
                       await deleteUseCase(resume.id);
                       ref.invalidate(resumeListProvider);
                     },
@@ -270,7 +271,8 @@ class _ResumeHistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final title = resume.title.trim().isEmpty ? 'Untitled Resume' : resume.title.trim();
+    final title =
+        resume.title.trim().isEmpty ? 'Untitled Resume' : resume.title.trim();
 
     return Semantics(
       button: true,
@@ -428,12 +430,23 @@ class _ResumeHistoryCard extends StatelessWidget {
 
 String _formatDateTime(DateTime date) {
   const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
 
   final day = date.day.toString().padLeft(2, '0');
-  final hour = date.hour == 0 ? 12 : (date.hour > 12 ? date.hour - 12 : date.hour);
+  final hour =
+      date.hour == 0 ? 12 : (date.hour > 12 ? date.hour - 12 : date.hour);
   final minute = date.minute.toString().padLeft(2, '0');
   final period = date.hour >= 12 ? 'PM' : 'AM';
 

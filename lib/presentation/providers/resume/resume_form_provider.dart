@@ -352,10 +352,10 @@ class ResumeFormState {
       isLoading: isLoading ?? this.isLoading,
       isEditing: isEditing ?? this.isEditing,
       createdAt: createdAt ?? this.createdAt,
-      errorMessage: clearErrorMessage ? null : (errorMessage ?? this.errorMessage),
-      successMessage: clearSuccessMessage
-          ? null
-          : (successMessage ?? this.successMessage),
+      errorMessage:
+          clearErrorMessage ? null : (errorMessage ?? this.errorMessage),
+      successMessage:
+          clearSuccessMessage ? null : (successMessage ?? this.successMessage),
     );
   }
 }

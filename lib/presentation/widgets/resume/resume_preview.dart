@@ -115,7 +115,8 @@ class ResumePreview extends StatelessWidget {
                               decoration: BoxDecoration(
                                 color: const Color(0xFFF1F5F9),
                                 borderRadius: BorderRadius.circular(999),
-                                border: Border.all(color: const Color(0xFFE2E8F0)),
+                                border:
+                                    Border.all(color: const Color(0xFFE2E8F0)),
                               ),
                               child: Text(
                                 '${skill.name} • ${skill.category}',
@@ -194,7 +195,8 @@ class _PreviewWorkExperienceItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateText = _formatDateRange(item.startDate, item.endDate, item.isCurrentRole);
+    final dateText =
+        _formatDateRange(item.startDate, item.endDate, item.isCurrentRole);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -321,6 +323,7 @@ String _formatMonthYear(DateTime date) {
 
 String _formatDateRange(DateTime start, DateTime? end, bool isCurrentRole) {
   final startText = _formatMonthYear(start);
-  final endText = isCurrentRole || end == null ? 'Present' : _formatMonthYear(end);
+  final endText =
+      isCurrentRole || end == null ? 'Present' : _formatMonthYear(end);
   return '$startText - $endText';
 }

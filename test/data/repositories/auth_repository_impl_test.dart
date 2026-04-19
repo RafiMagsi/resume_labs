@@ -67,7 +67,8 @@ void main() {
           password: testPassword,
         ),
       ).thenThrow(
-        const AuthException('Email already exists', code: 'email-already-in-use'),
+        const AuthException('Email already exists',
+            code: 'email-already-in-use'),
       );
 
       final result = await repository.signUp(

@@ -113,8 +113,8 @@ class FirebaseAuthDataSourceImpl implements FirebaseAuthDataSource {
   @override
   Stream<UserProfileModel?> authStateChanges() {
     return firebaseAuth.authStateChanges().map(
-      (user) => user == null ? null : _mapUser(user),
-    );
+          (user) => user == null ? null : _mapUser(user),
+        );
   }
 
   @override

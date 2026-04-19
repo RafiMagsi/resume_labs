@@ -38,6 +38,11 @@ migrate_working_dir/
 android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
 
+# Android signing
+android/key.properties
+*.jks
+*.keystore
+
 # Generated code (build_runner)
 **/*.g.dart
 **/*.freezed.dart

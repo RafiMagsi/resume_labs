@@ -49,8 +49,8 @@ class AppButton extends StatelessWidget {
             disabledBackgroundColor: const Color(0xFFB8B2F8),
             disabledForegroundColor: Colors.white70,
             elevation: 0,
-            padding:
-                padding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: padding ??
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
@@ -66,8 +66,8 @@ class AppButton extends StatelessWidget {
             minimumSize: Size(expand ? double.infinity : 0, height),
             foregroundColor: const Color(0xFF6D5EF8),
             side: const BorderSide(color: Color(0xFF6D5EF8)),
-            padding:
-                padding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: padding ??
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
@@ -82,8 +82,8 @@ class AppButton extends StatelessWidget {
           style: TextButton.styleFrom(
             minimumSize: Size(expand ? double.infinity : 0, height),
             foregroundColor: const Color(0xFF6D5EF8),
-            padding:
-                padding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: padding ??
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
@@ -114,7 +114,9 @@ class _ButtonContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final textColor = switch (variant) {
       AppButtonVariant.primary => Colors.white,
-      AppButtonVariant.secondary || AppButtonVariant.text => const Color(0xFF6D5EF8),
+      AppButtonVariant.secondary ||
+      AppButtonVariant.text =>
+        const Color(0xFF6D5EF8),
     };
 
     if (isLoading) {

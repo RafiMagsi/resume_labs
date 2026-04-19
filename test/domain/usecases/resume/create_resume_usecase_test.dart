@@ -61,4 +61,3 @@ void main() {
     expect(result, const Left(ServerFailure('Failed to create')));
   });
 }
-

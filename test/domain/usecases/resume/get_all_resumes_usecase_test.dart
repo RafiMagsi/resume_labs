@@ -53,4 +53,3 @@ void main() {
     expect(result, const Left(NetworkFailure('No internet')));
   });
 }
-

@@ -49,4 +49,3 @@ void main() {
     expect(result, const Left(ServerFailure('Not found')));
   });
 }
-

@@ -92,9 +92,11 @@ class ResumeRepositoryImpl implements ResumeRepository {
   }
 
   @override
-  Future<Either<Failure, List<Resume>>> getResumesByUserId(String userId) async {
+  Future<Either<Failure, List<Resume>>> getResumesByUserId(
+      String userId) async {
     try {
-      final remoteResults = await remoteDataSource.getAllResumes(userId: userId);
+      final remoteResults =
+          await remoteDataSource.getAllResumes(userId: userId);
 
       await localDataSource.cacheResumes(remoteResults);
 

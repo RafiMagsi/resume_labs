@@ -21,9 +21,7 @@ class Skill {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is Skill &&
-        other.name == name &&
-        other.category == category;
+    return other is Skill && other.name == name && other.category == category;
   }
 
   @override

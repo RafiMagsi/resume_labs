@@ -128,7 +128,8 @@ class WorkExperienceSectionForm extends StatelessWidget {
             ...List.generate(
               items.length,
               (index) => Padding(
-                padding: EdgeInsets.only(bottom: index == items.length - 1 ? 0 : 12),
+                padding:
+                    EdgeInsets.only(bottom: index == items.length - 1 ? 0 : 12),
                 child: _WorkExperienceCard(
                   item: items[index],
                   onEdit: () => _showWorkExperienceSheet(
@@ -199,7 +200,8 @@ class EducationSectionForm extends StatelessWidget {
             ...List.generate(
               items.length,
               (index) => Padding(
-                padding: EdgeInsets.only(bottom: index == items.length - 1 ? 0 : 12),
+                padding:
+                    EdgeInsets.only(bottom: index == items.length - 1 ? 0 : 12),
                 child: _EducationCard(
                   item: items[index],
                   onEdit: () => _showEducationSheet(
@@ -272,16 +274,16 @@ class _SkillsSectionFormState extends State<SkillsSectionForm> {
             onPressed: (widget.onSuggestSkills == null || _isSuggesting)
                 ? null
                 : () async {
-	                    setState(() => _isSuggesting = true);
-	                    try {
-	                      final results = await widget.onSuggestSkills!.call();
-	                      if (!context.mounted) return;
-	                      if (results == null || results.isEmpty) return;
+                    setState(() => _isSuggesting = true);
+                    try {
+                      final results = await widget.onSuggestSkills!.call();
+                      if (!context.mounted) return;
+                      if (results == null || results.isEmpty) return;
 
-	                      await _showSuggestedSkillsDialog(
-	                        context,
-	                        suggestions: results,
-	                        onAccept: (skillName) {
+                      await _showSuggestedSkillsDialog(
+                        context,
+                        suggestions: results,
+                        onAccept: (skillName) {
                           if (widget.onAcceptSuggestedSkill != null) {
                             widget.onAcceptSuggestedSkill!(skillName);
                           }
@@ -646,11 +648,14 @@ Future<void> _showWorkExperienceSheet(
   required ValueChanged<WorkExperience> onSave,
   Future<String?> Function(String bullet)? onImproveBullet,
 }) async {
-  final companyController = TextEditingController(text: initialValue?.company ?? '');
+  final companyController =
+      TextEditingController(text: initialValue?.company ?? '');
   final roleController = TextEditingController(text: initialValue?.role ?? '');
-  final locationController = TextEditingController(text: initialValue?.location ?? '');
+  final locationController =
+      TextEditingController(text: initialValue?.location ?? '');
   final startDateController = TextEditingController(
-    text: initialValue != null ? _formatDateForInput(initialValue.startDate) : '',
+    text:
+        initialValue != null ? _formatDateForInput(initialValue.startDate) : '',
   );
   final endDateController = TextEditingController(
     text: initialValue?.endDate != null
@@ -674,7 +679,8 @@ Future<void> _showWorkExperienceSheet(
       return StatefulBuilder(
         builder: (context, setState) {
           Future<void> pickDate(TextEditingController controller) async {
-            final initialDate = DateTime.tryParse(controller.text) ?? DateTime.now();
+            final initialDate =
+                DateTime.tryParse(controller.text) ?? DateTime.now();
             final date = await showDatePicker(
               context: context,
               initialDate: initialDate,
@@ -701,7 +707,9 @@ Future<void> _showWorkExperienceSheet(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      initialValue == null ? 'Add Work Experience' : 'Edit Work Experience',
+                      initialValue == null
+                          ? 'Add Work Experience'
+                          : 'Edit Work Experience',
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
@@ -786,7 +794,8 @@ Future<void> _showWorkExperienceSheet(
                               variant: AppButtonVariant.secondary,
                               icon: Icons.auto_awesome_rounded,
                               isLoading: isImprovingBullet,
-                              onPressed: (onImproveBullet == null || isImprovingBullet)
+                              onPressed: (onImproveBullet == null ||
+                                      isImprovingBullet)
                                   ? null
                                   : () async {
                                       final text = bulletController.text.trim();
@@ -794,7 +803,8 @@ Future<void> _showWorkExperienceSheet(
 
                                       setState(() => isImprovingBullet = true);
                                       try {
-                                        final improved = await onImproveBullet(text);
+                                        final improved =
+                                            await onImproveBullet(text);
                                         if (improved == null ||
                                             improved.trim().isEmpty ||
                                             !context.mounted) {
@@ -804,11 +814,14 @@ Future<void> _showWorkExperienceSheet(
                                         bulletController.text = improved;
                                         bulletController.selection =
                                             TextSelection.fromPosition(
-                                          TextPosition(offset: bulletController.text.length),
+                                          TextPosition(
+                                              offset:
+                                                  bulletController.text.length),
                                         );
                                       } finally {
                                         if (context.mounted) {
-                                          setState(() => isImprovingBullet = false);
+                                          setState(
+                                              () => isImprovingBullet = false);
                                         }
                                       }
                                     },
@@ -854,7 +867,9 @@ Future<void> _showWorkExperienceSheet(
                     ],
                     const SizedBox(height: 20),
                     AppButton(
-                      text: initialValue == null ? 'Save Experience' : 'Update Experience',
+                      text: initialValue == null
+                          ? 'Save Experience'
+                          : 'Update Experience',
                       onPressed: () {
                         if (!formKey.currentState!.validate()) return;
 
@@ -863,7 +878,8 @@ Future<void> _showWorkExperienceSheet(
                             company: companyController.text.trim(),
                             role: roleController.text.trim(),
                             location: locationController.text.trim(),
-                            startDate: DateTime.parse(startDateController.text.trim()),
+                            startDate:
+                                DateTime.parse(startDateController.text.trim()),
                             endDate: isCurrentRole
                                 ? null
                                 : DateTime.parse(endDateController.text.trim()),
@@ -891,11 +907,16 @@ Future<void> _showEducationSheet(
   Education? initialValue,
   required ValueChanged<Education> onSave,
 }) async {
-  final schoolController = TextEditingController(text: initialValue?.school ?? '');
-  final degreeController = TextEditingController(text: initialValue?.degree ?? '');
-  final fieldController = TextEditingController(text: initialValue?.field ?? '');
+  final schoolController =
+      TextEditingController(text: initialValue?.school ?? '');
+  final degreeController =
+      TextEditingController(text: initialValue?.degree ?? '');
+  final fieldController =
+      TextEditingController(text: initialValue?.field ?? '');
   final graduationDateController = TextEditingController(
-    text: initialValue != null ? _formatDateForInput(initialValue.graduationDate) : '',
+    text: initialValue != null
+        ? _formatDateForInput(initialValue.graduationDate)
+        : '',
   );
   final gpaController = TextEditingController(
     text: initialValue?.gpa?.toString() ?? '',
@@ -978,7 +999,8 @@ Future<void> _showEducationSheet(
                 AppTextField(
                   controller: gpaController,
                   labelText: 'GPA (optional)',
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
                   validator: (value) {
                     final text = value?.trim() ?? '';
                     if (text.isEmpty) return null;
@@ -990,7 +1012,9 @@ Future<void> _showEducationSheet(
                 ),
                 const SizedBox(height: 20),
                 AppButton(
-                  text: initialValue == null ? 'Save Education' : 'Update Education',
+                  text: initialValue == null
+                      ? 'Save Education'
+                      : 'Update Education',
                   onPressed: () {
                     if (!formKey.currentState!.validate()) return;
 
@@ -999,8 +1023,8 @@ Future<void> _showEducationSheet(
                         school: schoolController.text.trim(),
                         degree: degreeController.text.trim(),
                         field: fieldController.text.trim(),
-                        graduationDate:
-                            DateTime.parse(graduationDateController.text.trim()),
+                        graduationDate: DateTime.parse(
+                            graduationDateController.text.trim()),
                         gpa: gpaController.text.trim().isEmpty
                             ? null
                             : double.parse(gpaController.text.trim()),
@@ -1143,7 +1167,8 @@ String _formatMonthYear(DateTime date) {
 
 String _formatDateRange(DateTime start, DateTime? end, bool isCurrentRole) {
   final startText = _formatMonthYear(start);
-  final endText = isCurrentRole || end == null ? 'Present' : _formatMonthYear(end);
+  final endText =
+      isCurrentRole || end == null ? 'Present' : _formatMonthYear(end);
   return '$startText - $endText';
 }
 

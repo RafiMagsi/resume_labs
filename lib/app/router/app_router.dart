@@ -181,7 +181,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    state.error?.toString() ?? 'The requested route is unavailable.',
+                    state.error?.toString() ??
+                        'The requested route is unavailable.',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 14,

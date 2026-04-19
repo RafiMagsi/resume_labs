@@ -53,7 +53,9 @@ class ResumeLocalDataSourceImpl implements ResumeLocalDataSource {
   }) async {
     try {
       final box = await _openBox();
-      final items = box.values.where((resume) => resume.userId == userId).toList()
+      final items = box.values
+          .where((resume) => resume.userId == userId)
+          .toList()
         ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
       return items;
     } catch (_) {
@@ -76,12 +78,10 @@ class ResumeLocalDataSourceImpl implements ResumeLocalDataSource {
         return;
       }
 
-      final keysToDelete = box.keys
-          .where((key) {
-            final value = box.get(key);
-            return value?.userId == userId;
-          })
-          .toList();
+      final keysToDelete = box.keys.where((key) {
+        final value = box.get(key);
+        return value?.userId == userId;
+      }).toList();
 
       await box.deleteAll(keysToDelete);
     } catch (_) {

@@ -11,14 +11,14 @@ import 'data/datasources/local/hive_adapters.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   await Hive.initFlutter();
   registerHiveAdapters();
 
   await dotenv.load(fileName: '.env');
   final openAiApiKey = dotenv.env['OPENAI_API_KEY'];
   final firebaseProjectId = dotenv.env['FIREBASE_PROJECT_ID'];
-  
+
   assert(
     openAiApiKey != null && openAiApiKey.isNotEmpty,
     'OPENAI_API_KEY is missing in .env',
@@ -32,7 +32,7 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  
+
   if (kDebugMode) {
     debugPrint('OPENAI_API_KEY loaded: ${openAiApiKey != null}');
     debugPrint('FIREBASE_PROJECT_ID loaded: $firebaseProjectId');

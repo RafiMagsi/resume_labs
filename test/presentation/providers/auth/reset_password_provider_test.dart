@@ -60,4 +60,3 @@ void main() {
     expect(state.error, const NetworkFailure('No internet'));
   });
 }
-

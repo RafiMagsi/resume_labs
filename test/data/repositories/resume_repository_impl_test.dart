@@ -18,8 +18,7 @@ import 'package:resume_labs/domain/entities/work_experience.dart';
 class MockFirestoreResumeDataSource extends Mock
     implements FirestoreResumeDataSource {}
 
-class MockResumeLocalDataSource extends Mock
-    implements ResumeLocalDataSource {}
+class MockResumeLocalDataSource extends Mock implements ResumeLocalDataSource {}
 
 void main() {
   late FirestoreResumeDataSource remoteDataSource;
@@ -153,7 +152,8 @@ void main() {
         },
         (_) => fail('Expected Left but got Right'),
       );
-      verifyNever(() => localDataSource.cacheResume(any(that: isA<ResumeModel>())));
+      verifyNever(
+          () => localDataSource.cacheResume(any(that: isA<ResumeModel>())));
     });
   });
 
@@ -224,12 +224,14 @@ void main() {
       final result = await repository.getResumeById('resume-1');
 
       expect(result, const Right(null));
-      verifyNever(() => localDataSource.cacheResume(any(that: isA<ResumeModel>())));
+      verifyNever(
+          () => localDataSource.cacheResume(any(that: isA<ResumeModel>())));
     });
 
     test('returns Left(NetworkFailure) on remote network error', () async {
       when(() => remoteDataSource.getResumeById('resume-1')).thenThrow(
-        const NetworkException('No internet connection. Unable to load resume.'),
+        const NetworkException(
+            'No internet connection. Unable to load resume.'),
       );
 
       final result = await repository.getResumeById('resume-1');
@@ -238,7 +240,8 @@ void main() {
       result.match(
         (failure) {
           expect(failure, isA<NetworkFailure>());
-          expect(failure.message, 'No internet connection. Unable to load resume.');
+          expect(failure.message,
+              'No internet connection. Unable to load resume.');
         },
         (_) => fail('Expected Left but got Right'),
       );
@@ -249,7 +252,8 @@ void main() {
     test('returns remote data and caches it on success', () async {
       when(() => remoteDataSource.getAllResumes(userId: 'user-1'))
           .thenAnswer((_) async => [resumeModel]);
-      when(() => localDataSource.cacheResumes(any(that: isA<List<ResumeModel>>())))
+      when(() =>
+              localDataSource.cacheResumes(any(that: isA<List<ResumeModel>>())))
           .thenAnswer((_) async {});
 
       final result = await repository.getResumesByUserId('user-1');

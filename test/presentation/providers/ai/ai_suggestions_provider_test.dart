@@ -9,7 +9,8 @@ import 'package:resume_labs/domain/usecases/ai/suggest_skills_usecase.dart';
 import 'package:resume_labs/injection/injection_container.dart';
 import 'package:resume_labs/presentation/providers/ai/ai_suggestions_provider.dart';
 
-class MockGenerateSummaryUseCase extends Mock implements GenerateSummaryUseCase {}
+class MockGenerateSummaryUseCase extends Mock
+    implements GenerateSummaryUseCase {}
 
 class MockImproveBulletUseCase extends Mock implements ImproveBulletUseCase {}
 
@@ -52,7 +53,8 @@ void main() {
       workHighlights: const ['Built apps'],
     );
 
-    expect(container.read(aiSuggestionsProvider), const AsyncLoading<AiSuggestionsState>());
+    expect(container.read(aiSuggestionsProvider),
+        const AsyncLoading<AiSuggestionsState>());
     await future;
 
     final state = container.read(aiSuggestionsProvider).valueOrNull;
@@ -78,14 +80,13 @@ void main() {
     addTearDown(container.dispose);
 
     await container.read(aiSuggestionsProvider.notifier).generateSummary(
-          jobTitle: 'Flutter Developer',
-          skills: const ['Flutter'],
-          workHighlights: const ['Built apps'],
-        );
+      jobTitle: 'Flutter Developer',
+      skills: const ['Flutter'],
+      workHighlights: const ['Built apps'],
+    );
 
     final providerState = container.read(aiSuggestionsProvider);
     expect(providerState.hasError, true);
     expect(providerState.error, const ServerFailure('OpenAI down'));
   });
 }
-

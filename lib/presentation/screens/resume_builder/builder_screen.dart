@@ -119,14 +119,14 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
   Future<void> _handleGenerateSummary() async {
     final formState = ref.read(resumeFormProvider);
 
-    final allBullets = formState.workExperiences
-        .expand((e) => e.bulletPoints)
-        .toList();
+    final allBullets =
+        formState.workExperiences.expand((e) => e.bulletPoints).toList();
 
     if (allBullets.isEmpty) {
       await _showErrorDialog(
         title: 'Missing Work Experience',
-        message: 'Add work experience bullets first so AI can generate a meaningful summary.',
+        message:
+            'Add work experience bullets first so AI can generate a meaningful summary.',
       );
       return;
     }
@@ -313,7 +313,8 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
       ),
       body: LoadingOverlay(
         isLoading: formState.isLoading,
-        message: formState.isEditing ? 'Updating resume...' : 'Saving resume...',
+        message:
+            formState.isEditing ? 'Updating resume...' : 'Saving resume...',
         child: SafeArea(
           child: GestureDetector(
             behavior: HitTestBehavior.translucent,
@@ -321,7 +322,8 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final shortestSide = MediaQuery.sizeOf(context).shortestSide;
-                final isWide = constraints.maxWidth >= 980 || shortestSide >= 720;
+                final isWide =
+                    constraints.maxWidth >= 980 || shortestSide >= 720;
 
                 final formContent = _BuilderFormContent(
                   formState: formState,
@@ -453,7 +455,8 @@ class _BuilderFormContent extends StatelessWidget {
             variant: AppButtonVariant.secondary,
             icon: Icons.auto_awesome_rounded,
             isLoading: isAiLoading,
-            onPressed: (formState.isLoading || isAiLoading) ? null : onGenerateSummary,
+            onPressed:
+                (formState.isLoading || isAiLoading) ? null : onGenerateSummary,
           ),
           child: Column(
             children: [

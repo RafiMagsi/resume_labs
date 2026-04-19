@@ -54,9 +54,11 @@ void main() {
       createdAt: DateTime(2024, 1, 1),
       updatedAt: DateTime(2024, 1, 2),
     );
-    final newer = older.copyWith(id: 'r2', title: 'New', updatedAt: DateTime(2024, 2, 1));
+    final newer =
+        older.copyWith(id: 'r2', title: 'New', updatedAt: DateTime(2024, 2, 1));
 
-    when(() => useCase('user-1')).thenAnswer((_) async => Right([older, newer]));
+    when(() => useCase('user-1'))
+        .thenAnswer((_) async => Right([older, newer]));
 
     final container = ProviderContainer(
       overrides: [

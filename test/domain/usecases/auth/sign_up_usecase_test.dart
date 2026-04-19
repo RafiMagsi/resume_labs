@@ -61,4 +61,3 @@ void main() {
     expect(result, const Left(ValidationFailure('Invalid email')));
   });
 }
-

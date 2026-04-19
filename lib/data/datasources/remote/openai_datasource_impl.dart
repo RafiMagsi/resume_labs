@@ -142,7 +142,10 @@ Rules:
         throw const FormatException('Missing or invalid skills array');
       }
 
-      return skills.map((e) => e.toString().trim()).where((e) => e.isNotEmpty).toList();
+      return skills
+          .map((e) => e.toString().trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
     } catch (_) {
       throw const ServerException(
         'Failed to parse suggested skills response.',

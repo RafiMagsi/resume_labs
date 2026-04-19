@@ -57,4 +57,3 @@ void main() {
     expect(state.error, const ServerFailure('Sign out failed'));
   });
 }
-

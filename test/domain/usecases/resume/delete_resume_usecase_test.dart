@@ -36,4 +36,3 @@ void main() {
     expect(result, const Left(CacheFailure('Delete failed')));
   });
 }
-

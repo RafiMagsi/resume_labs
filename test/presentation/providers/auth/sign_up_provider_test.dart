@@ -79,4 +79,3 @@ void main() {
     expect(state.error, const ValidationFailure('Invalid email'));
   });
 }
-

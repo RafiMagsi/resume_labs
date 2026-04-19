@@ -23,8 +23,7 @@ abstract final class AppStrings {
   // Validation
   static const String fieldRequired = 'This field is required';
   static const String invalidEmail = 'Please enter a valid email';
-  static const String weakPassword =
-      'Password must be at least 8 characters';
+  static const String weakPassword = 'Password must be at least 8 characters';
   static const String passwordMismatch = 'Passwords do not match';
 
   // Errors
@@ -34,8 +33,7 @@ abstract final class AppStrings {
       'No internet connection. Please check your network.';
   static const String serverError =
       'Server error occurred. Please try again later.';
-  static const String cacheError =
-      'Unable to load cached data.';
+  static const String cacheError = 'Unable to load cached data.';
   static const String authError =
       'Authentication failed. Please check your credentials.';
 }

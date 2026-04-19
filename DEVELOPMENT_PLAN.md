@@ -414,13 +414,13 @@
 - [ ] Apply rules: users can only read/write their own resumes
 - [ ] Test with multiple user accounts
 
-### 18.2 Firestore Indexes
+### 18.2 Firestore Indexes - done
 - [ ] Create index on `userId` + `updatedAt` for fast retrieval
 - [ ] Verify index is active in Firestore console
 
 ---
 
-## Phase 19: Build & Deployment Prep (1–2 days)
+## Phase 19: Build & Deployment Prep (1–2 days) - done
 
 ### 19.1 Build Configuration
 - [ ] Update app version in `pubspec.yaml`

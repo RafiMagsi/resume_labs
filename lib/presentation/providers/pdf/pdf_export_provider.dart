@@ -68,9 +68,8 @@ class PdfExportState {
       exportedFilePath: clearExportedFilePath
           ? null
           : (exportedFilePath ?? this.exportedFilePath),
-      successMessage: clearSuccessMessage
-          ? null
-          : (successMessage ?? this.successMessage),
+      successMessage:
+          clearSuccessMessage ? null : (successMessage ?? this.successMessage),
     );
   }
 }

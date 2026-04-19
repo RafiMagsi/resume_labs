@@ -69,7 +69,8 @@ void main() {
       template: ResumeTemplate.classic,
     );
 
-    expect(container.read(pdfExportProvider), const AsyncLoading<PdfExportState>());
+    expect(container.read(pdfExportProvider),
+        const AsyncLoading<PdfExportState>());
     await future;
 
     final state = container.read(pdfExportProvider).valueOrNull;

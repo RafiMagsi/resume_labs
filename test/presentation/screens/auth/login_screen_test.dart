@@ -55,7 +55,10 @@ void main() {
     }
     for (var i = 0; i < 30; i++) {
       await tester.pump(const Duration(milliseconds: 50));
-      if (find.byKey(const ValueKey('loading-overlay-off')).evaluate().isNotEmpty) {
+      if (find
+          .byKey(const ValueKey('loading-overlay-off'))
+          .evaluate()
+          .isNotEmpty) {
         break;
       }
     }
@@ -85,7 +88,10 @@ void main() {
     }
     for (var i = 0; i < 30; i++) {
       await tester.pump(const Duration(milliseconds: 50));
-      if (find.byKey(const ValueKey('loading-overlay-off')).evaluate().isNotEmpty) {
+      if (find
+          .byKey(const ValueKey('loading-overlay-off'))
+          .evaluate()
+          .isNotEmpty) {
         break;
       }
     }

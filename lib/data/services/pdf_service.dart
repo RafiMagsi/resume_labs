@@ -106,7 +106,8 @@ class PdfService {
             _bodyText('No work experience added.', regularFont)
           else
             ...resume.workExperiences.map(
-              (item) => _classicWorkExperience(item, regularFont, mediumFont, semiBoldFont),
+              (item) => _classicWorkExperience(
+                  item, regularFont, mediumFont, semiBoldFont),
             ),
           pw.SizedBox(height: 18),
           _classicSectionTitle('Education', semiBoldFont),
@@ -188,7 +189,8 @@ class PdfService {
             content: resume.workExperiences.isEmpty
                 ? [_bodyText('No work experience added.', regularFont)]
                 : resume.workExperiences
-                    .map((item) => _modernWorkExperience(item, regularFont, mediumFont, semiBoldFont))
+                    .map((item) => _modernWorkExperience(
+                        item, regularFont, mediumFont, semiBoldFont))
                     .toList(),
             titleFont: semiBoldFont,
           ),
@@ -198,7 +200,8 @@ class PdfService {
             content: resume.educations.isEmpty
                 ? [_bodyText('No education added.', regularFont)]
                 : resume.educations
-                    .map((item) => _modernEducation(item, regularFont, mediumFont))
+                    .map((item) =>
+                        _modernEducation(item, regularFont, mediumFont))
                     .toList(),
             titleFont: semiBoldFont,
           ),
@@ -290,7 +293,8 @@ class PdfService {
     );
   }
 
-  pw.Widget _classicHeader(Resume resume, pw.Font boldFont, pw.Font mediumFont) {
+  pw.Widget _classicHeader(
+      Resume resume, pw.Font boldFont, pw.Font mediumFont) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
@@ -380,12 +384,14 @@ class PdfService {
           pw.SizedBox(height: 3),
           pw.Text(
             '${item.company} - ${item.location}',
-            style: pw.TextStyle(font: mediumFont, fontSize: 11, color: PdfColors.grey700),
+            style: pw.TextStyle(
+                font: mediumFont, fontSize: 11, color: PdfColors.grey700),
           ),
           pw.SizedBox(height: 2),
           pw.Text(
             _formatDateRange(item.startDate, item.endDate, item.isCurrentRole),
-            style: pw.TextStyle(font: regularFont, fontSize: 10, color: PdfColors.grey600),
+            style: pw.TextStyle(
+                font: regularFont, fontSize: 10, color: PdfColors.grey600),
           ),
           if (item.bulletPoints.isNotEmpty) ...[
             pw.SizedBox(height: 6),
@@ -411,17 +417,20 @@ class PdfService {
         children: [
           pw.Text(
             item.role,
-            style: pw.TextStyle(font: semiBoldFont, fontSize: 13, color: PdfColors.grey900),
+            style: pw.TextStyle(
+                font: semiBoldFont, fontSize: 13, color: PdfColors.grey900),
           ),
           pw.SizedBox(height: 3),
           pw.Text(
             '${item.company} - ${item.location}',
-            style: pw.TextStyle(font: mediumFont, fontSize: 11, color: PdfColors.grey700),
+            style: pw.TextStyle(
+                font: mediumFont, fontSize: 11, color: PdfColors.grey700),
           ),
           pw.SizedBox(height: 2),
           pw.Text(
             _formatDateRange(item.startDate, item.endDate, item.isCurrentRole),
-            style: pw.TextStyle(font: regularFont, fontSize: 10, color: PdfColors.grey600),
+            style: pw.TextStyle(
+                font: regularFont, fontSize: 10, color: PdfColors.grey600),
           ),
           if (item.bulletPoints.isNotEmpty) ...[
             pw.SizedBox(height: 6),
@@ -450,17 +459,20 @@ class PdfService {
         children: [
           pw.Text(
             item.role,
-            style: pw.TextStyle(font: mediumFont, fontSize: 13, color: PdfColors.grey900),
+            style: pw.TextStyle(
+                font: mediumFont, fontSize: 13, color: PdfColors.grey900),
           ),
           pw.SizedBox(height: 3),
           pw.Text(
             '${item.company} - ${item.location}',
-            style: pw.TextStyle(font: regularFont, fontSize: 11, color: PdfColors.grey700),
+            style: pw.TextStyle(
+                font: regularFont, fontSize: 11, color: PdfColors.grey700),
           ),
           pw.SizedBox(height: 2),
           pw.Text(
             _formatDateRange(item.startDate, item.endDate, item.isCurrentRole),
-            style: pw.TextStyle(font: regularFont, fontSize: 10, color: PdfColors.grey600),
+            style: pw.TextStyle(
+                font: regularFont, fontSize: 10, color: PdfColors.grey600),
           ),
           if (item.bulletPoints.isNotEmpty) ...[
             pw.SizedBox(height: 6),
@@ -473,7 +485,8 @@ class PdfService {
     );
   }
 
-  pw.Widget _classicEducation(Education item, pw.Font regularFont, pw.Font mediumFont) {
+  pw.Widget _classicEducation(
+      Education item, pw.Font regularFont, pw.Font mediumFont) {
     return pw.Padding(
       padding: const pw.EdgeInsets.only(bottom: 12),
       child: pw.Column(
@@ -486,23 +499,27 @@ class PdfService {
           pw.SizedBox(height: 2),
           pw.Text(
             '${item.school} - ${item.field}',
-            style: pw.TextStyle(font: regularFont, fontSize: 11, color: PdfColors.grey700),
+            style: pw.TextStyle(
+                font: regularFont, fontSize: 11, color: PdfColors.grey700),
           ),
           pw.SizedBox(height: 2),
           pw.Text(
             'Graduation: ${_formatMonthYear(item.graduationDate)}${item.gpa != null ? ' - GPA: ${item.gpa}' : ''}',
-            style: pw.TextStyle(font: regularFont, fontSize: 10, color: PdfColors.grey600),
+            style: pw.TextStyle(
+                font: regularFont, fontSize: 10, color: PdfColors.grey600),
           ),
         ],
       ),
     );
   }
 
-  pw.Widget _modernEducation(Education item, pw.Font regularFont, pw.Font mediumFont) {
+  pw.Widget _modernEducation(
+      Education item, pw.Font regularFont, pw.Font mediumFont) {
     return _classicEducation(item, regularFont, mediumFont);
   }
 
-  pw.Widget _minimalEducation(Education item, pw.Font regularFont, pw.Font mediumFont) {
+  pw.Widget _minimalEducation(
+      Education item, pw.Font regularFont, pw.Font mediumFont) {
     return _classicEducation(item, regularFont, mediumFont);
   }
 
@@ -630,15 +647,26 @@ class PdfService {
 
   String _formatMonthYear(DateTime date) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${months[date.month - 1]} ${date.year}';
   }
 
   String _formatDateRange(DateTime start, DateTime? end, bool isCurrentRole) {
     final startText = _formatMonthYear(start);
-    final endText = isCurrentRole || end == null ? 'Present' : _formatMonthYear(end);
+    final endText =
+        isCurrentRole || end == null ? 'Present' : _formatMonthYear(end);
     return '$startText - $endText';
   }
 }

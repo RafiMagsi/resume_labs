@@ -79,4 +79,3 @@ void main() {
     expect(state.error, const AuthFailure('Invalid credentials'));
   });
 }
-

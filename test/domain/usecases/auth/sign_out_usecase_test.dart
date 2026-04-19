@@ -34,4 +34,3 @@ void main() {
     expect(result, const Left(ServerFailure('Sign out failed')));
   });
 }
-

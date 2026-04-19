@@ -99,7 +99,8 @@ class AiSuggestionsState {
     this.suggestedSkills = const [],
   });
 
-  bool get hasSummary => generatedSummary != null && generatedSummary!.trim().isNotEmpty;
+  bool get hasSummary =>
+      generatedSummary != null && generatedSummary!.trim().isNotEmpty;
 
   bool get hasImprovedBullet =>
       improvedBullet != null && improvedBullet!.trim().isNotEmpty;
@@ -118,9 +119,8 @@ class AiSuggestionsState {
       generatedSummary: clearGeneratedSummary
           ? null
           : (generatedSummary ?? this.generatedSummary),
-      improvedBullet: clearImprovedBullet
-          ? null
-          : (improvedBullet ?? this.improvedBullet),
+      improvedBullet:
+          clearImprovedBullet ? null : (improvedBullet ?? this.improvedBullet),
       suggestedSkills: clearSuggestedSkills
           ? const []
           : (suggestedSkills ?? this.suggestedSkills),

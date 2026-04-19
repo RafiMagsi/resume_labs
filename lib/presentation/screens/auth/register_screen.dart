@@ -44,7 +44,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (message.toLowerCase().contains('internet') ||
         message.toLowerCase().contains('network') ||
         message.toLowerCase().contains('connection')) {
-      return NetworkFailure(message.isEmpty ? 'No internet connection.' : message);
+      return NetworkFailure(
+          message.isEmpty ? 'No internet connection.' : message);
     }
 
     if (message.toLowerCase().contains('auth')) {
@@ -62,6 +63,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           : message,
     );
   }
+
   @override
   void initState() {
     super.initState();
@@ -159,63 +161,63 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           ),
                         ),
                       ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Start building and saving professional resumes',
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 32),
-                    AppTextField(
-                      controller: _emailController,
-                      labelText: 'Email',
-                      hintText: 'Enter your email',
-                      keyboardType: TextInputType.emailAddress,
-                      textInputAction: TextInputAction.next,
-                      validator: InputValidators.email,
-                      focusNode: _emailFocusNode,
-                      nextFocusNode: _passwordFocusNode,
-                      autofillHints: const [AutofillHints.email],
-                      prefixIcon: const Icon(Icons.email_outlined),
-                    ),
-                    const SizedBox(height: 16),
-                    AppTextField(
-                      controller: _passwordController,
-                      labelText: 'Password',
-                      hintText: 'Minimum 8 characters',
-                      obscureText: true,
-                      textInputAction: TextInputAction.next,
-                      validator: InputValidators.password,
-                      focusNode: _passwordFocusNode,
-                      nextFocusNode: _confirmPasswordFocusNode,
-                      autofillHints: const [AutofillHints.newPassword],
-                      prefixIcon: const Icon(Icons.lock_outline),
-                    ),
-                    const SizedBox(height: 16),
-                    AppTextField(
-                      controller: _confirmPasswordController,
-                      labelText: 'Confirm Password',
-                      hintText: 'Re-enter your password',
-                      obscureText: true,
-                      textInputAction: TextInputAction.done,
-                      validator: _confirmPasswordValidator,
-                      focusNode: _confirmPasswordFocusNode,
-                      autofillHints: const [AutofillHints.newPassword],
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      onFieldSubmitted: (_) => _submit(),
-                    ),
-                    const SizedBox(height: 20),
-                    AppButton(
-                      text: 'Create Account',
-                      isLoading: signUpState.isLoading,
-                      onPressed: _submit,
-                    ),
-                    const SizedBox(height: 12),
-                    AppButton(
-                      text: 'Back to Sign In',
-                      variant: AppButtonVariant.secondary,
-                      onPressed:
-                          signUpState.isLoading ? null : () => context.pop(),
-                    ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Start building and saving professional resumes',
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 32),
+                      AppTextField(
+                        controller: _emailController,
+                        labelText: 'Email',
+                        hintText: 'Enter your email',
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
+                        validator: InputValidators.email,
+                        focusNode: _emailFocusNode,
+                        nextFocusNode: _passwordFocusNode,
+                        autofillHints: const [AutofillHints.email],
+                        prefixIcon: const Icon(Icons.email_outlined),
+                      ),
+                      const SizedBox(height: 16),
+                      AppTextField(
+                        controller: _passwordController,
+                        labelText: 'Password',
+                        hintText: 'Minimum 8 characters',
+                        obscureText: true,
+                        textInputAction: TextInputAction.next,
+                        validator: InputValidators.password,
+                        focusNode: _passwordFocusNode,
+                        nextFocusNode: _confirmPasswordFocusNode,
+                        autofillHints: const [AutofillHints.newPassword],
+                        prefixIcon: const Icon(Icons.lock_outline),
+                      ),
+                      const SizedBox(height: 16),
+                      AppTextField(
+                        controller: _confirmPasswordController,
+                        labelText: 'Confirm Password',
+                        hintText: 'Re-enter your password',
+                        obscureText: true,
+                        textInputAction: TextInputAction.done,
+                        validator: _confirmPasswordValidator,
+                        focusNode: _confirmPasswordFocusNode,
+                        autofillHints: const [AutofillHints.newPassword],
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        onFieldSubmitted: (_) => _submit(),
+                      ),
+                      const SizedBox(height: 20),
+                      AppButton(
+                        text: 'Create Account',
+                        isLoading: signUpState.isLoading,
+                        onPressed: _submit,
+                      ),
+                      const SizedBox(height: 12),
+                      AppButton(
+                        text: 'Back to Sign In',
+                        variant: AppButtonVariant.secondary,
+                        onPressed:
+                            signUpState.isLoading ? null : () => context.pop(),
+                      ),
                     ],
                   ),
                 ),

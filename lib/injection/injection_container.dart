@@ -55,7 +55,8 @@ final firebaseAuthDataSourceProvider = Provider<FirebaseAuthDataSource>((ref) {
   return FirebaseAuthDataSourceImpl(firebaseAuth);
 });
 
-final firestoreResumeDataSourceProvider = Provider<FirestoreResumeDataSource>((ref) {
+final firestoreResumeDataSourceProvider =
+    Provider<FirestoreResumeDataSource>((ref) {
   final firestore = ref.watch(firebaseFirestoreProvider);
   return FirestoreResumeDataSourceImpl(firestore);
 });

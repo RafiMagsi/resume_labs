@@ -2,7 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../injection/injection_container.dart';
 
-final resetPasswordProvider = AsyncNotifierProvider<ResetPasswordNotifier, void>(
+final resetPasswordProvider =
+    AsyncNotifierProvider<ResetPasswordNotifier, void>(
   ResetPasswordNotifier.new,
 );
 

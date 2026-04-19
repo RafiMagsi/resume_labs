@@ -52,7 +52,8 @@ class _InMemoryResumeRepository implements ResumeRepository {
   }
 
   @override
-  Future<Either<Failure, List<Resume>>> getResumesByUserId(String userId) async {
+  Future<Either<Failure, List<Resume>>> getResumesByUserId(
+      String userId) async {
     return Right(_items.where((e) => e.userId == userId).toList());
   }
 
@@ -144,7 +145,8 @@ void main() {
           exportPdfUseCaseProvider.overrideWithValue(
             ExportPdfUseCase(_FakePdfRepository()),
           ),
-          pdfShareServiceProvider.overrideWithValue(const _NoopPdfShareService()),
+          pdfShareServiceProvider
+              .overrideWithValue(const _NoopPdfShareService()),
           // Keep History deterministic for this flow.
           resumeListProvider.overrideWith((ref) async => const <Resume>[]),
         ],
@@ -176,7 +178,8 @@ void main() {
     expect(find.byType(BuilderScreen), findsOneWidget);
 
     // Fill required form state directly (avoid flaky bottom sheets).
-    final container = ProviderScope.containerOf(tester.element(find.byType(BuilderScreen)));
+    final container =
+        ProviderScope.containerOf(tester.element(find.byType(BuilderScreen)));
     final formNotifier = container.read(resumeFormProvider.notifier);
     formNotifier.reset(userId: 'user-1');
     formNotifier.updateTitle('Flutter Developer');

@@ -36,7 +36,8 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
     if (message.toLowerCase().contains('internet') ||
         message.toLowerCase().contains('network') ||
         message.toLowerCase().contains('connection')) {
-      return NetworkFailure(message.isEmpty ? 'No internet connection.' : message);
+      return NetworkFailure(
+          message.isEmpty ? 'No internet connection.' : message);
     }
 
     if (message.toLowerCase().contains('pdf')) {
@@ -44,7 +45,9 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
     }
 
     return ServerFailure(
-      message.isEmpty ? 'Unable to export PDF right now. Please try again.' : message,
+      message.isEmpty
+          ? 'Unable to export PDF right now. Please try again.'
+          : message,
     );
   }
 
@@ -66,7 +69,8 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
             if (!mounted) return;
             await ErrorDialog.show(
               context,
-              failure: ServerFailure('PDF was exported but could not be shared.'),
+              failure:
+                  ServerFailure('PDF was exported but could not be shared.'),
               onRetry: _handleExport,
               title: 'Share Failed',
             );
@@ -91,7 +95,8 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
     final template = ref.read(selectedResumeTemplateProvider);
 
     final resume = Resume(
-      id: formState.resumeId ?? DateTime.now().microsecondsSinceEpoch.toString(),
+      id: formState.resumeId ??
+          DateTime.now().microsecondsSinceEpoch.toString(),
       userId: formState.userId ?? '',
       title: formState.title.trim(),
       personalSummary: formState.personalSummary.trim(),
@@ -750,9 +755,8 @@ class _PreviewWorkItem extends StatelessWidget {
       item.isCurrentRole,
     );
 
-    final bulletColor = accent
-        ? const Color(0xFF6D5EF8)
-        : const Color(0xFF334155);
+    final bulletColor =
+        accent ? const Color(0xFF6D5EF8) : const Color(0xFF334155);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -884,9 +888,8 @@ class _SkillWrap extends StatelessWidget {
             ? const Color(0xFFF9FAFB)
             : const Color(0xFFF1F5F9);
 
-    final textColor = accent
-        ? const Color(0xFF5B21B6)
-        : const Color(0xFF334155);
+    final textColor =
+        accent ? const Color(0xFF5B21B6) : const Color(0xFF334155);
 
     return Wrap(
       spacing: 8,
@@ -944,6 +947,7 @@ String _formatMonthYear(DateTime date) {
 
 String _formatDateRange(DateTime start, DateTime? end, bool isCurrentRole) {
   final startText = _formatMonthYear(start);
-  final endText = isCurrentRole || end == null ? 'Present' : _formatMonthYear(end);
+  final endText =
+      isCurrentRole || end == null ? 'Present' : _formatMonthYear(end);
   return '$startText - $endText';
 }
