@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_sizes.dart';
+
 class LoadingOverlay extends StatelessWidget {
   final bool isLoading;
   final Widget child;
@@ -30,7 +33,7 @@ class LoadingOverlay extends StatelessWidget {
                     child: AbsorbPointer(
                       absorbing: true,
                       child: Container(
-                        color: const Color(0x990F172A),
+                        color: AppColors.modalBarrier,
                         alignment: Alignment.center,
                         child: Container(
                           constraints: const BoxConstraints(maxWidth: 240),
@@ -39,13 +42,14 @@ class LoadingOverlay extends StatelessWidget {
                             vertical: 18,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
+                            color: AppColors.screenSurface,
+                            borderRadius:
+                                BorderRadius.circular(AppSizes.dialogRadius),
                             boxShadow: const [
                               BoxShadow(
-                                color: Color(0x140F172A),
-                                blurRadius: 24,
-                                offset: Offset(0, 8),
+                                color: AppColors.shadowDialog,
+                                blurRadius: 28,
+                                offset: Offset(0, 10),
                               ),
                             ],
                           ),
@@ -67,7 +71,7 @@ class LoadingOverlay extends StatelessWidget {
                                   style: const TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
-                                    color: Color(0xFF334155),
+                                    color: AppColors.textSecondary,
                                   ),
                                 ),
                               ],

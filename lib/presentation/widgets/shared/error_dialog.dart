@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/errors/failure.dart';
 import 'app_button.dart';
@@ -55,7 +56,7 @@ class ErrorDialog extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         constraints: const BoxConstraints(maxWidth: 520),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.screenSurface,
           borderRadius: BorderRadius.circular(24),
         ),
         child: Column(
@@ -65,13 +66,13 @@ class ErrorDialog extends StatelessWidget {
               width: 68,
               height: 68,
               decoration: const BoxDecoration(
-                color: Color(0xFFFEE2E2),
+                color: AppColors.errorSoft,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.error_outline_rounded,
                 size: 34,
-                color: Color(0xFFDC2626),
+                color: AppColors.error,
               ),
             ),
             const SizedBox(height: 18),
@@ -81,7 +82,7 @@ class ErrorDialog extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF0F172A),
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 10),
@@ -91,7 +92,7 @@ class ErrorDialog extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 14,
                 height: 1.5,
-                color: Color(0xFF475569),
+                color: AppColors.textSecondary,
               ),
             ),
             const SizedBox(height: 20),

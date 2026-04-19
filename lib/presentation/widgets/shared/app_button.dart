@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_sizes.dart';
+
 enum AppButtonVariant {
   primary,
   secondary,
@@ -24,7 +27,7 @@ class AppButton extends StatelessWidget {
     this.expand = true,
     this.icon,
     this.variant = AppButtonVariant.primary,
-    this.height = 52,
+    this.height = AppSizes.buttonHeight,
     this.padding,
   });
 
@@ -44,15 +47,15 @@ class AppButton extends StatelessWidget {
           onPressed: isLoading ? null : onPressed,
           style: ElevatedButton.styleFrom(
             minimumSize: Size(expand ? double.infinity : 0, height),
-            backgroundColor: const Color(0xFF6D5EF8),
-            foregroundColor: Colors.white,
-            disabledBackgroundColor: const Color(0xFFB8B2F8),
-            disabledForegroundColor: Colors.white70,
+            backgroundColor: AppColors.primary,
+            foregroundColor: AppColors.textOnPrimary,
+            disabledBackgroundColor: AppColors.primaryLight,
+            disabledForegroundColor: AppColors.textOnPrimary,
             elevation: 0,
             padding: padding ??
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(10),
             ),
           ),
           child: child,
@@ -64,12 +67,13 @@ class AppButton extends StatelessWidget {
           onPressed: isLoading ? null : onPressed,
           style: OutlinedButton.styleFrom(
             minimumSize: Size(expand ? double.infinity : 0, height),
-            foregroundColor: const Color(0xFF6D5EF8),
-            side: const BorderSide(color: Color(0xFF6D5EF8)),
+            foregroundColor: AppColors.textPrimary,
+            backgroundColor: AppColors.white,
+            side: const BorderSide(color: AppColors.border),
             padding: padding ??
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(10),
             ),
           ),
           child: child,
@@ -81,11 +85,11 @@ class AppButton extends StatelessWidget {
           onPressed: isLoading ? null : onPressed,
           style: TextButton.styleFrom(
             minimumSize: Size(expand ? double.infinity : 0, height),
-            foregroundColor: const Color(0xFF6D5EF8),
+            foregroundColor: AppColors.primary,
             padding: padding ??
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(10),
             ),
           ),
           child: child,
@@ -113,10 +117,9 @@ class _ButtonContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textColor = switch (variant) {
-      AppButtonVariant.primary => Colors.white,
-      AppButtonVariant.secondary ||
-      AppButtonVariant.text =>
-        const Color(0xFF6D5EF8),
+      AppButtonVariant.primary => AppColors.textOnPrimary,
+      AppButtonVariant.secondary => AppColors.textPrimary,
+      AppButtonVariant.text => AppColors.primary,
     };
 
     if (isLoading) {
@@ -133,7 +136,7 @@ class _ButtonContent extends StatelessWidget {
     final textWidget = Text(
       text,
       style: TextStyle(
-        fontSize: 16,
+        fontSize: 15.5,
         fontWeight: FontWeight.w600,
         color: textColor,
       ),

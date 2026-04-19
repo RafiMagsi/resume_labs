@@ -22,9 +22,15 @@ abstract final class AppSizes {
   static const double iconXl = 28;
 
   // Component heights
-  static const double buttonHeight = 52;
-  static const double inputHeight = 56;
+  static const double buttonHeight = 48;
+  static const double inputHeight = 46;
   static const double appBarHeight = 60;
+
+  // Common layout
+  static const double screenPadding = 20;
+  static const double sectionGap = 24;
+  static const double cardRadius = radiusMd;
+  static const double dialogRadius = radiusLg;
 
   // Elevation
   static const double elevationSm = 2;

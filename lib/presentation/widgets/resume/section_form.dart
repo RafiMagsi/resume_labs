@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_sizes.dart';
 import '../../../domain/entities/education.dart';
 import '../../../domain/entities/skill.dart';
 import '../../../domain/entities/work_experience.dart';
@@ -28,14 +30,14 @@ class SectionForm extends StatelessWidget {
       width: double.infinity,
       padding: padding ?? const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        color: AppColors.screenSurface,
+        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+        border: Border.all(color: AppColors.border),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x140F172A),
+            color: AppColors.shadowCard,
             blurRadius: 18,
-            offset: Offset(0, 8),
+            offset: Offset(0, 6),
           ),
         ],
       ),
@@ -55,7 +57,7 @@ class SectionForm extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF0F172A),
+                          color: AppColors.textPrimary,
                         ),
                       ),
                     ),
@@ -65,7 +67,7 @@ class SectionForm extends StatelessWidget {
                         subtitle!,
                         style: const TextStyle(
                           fontSize: 14,
-                          color: Color(0xFF64748B),
+                          color: AppColors.textSecondary,
                           height: 1.4,
                         ),
                       ),
@@ -147,7 +149,7 @@ class WorkExperienceSectionForm extends StatelessWidget {
             Text(
               errorText!,
               style: const TextStyle(
-                color: Color(0xFFDC2626),
+                color: AppColors.error,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
@@ -218,7 +220,7 @@ class EducationSectionForm extends StatelessWidget {
             Text(
               errorText!,
               style: const TextStyle(
-                color: Color(0xFFDC2626),
+                color: AppColors.error,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
@@ -335,7 +337,7 @@ class _SkillsSectionFormState extends State<SkillsSectionForm> {
             Text(
               widget.errorText!,
               style: const TextStyle(
-                color: Color(0xFFDC2626),
+                color: AppColors.error,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
@@ -360,14 +362,14 @@ class _EmptySectionState extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        color: AppColors.secondarySurface,
+        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+        border: Border.all(color: AppColors.border),
       ),
       child: Text(
         message,
         style: const TextStyle(
-          color: Color(0xFF64748B),
+          color: AppColors.textSecondary,
           fontSize: 14,
         ),
       ),
@@ -398,9 +400,9 @@ class _WorkExperienceCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        color: AppColors.secondarySurface,
+        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -413,7 +415,7 @@ class _WorkExperienceCard extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF0F172A),
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ),
@@ -428,7 +430,7 @@ class _WorkExperienceCard extends StatelessWidget {
             '${item.company} • ${item.location}',
             style: const TextStyle(
               fontSize: 14,
-              color: Color(0xFF475569),
+              color: AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 4),
@@ -436,7 +438,7 @@ class _WorkExperienceCard extends StatelessWidget {
             duration,
             style: const TextStyle(
               fontSize: 13,
-              color: Color(0xFF64748B),
+              color: AppColors.textSecondary,
             ),
           ),
           if (item.bulletPoints.isNotEmpty) ...[
@@ -452,7 +454,7 @@ class _WorkExperienceCard extends StatelessWidget {
                       child: Icon(
                         Icons.circle,
                         size: 6,
-                        color: Color(0xFF6D5EF8),
+                        color: AppColors.primary,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -461,7 +463,7 @@ class _WorkExperienceCard extends StatelessWidget {
                         bullet,
                         style: const TextStyle(
                           fontSize: 14,
-                          color: Color(0xFF334155),
+                          color: AppColors.textSecondary,
                           height: 1.45,
                         ),
                       ),
@@ -496,9 +498,9 @@ class _EducationCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        color: AppColors.secondarySurface,
+        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -511,7 +513,7 @@ class _EducationCard extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF0F172A),
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ),
@@ -526,7 +528,7 @@ class _EducationCard extends StatelessWidget {
             '${item.school} • ${item.field}',
             style: const TextStyle(
               fontSize: 14,
-              color: Color(0xFF475569),
+              color: AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 4),
@@ -534,7 +536,7 @@ class _EducationCard extends StatelessWidget {
             'Graduated: $graduation${item.gpa != null ? ' • GPA: ${item.gpa}' : ''}',
             style: const TextStyle(
               fontSize: 13,
-              color: Color(0xFF64748B),
+              color: AppColors.textSecondary,
             ),
           ),
         ],
@@ -562,9 +564,9 @@ class _SkillChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: const Color(0xFFEDE9FE),
+          color: AppColors.primaryLight,
           borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: const Color(0xFFD8B4FE)),
+          border: Border.all(color: AppColors.border),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -574,7 +576,7 @@ class _SkillChip extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF5B21B6),
+                color: AppColors.primaryDark,
               ),
             ),
             const SizedBox(width: 8),
@@ -582,7 +584,7 @@ class _SkillChip extends StatelessWidget {
               item.category,
               style: const TextStyle(
                 fontSize: 12,
-                color: Color(0xFF7C3AED),
+                color: AppColors.textSecondary,
               ),
             ),
             const SizedBox(width: 8),
@@ -598,7 +600,7 @@ class _SkillChip extends StatelessWidget {
                 icon: const Icon(
                   Icons.close_rounded,
                   size: 16,
-                  color: Color(0xFF7C3AED),
+                  color: AppColors.primaryDark,
                 ),
               ),
             ),
@@ -634,7 +636,7 @@ class _ItemActionButtons extends StatelessWidget {
           tooltip: 'Delete',
           icon: const Icon(
             Icons.delete_outline,
-            color: Color(0xFFDC2626),
+            color: AppColors.error,
           ),
         ),
       ],
@@ -671,7 +673,7 @@ Future<void> _showWorkExperienceSheet(
   await showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Colors.white,
+    backgroundColor: AppColors.screenSurface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
@@ -859,7 +861,7 @@ Future<void> _showWorkExperienceSheet(
                             },
                             icon: const Icon(
                               Icons.delete_outline,
-                              color: Color(0xFFDC2626),
+                              color: AppColors.error,
                             ),
                           ),
                         ),
@@ -1193,7 +1195,7 @@ Future<void> _showSuggestedSkillsDialog(
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF0F172A),
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 16),
@@ -1203,9 +1205,9 @@ Future<void> _showSuggestedSkillsDialog(
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
+                    color: AppColors.secondarySurface,
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    border: Border.all(color: AppColors.border),
                   ),
                   child: Row(
                     children: [
@@ -1214,7 +1216,7 @@ Future<void> _showSuggestedSkillsDialog(
                           skill,
                           style: const TextStyle(
                             fontSize: 14,
-                            color: Color(0xFF334155),
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       ),

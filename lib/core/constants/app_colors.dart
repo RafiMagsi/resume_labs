@@ -2,36 +2,48 @@ import 'package:flutter/material.dart';
 
 abstract final class AppColors {
   // Brand
-  static const Color primary = Color(0xFF6D5EF8);
-  static const Color primaryDark = Color(0xFF5243D8);
-  static const Color secondary = Color(0xFF22C7A9);
-  static const Color accent = Color(0xFF8B7CFF);
+  static const Color primary = Color(0xFF6C5CE7);
+  static const Color primaryDark = Color(0xFF5B4DD8);
+  static const Color primaryLight = Color(0xFFEDE9FE);
+  static const Color primarySoft = Color(0xFFF5F3FF);
 
-  // Neutrals
-  static const Color background = Color(0xFFF8FAFC);
-  static const Color surface = Color(0xFFFFFFFF);
-  static const Color surfaceAlt = Color(0xFFF1F5F9);
-  static const Color border = Color(0xFFE2E8F0);
+  // Background / surfaces
+  static const Color appBackground = Color(0xFFF5F5F7);
+  static const Color screenSurface = Color(0xFFFFFFFF);
+  static const Color secondarySurface = Color(0xFFF8F8FA);
 
   // Text
-  static const Color textPrimary = Color(0xFF0F172A);
-  static const Color textSecondary = Color(0xFF475569);
-  static const Color textMuted = Color(0xFF94A3B8);
-  static const Color textOnDark = Color(0xFFFFFFFF);
+  static const Color textPrimary = Color(0xFF111827);
+  static const Color textSecondary = Color(0xFF6B7280);
+  static const Color textTertiary = Color(0xFF9CA3AF);
+  static const Color textOnPrimary = Color(0xFFFFFFFF);
 
-  // States
-  static const Color success = Color(0xFF16A34A);
+  // Borders / dividers / inactive
+  static const Color border = Color(0xFFE5E7EB);
+  static const Color divider = Color(0xFFEBEDF0);
+  static const Color inactive = Color(0xFFD1D5DB);
+
+  // Semantic
+  static const Color error = Color(0xFFEF4444);
+  static const Color errorSoft = Color(0xFFFEE2E2);
+  static const Color success = Color(0xFF10B981);
   static const Color warning = Color(0xFFF59E0B);
-  static const Color error = Color(0xFFDC2626);
-  static const Color info = Color(0xFF2563EB);
 
-  // Shadows / overlays
-  static const Color shadow = Color(0x140F172A);
-  static const Color overlay = Color(0x660F172A);
+  // Overlay / shadows
+  static const Color modalBarrier = Color(0x990F172A);
+  static const Color modalOverlay = Color(0xFF8D919B);
+  static const Color shadowCard = Color(0x12000000);
+  static const Color shadowDialog = Color(0x18000000);
 
-  static const LinearGradient primaryGradient = LinearGradient(
-    colors: [Color(0xFF6D5EF8), Color(0xFF8B7CFF)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
+  // Utilities
+  static const Color black = Color(0xFF000000);
+  static const Color white = Color(0xFFFFFFFF);
+  static const Color transparent = Colors.transparent;
+
+  // Backwards-compatible aliases (prefer the new names in new code).
+  static const Color background = appBackground;
+  static const Color surface = screenSurface;
+  static const Color surfaceAlt = secondarySurface;
+  static const Color textMuted = textTertiary;
+  static const Color textOnDark = textOnPrimary;
 }

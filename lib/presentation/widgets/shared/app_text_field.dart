@@ -88,6 +88,8 @@ class AppTextField extends StatelessWidget {
         decoration: InputDecoration(
           labelText: labelText,
           hintText: hintText,
+          floatingLabelBehavior: FloatingLabelBehavior.always,
+          alignLabelWithHint: maxLines != 1,
           prefixIcon: prefixIcon,
           suffixIcon: suffixIcon,
         ),
