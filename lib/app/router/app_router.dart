@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:resume_labs/domain/usecases/auth/reset_password_usecase.dart';
 
+import '../../presentation/providers/auth/auth_provider.dart';
 import '../../presentation/screens/auth/login_screen.dart';
+import '../../presentation/screens/auth/password_reset_screen.dart';
 import '../../presentation/screens/auth/register_screen.dart';
 import '../../presentation/screens/history/history_screen.dart';
 import '../../presentation/screens/resume_builder/builder_screen.dart';
 import '../../presentation/screens/resume_builder/preview_screen.dart';
 import '../../presentation/screens/splash/splash_screen.dart';
-import '../../presentation/screens/auth/password_reset_screen.dart';
-
-final isAuthenticatedProvider = StateProvider<bool>((ref) => false);
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final isAuthenticated = ref.watch(isAuthenticatedProvider);
+  final authState = ref.watch(authProvider);
 
   return GoRouter(
     initialLocation: SplashScreen.routePath,
@@ -23,10 +21,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: SplashScreen.routePath,
         name: SplashScreen.routeName,
-        builder: (context, state) {
-          debugPrint("Router Splash");
-          return const SplashScreen();
-        },
+        builder: (context, state) => const SplashScreen(),
       ),
       GoRoute(
         path: LoginScreen.routePath,
@@ -37,6 +32,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: RegisterScreen.routePath,
         name: RegisterScreen.routeName,
         builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: PasswordResetScreen.routePath,
+        name: PasswordResetScreen.routeName,
+        builder: (context, state) => const PasswordResetScreen(),
       ),
       GoRoute(
         path: HistoryScreen.routePath,
@@ -53,33 +53,61 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: PreviewScreen.routeName,
         builder: (context, state) => const PreviewScreen(),
       ),
-      GoRoute(
-        path: PasswordResetScreen.routePath,
-        name: PasswordResetScreen.routeName,
-        builder: (context, state) => const PasswordResetScreen(),
-      ),
     ],
-    redirect: (BuildContext context, GoRouterState state) {
+    redirect: (context, state) {
       final location = state.matchedLocation;
 
-      const authPaths = <String>{
+      const publicPaths = <String>{
         SplashScreen.routePath,
         LoginScreen.routePath,
         RegisterScreen.routePath,
         PasswordResetScreen.routePath,
       };
 
-      if (!isAuthenticated && !authPaths.contains(location)) {
-        return LoginScreen.routePath;
-      }
+      final isGoingToPublicRoute = publicPaths.contains(location);
 
-      if (isAuthenticated &&
-          (location == LoginScreen.routePath ||
-              location == RegisterScreen.routePath)) {
-        return HistoryScreen.routePath;
-      }
+      return authState.when(
+        loading: () {
+          // While auth state is resolving, keep the user on splash.
+          if (location == SplashScreen.routePath) return null;
+          return SplashScreen.routePath;
+        },
+        error: (_, __) {
+          // If auth stream fails, force user to login unless already on public page.
+          if (location == LoginScreen.routePath ||
+              location == RegisterScreen.routePath ||
+              location == PasswordResetScreen.routePath) {
+            return null;
+          }
+          return LoginScreen.routePath;
+        },
+        data: (user) {
+          final isAuthenticated = user != null;
 
-      return null;
+          if (!isAuthenticated) {
+            // Unauthenticated users can only access public routes.
+            if (isGoingToPublicRoute) {
+              // Do not keep them on splash forever once auth is resolved.
+              if (location == SplashScreen.routePath) {
+                return LoginScreen.routePath;
+              }
+              return null;
+            }
+
+            return LoginScreen.routePath;
+          }
+
+          // Authenticated users should not stay on auth screens or splash.
+          if (location == SplashScreen.routePath ||
+              location == LoginScreen.routePath ||
+              location == RegisterScreen.routePath ||
+              location == PasswordResetScreen.routePath) {
+            return HistoryScreen.routePath;
+          }
+
+          return null;
+        },
+      );
     },
     errorBuilder: (context, state) => Scaffold(
       body: Center(
