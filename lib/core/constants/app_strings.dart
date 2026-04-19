@@ -9,6 +9,7 @@ abstract final class AppStrings {
   static const String delete = 'Delete';
   static const String edit = 'Edit';
   static const String loading = 'Loading...';
+  static const String dismiss = 'Dismiss';
 
   // Auth
   static const String email = 'Email';
