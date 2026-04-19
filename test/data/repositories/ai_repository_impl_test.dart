@@ -51,7 +51,14 @@ void main() {
         workHighlights: const ['Built app'],
       );
 
-      expect(result, const Left(NetworkFailure('No internet')));
+      expect(result.isLeft(), true);
+      result.match(
+        (failure) {
+          expect(failure, isA<NetworkFailure>());
+          expect(failure.message, 'No internet');
+        },
+        (_) => fail('Expected Left but got Right'),
+      );
     });
 
     test('maps ServerException to ServerFailure', () async {
@@ -69,7 +76,14 @@ void main() {
         workHighlights: const ['Built app'],
       );
 
-      expect(result, const Left(ServerFailure('OpenAI unavailable')));
+      expect(result.isLeft(), true);
+      result.match(
+        (failure) {
+          expect(failure, isA<ServerFailure>());
+          expect(failure.message, 'OpenAI unavailable');
+        },
+        (_) => fail('Expected Left but got Right'),
+      );
     });
 
     test('maps timeout to NetworkFailure', () async {
@@ -93,8 +107,15 @@ void main() {
       );
 
       expect(
-        result,
-        const Left(NetworkFailure('Request timed out. Please try again.')),
+        result.isLeft(),
+        true,
+      );
+      result.match(
+        (failure) {
+          expect(failure, isA<NetworkFailure>());
+          expect(failure.message, 'Request timed out. Please try again.');
+        },
+        (_) => fail('Expected Left but got Right'),
       );
     });
   });
@@ -129,7 +150,14 @@ void main() {
         jobTitle: 'Flutter Developer',
       );
 
-      expect(result, const Left(NetworkFailure('Rate limited')));
+      expect(result.isLeft(), true);
+      result.match(
+        (failure) {
+          expect(failure, isA<NetworkFailure>());
+          expect(failure.message, 'Rate limited');
+        },
+        (_) => fail('Expected Left but got Right'),
+      );
     });
 
     test('maps ServerException to ServerFailure', () async {
@@ -145,7 +173,14 @@ void main() {
         jobTitle: 'Flutter Developer',
       );
 
-      expect(result, const Left(ServerFailure('Parse failed')));
+      expect(result.isLeft(), true);
+      result.match(
+        (failure) {
+          expect(failure, isA<ServerFailure>());
+          expect(failure.message, 'Parse failed');
+        },
+        (_) => fail('Expected Left but got Right'),
+      );
     });
   });
 
@@ -183,7 +218,14 @@ void main() {
         personalSummary: 'Mobile engineer',
       );
 
-      expect(result, const Left(ServerFailure('Invalid JSON')));
+      expect(result.isLeft(), true);
+      result.match(
+        (failure) {
+          expect(failure, isA<ServerFailure>());
+          expect(failure.message, 'Invalid JSON');
+        },
+        (_) => fail('Expected Left but got Right'),
+      );
     });
 
     test('maps timeout to NetworkFailure', () async {
@@ -207,8 +249,15 @@ void main() {
       );
 
       expect(
-        result,
-        const Left(NetworkFailure('Request timed out. Please try again.')),
+        result.isLeft(),
+        true,
+      );
+      result.match(
+        (failure) {
+          expect(failure, isA<NetworkFailure>());
+          expect(failure.message, 'Request timed out. Please try again.');
+        },
+        (_) => fail('Expected Left but got Right'),
       );
     });
   });

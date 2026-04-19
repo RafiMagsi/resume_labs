@@ -388,7 +388,7 @@
 - [ ] All use cases: success and failure paths
 - [ ] Mock repositories
 
-### 17.2 Data Layer Tests
+### 17.2 Data Layer Tests - done
 - [ ] All mappers: 100% coverage
 - [ ] Repository impls: success, failure, cache fallback scenarios
 - [ ] Mock datasources and external APIs

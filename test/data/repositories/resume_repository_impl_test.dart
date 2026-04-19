@@ -29,6 +29,19 @@ void main() {
   late ResumeModel resumeModel;
   late Resume resumeEntity;
 
+  setUpAll(() {
+    final fallback = ResumeModel(
+      id: 'fallback',
+      userId: 'fallback',
+      title: 'fallback',
+      personalSummary: 'fallback',
+      createdAt: DateTime(2000, 1, 1),
+      updatedAt: DateTime(2000, 1, 1),
+    );
+    registerFallbackValue(fallback);
+    registerFallbackValue(<ResumeModel>[]);
+  });
+
   setUp(() {
     remoteDataSource = MockFirestoreResumeDataSource();
     localDataSource = MockResumeLocalDataSource();
@@ -113,14 +126,15 @@ void main() {
     test('returns Right and caches on remote success', () async {
       when(() => remoteDataSource.createResume(any()))
           .thenAnswer((_) async => resumeModel);
-      when(() => localDataSource.cacheResume(any()))
+      when(() => localDataSource.cacheResume(any(that: isA<ResumeModel>())))
           .thenAnswer((_) async {});
 
       final result = await repository.createResume(resumeEntity);
 
       expect(result.isRight(), true);
       verify(() => remoteDataSource.createResume(any())).called(1);
-      verify(() => localDataSource.cacheResume(any())).called(1);
+      verify(() => localDataSource.cacheResume(any(that: isA<ResumeModel>())))
+          .called(1);
     });
 
     test('returns Left(ServerFailure) when remote throws ServerException',
@@ -131,8 +145,15 @@ void main() {
 
       final result = await repository.createResume(resumeEntity);
 
-      expect(result, const Left(ServerFailure('Failed to create resume')));
-      verifyNever(() => localDataSource.cacheResume(any()));
+      expect(result.isLeft(), true);
+      result.match(
+        (failure) {
+          expect(failure, isA<ServerFailure>());
+          expect(failure.message, 'Failed to create resume');
+        },
+        (_) => fail('Expected Left but got Right'),
+      );
+      verifyNever(() => localDataSource.cacheResume(any(that: isA<ResumeModel>())));
     });
   });
 
@@ -140,14 +161,15 @@ void main() {
     test('returns Right and caches on remote success', () async {
       when(() => remoteDataSource.updateResume(any()))
           .thenAnswer((_) async => resumeModel);
-      when(() => localDataSource.cacheResume(any()))
+      when(() => localDataSource.cacheResume(any(that: isA<ResumeModel>())))
           .thenAnswer((_) async {});
 
       final result = await repository.updateResume(resumeEntity);
 
       expect(result.isRight(), true);
       verify(() => remoteDataSource.updateResume(any())).called(1);
-      verify(() => localDataSource.cacheResume(any())).called(1);
+      verify(() => localDataSource.cacheResume(any(that: isA<ResumeModel>())))
+          .called(1);
     });
   });
 
@@ -169,7 +191,14 @@ void main() {
 
       final result = await repository.deleteResume('resume-1');
 
-      expect(result, const Left(NetworkFailure('No internet')));
+      expect(result.isLeft(), true);
+      result.match(
+        (failure) {
+          expect(failure, isA<NetworkFailure>());
+          expect(failure.message, 'No internet');
+        },
+        (_) => fail('Expected Left but got Right'),
+      );
     });
   });
 
@@ -177,14 +206,15 @@ void main() {
     test('returns Right(resume) and caches on remote success', () async {
       when(() => remoteDataSource.getResumeById('resume-1'))
           .thenAnswer((_) async => resumeModel);
-      when(() => localDataSource.cacheResume(any()))
+      when(() => localDataSource.cacheResume(any(that: isA<ResumeModel>())))
           .thenAnswer((_) async {});
 
       final result = await repository.getResumeById('resume-1');
 
       expect(result.isRight(), true);
       verify(() => remoteDataSource.getResumeById('resume-1')).called(1);
-      verify(() => localDataSource.cacheResume(any())).called(1);
+      verify(() => localDataSource.cacheResume(any(that: isA<ResumeModel>())))
+          .called(1);
     });
 
     test('returns Right(null) when remote returns null', () async {
@@ -194,7 +224,7 @@ void main() {
       final result = await repository.getResumeById('resume-1');
 
       expect(result, const Right(null));
-      verifyNever(() => localDataSource.cacheResume(any()));
+      verifyNever(() => localDataSource.cacheResume(any(that: isA<ResumeModel>())));
     });
 
     test('returns Left(NetworkFailure) on remote network error', () async {
@@ -204,11 +234,13 @@ void main() {
 
       final result = await repository.getResumeById('resume-1');
 
-      expect(
-        result,
-        const Left(
-          NetworkFailure('No internet connection. Unable to load resume.'),
-        ),
+      expect(result.isLeft(), true);
+      result.match(
+        (failure) {
+          expect(failure, isA<NetworkFailure>());
+          expect(failure.message, 'No internet connection. Unable to load resume.');
+        },
+        (_) => fail('Expected Left but got Right'),
       );
     });
   });
@@ -217,14 +249,16 @@ void main() {
     test('returns remote data and caches it on success', () async {
       when(() => remoteDataSource.getAllResumes(userId: 'user-1'))
           .thenAnswer((_) async => [resumeModel]);
-      when(() => localDataSource.cacheResumes(any()))
+      when(() => localDataSource.cacheResumes(any(that: isA<List<ResumeModel>>())))
           .thenAnswer((_) async {});
 
       final result = await repository.getResumesByUserId('user-1');
 
       expect(result.isRight(), true);
       verify(() => remoteDataSource.getAllResumes(userId: 'user-1')).called(1);
-      verify(() => localDataSource.cacheResumes(any())).called(1);
+      verify(
+        () => localDataSource.cacheResumes(any(that: isA<List<ResumeModel>>())),
+      ).called(1);
     });
 
     test('falls back to cache when remote throws NetworkException', () async {
@@ -253,7 +287,14 @@ void main() {
 
       final result = await repository.getResumesByUserId('user-1');
 
-      expect(result, const Left(CacheFailure('Cache broken')));
+      expect(result.isLeft(), true);
+      result.match(
+        (failure) {
+          expect(failure, isA<CacheFailure>());
+          expect(failure.message, 'Cache broken');
+        },
+        (_) => fail('Expected Left but got Right'),
+      );
     });
 
     test('returns Left(ServerFailure) on non-network remote error', () async {
@@ -263,7 +304,14 @@ void main() {
 
       final result = await repository.getResumesByUserId('user-1');
 
-      expect(result, const Left(ServerFailure('Firestore unavailable')));
+      expect(result.isLeft(), true);
+      result.match(
+        (failure) {
+          expect(failure, isA<ServerFailure>());
+          expect(failure.message, 'Firestore unavailable');
+        },
+        (_) => fail('Expected Left but got Right'),
+      );
       verifyNever(() => localDataSource.getCachedResumes(userId: 'user-1'));
     });
   });

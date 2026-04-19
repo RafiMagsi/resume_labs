@@ -75,7 +75,14 @@ void main() {
         password: testPassword,
       );
 
-      expect(result, const Left(AuthFailure('Email already exists')));
+      expect(result.isLeft(), true);
+      result.match(
+        (failure) {
+          expect(failure, isA<AuthFailure>());
+          expect(failure.message, 'Email already exists');
+        },
+        (_) => fail('Expected Left but got Right'),
+      );
     });
 
     test(
@@ -95,7 +102,14 @@ void main() {
         password: testPassword,
       );
 
-      expect(result, const Left(ValidationFailure('Invalid email')));
+      expect(result.isLeft(), true);
+      result.match(
+        (failure) {
+          expect(failure, isA<ValidationFailure>());
+          expect(failure.message, 'Invalid email');
+        },
+        (_) => fail('Expected Left but got Right'),
+      );
     });
   });
 
@@ -132,7 +146,14 @@ void main() {
         password: testPassword,
       );
 
-      expect(result, const Left(AuthFailure('Invalid email or password')));
+      expect(result.isLeft(), true);
+      result.match(
+        (failure) {
+          expect(failure, isA<AuthFailure>());
+          expect(failure.message, 'Invalid email or password');
+        },
+        (_) => fail('Expected Left but got Right'),
+      );
     });
   });
 
@@ -167,7 +188,14 @@ void main() {
 
       final result = await repository.resetPassword(email: testEmail);
 
-      expect(result, const Left(NetworkFailure('No internet')));
+      expect(result.isLeft(), true);
+      result.match(
+        (failure) {
+          expect(failure, isA<NetworkFailure>());
+          expect(failure.message, 'No internet');
+        },
+        (_) => fail('Expected Left but got Right'),
+      );
     });
   });
 
