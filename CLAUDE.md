@@ -303,6 +303,11 @@ final class PdfFailure extends Failure {
 - Max line length: 100 characters.
 - Run `dart fix --apply` and `dart format lib/ test/` after every change.
 
+### Edits and Docs
+- Do not generate any Documents until asked to do, and if asked to make a document then make it ./claude/docs/module/(here)
+- Always use sub agents where you can and sub agents should work in the background
+- You have permission to create and update files, for commands ask for permission if changing something critical
+
 ### Riverpod
 - `@riverpod` annotation only — no manual `Provider()`, `StateNotifierProvider`, etc.
 - Every provider file declares: `part 'filename.g.dart';`

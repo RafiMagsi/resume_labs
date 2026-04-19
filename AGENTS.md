@@ -151,6 +151,9 @@ lib/
 3. Never create a new file without first reading the existing file in that directory.
 4. If touching a Freezed model, do not edit `*.freezed.dart` or `*.g.dart` — they are generated.
 5. If the task spans multiple layers, start from `domain/` and work outward.
+6. Do not generate any Documents until asked to do, and if asked to make a document then make it ./openai/docs/module/(here)
+7. Always use sub agents where you can and sub agents should work in the background
+8. You have permission to create and update files, for commands ask for permission if changing something critical
 
 ---
 
