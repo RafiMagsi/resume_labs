@@ -18,15 +18,6 @@ class HistoryScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Resume History'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              ref.read(isAuthenticatedProvider.notifier).state = false;
-              context.go(LoginScreen.routePath);
-            },
-            icon: const Icon(Icons.logout),
-          ),
-        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),
