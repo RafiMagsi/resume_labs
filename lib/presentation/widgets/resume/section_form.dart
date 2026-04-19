@@ -681,6 +681,7 @@ Future<void> _showWorkExperienceSheet(
               bottom: MediaQuery.of(context).viewInsets.bottom + 20,
             ),
             child: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               child: Form(
                 key: formKey,
                 child: Column(
@@ -916,6 +917,7 @@ Future<void> _showEducationSheet(
           bottom: MediaQuery.of(context).viewInsets.bottom + 20,
         ),
         child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           child: Form(
             key: formKey,
             child: Column(
@@ -1027,6 +1029,7 @@ Future<void> _showSkillSheet(
           bottom: MediaQuery.of(context).viewInsets.bottom + 20,
         ),
         child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           child: Form(
             key: formKey,
             child: Column(

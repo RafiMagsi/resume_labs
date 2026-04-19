@@ -116,80 +116,85 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         isLoading: signInState.isLoading,
         message: 'Signing you in...',
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Welcome back',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w700,
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+            child: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: const EdgeInsets.all(20),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Welcome back',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Sign in to continue building your resume',
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 32),
-                  AppTextField(
-                    controller: _emailController,
-                    labelText: 'Email',
-                    hintText: 'Enter your email',
-                    keyboardType: TextInputType.emailAddress,
-                    textInputAction: TextInputAction.next,
-                    validator: InputValidators.email,
-                    focusNode: _emailFocusNode,
-                    nextFocusNode: _passwordFocusNode,
-                    prefixIcon: const Icon(Icons.email_outlined),
-                  ),
-                  const SizedBox(height: 16),
-                  AppTextField(
-                    controller: _passwordController,
-                    labelText: 'Password',
-                    hintText: 'Enter your password',
-                    obscureText: true,
-                    textInputAction: TextInputAction.done,
-                    validator: InputValidators.password,
-                    focusNode: _passwordFocusNode,
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    onFieldSubmitted: (_) => _submit(),
-                  ),
-                  const SizedBox(height: 12),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: AppButton(
-                      text: 'Forgot Password?',
-                      variant: AppButtonVariant.text,
-                      expand: false,
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Sign in to continue building your resume',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 32),
+                    AppTextField(
+                      controller: _emailController,
+                      labelText: 'Email',
+                      hintText: 'Enter your email',
+                      keyboardType: TextInputType.emailAddress,
+                      textInputAction: TextInputAction.next,
+                      validator: InputValidators.email,
+                      focusNode: _emailFocusNode,
+                      nextFocusNode: _passwordFocusNode,
+                      prefixIcon: const Icon(Icons.email_outlined),
+                    ),
+                    const SizedBox(height: 16),
+                    AppTextField(
+                      controller: _passwordController,
+                      labelText: 'Password',
+                      hintText: 'Enter your password',
+                      obscureText: true,
+                      textInputAction: TextInputAction.done,
+                      validator: InputValidators.password,
+                      focusNode: _passwordFocusNode,
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      onFieldSubmitted: (_) => _submit(),
+                    ),
+                    const SizedBox(height: 12),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: AppButton(
+                        text: 'Forgot Password?',
+                        variant: AppButtonVariant.text,
+                        expand: false,
+                        onPressed: signInState.isLoading
+                            ? null
+                            : () {
+                                context.push(PasswordResetScreen.routePath);
+                              },
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    AppButton(
+                      text: 'Sign In',
+                      isLoading: signInState.isLoading,
+                      onPressed: _submit,
+                    ),
+                    const SizedBox(height: 12),
+                    AppButton(
+                      text: 'Create Account',
+                      variant: AppButtonVariant.secondary,
                       onPressed: signInState.isLoading
                           ? null
                           : () {
-                        context.push(PasswordResetScreen.routePath);
-                      },
+                              context.push(RegisterScreen.routePath);
+                            },
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  AppButton(
-                    text: 'Sign In',
-                    isLoading: signInState.isLoading,
-                    onPressed: _submit,
-                  ),
-                  const SizedBox(height: 12),
-                  AppButton(
-                    text: 'Create Account',
-                    variant: AppButtonVariant.secondary,
-                    onPressed: signInState.isLoading
-                        ? null
-                        : () {
-                      context.push(RegisterScreen.routePath);
-                    },
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

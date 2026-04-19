@@ -362,7 +362,7 @@
 
 ## Phase 16: Responsive Design & Polish (1–2 days)
 
-### 16.1 Mobile Responsiveness
+### 16.1 Mobile Responsiveness - done
 - [ ] Test all screens on portrait (phone) and landscape (tablet)
 - [ ] Form steps: ensure keyboard auto-hides after input
 - [ ] Preview pane: responsive on different screen sizes
@@ -527,3 +527,6 @@ Phase 19–21 (Build, Testing, Deployment)
 - [x] Responsive UI on phones and tablets
 - [x] Accessibility: keyboard navigation, contrast, semantic widgets
 
+### TASKS
+# Replace all colors codes with Colors in the AppColors file, if color is missing in the file then add the colors in the file and use the new constant color name
+# Extract all components where you can

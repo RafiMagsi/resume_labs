@@ -130,10 +130,12 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
         child: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final isWide = constraints.maxWidth >= 900;
+              final shortestSide = MediaQuery.sizeOf(context).shortestSide;
+              final isWide = constraints.maxWidth >= 900 || shortestSide >= 720;
 
               final controls = _PreviewControls(
                 selectedTemplate: selectedTemplate,
+                isLoading: exportState.isLoading,
                 onTemplateChanged: (template) {
                   if (template == null) return;
                   ref.read(selectedResumeTemplateProvider.notifier).state =
@@ -155,30 +157,40 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
               );
 
               if (isWide) {
-                return Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: 320,
-                        child: controls,
-                      ),
-                      const SizedBox(width: 20),
-                      Expanded(child: preview),
-                    ],
+                return GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: 320,
+                          child: controls,
+                        ),
+                        const SizedBox(width: 20),
+                        Expanded(child: preview),
+                      ],
+                    ),
                   ),
                 );
               }
 
-              return SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    controls,
-                    const SizedBox(height: 20),
-                    preview,
-                  ],
+              return GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+                child: SingleChildScrollView(
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      controls,
+                      const SizedBox(height: 20),
+                      preview,
+                    ],
+                  ),
                 ),
               );
             },
@@ -191,12 +203,14 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
 
 class _PreviewControls extends StatelessWidget {
   final ResumeTemplate selectedTemplate;
+  final bool isLoading;
   final ValueChanged<ResumeTemplate?> onTemplateChanged;
   final VoidCallback onExportPdf;
   final VoidCallback onBackToEdit;
 
   const _PreviewControls({
     required this.selectedTemplate,
+    required this.isLoading,
     required this.onTemplateChanged,
     required this.onExportPdf,
     required this.onBackToEdit,
@@ -259,7 +273,7 @@ class _PreviewControls extends StatelessWidget {
                   ),
                 )
                 .toList(),
-            onChanged: onTemplateChanged,
+            onChanged: isLoading ? null : onTemplateChanged,
             decoration: InputDecoration(
               filled: true,
               fillColor: const Color(0xFFF8FAFC),
@@ -277,14 +291,15 @@ class _PreviewControls extends StatelessWidget {
           AppButton(
             text: 'Export PDF',
             icon: Icons.picture_as_pdf_outlined,
-            onPressed: onExportPdf,
+            isLoading: isLoading,
+            onPressed: isLoading ? null : onExportPdf,
           ),
           const SizedBox(height: 12),
           AppButton(
             text: 'Back to Edit',
             variant: AppButtonVariant.secondary,
             icon: Icons.arrow_back_rounded,
-            onPressed: onBackToEdit,
+            onPressed: isLoading ? null : onBackToEdit,
           ),
         ],
       ),
@@ -311,13 +326,14 @@ class _ResumePdfPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pagePadding = MediaQuery.sizeOf(context).width < 380 ? 16.0 : 28.0;
     return Center(
       child: AspectRatio(
         aspectRatio: 1 / 1.414,
         child: Container(
           width: double.infinity,
           constraints: const BoxConstraints(maxWidth: 700),
-          padding: const EdgeInsets.all(28),
+          padding: EdgeInsets.all(pagePadding),
           decoration: BoxDecoration(
             color: _backgroundColor(template),
             borderRadius: BorderRadius.circular(12),
@@ -714,7 +730,7 @@ class _PreviewEmptyState extends StatelessWidget {
       message,
       style: const TextStyle(
         fontSize: 14,
-        color: Color(0xFF94A3B8),
+        color: Color(0xFF64748B),
       ),
     );
   }

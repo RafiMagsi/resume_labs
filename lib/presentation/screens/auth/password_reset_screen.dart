@@ -100,44 +100,49 @@ class _PasswordResetScreenState extends ConsumerState<PasswordResetScreen> {
         isLoading: resetState.isLoading,
         message: 'Sending reset link...',
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Reset your password',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w700,
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+            child: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: const EdgeInsets.all(20),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Reset your password',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Enter your email and we will send you a password reset link.',
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 32),
-                  AppTextField(
-                    controller: _emailController,
-                    labelText: 'Email',
-                    hintText: 'Enter your email',
-                    keyboardType: TextInputType.emailAddress,
-                    textInputAction: TextInputAction.done,
-                    validator: InputValidators.email,
-                    focusNode: _emailFocusNode,
-                    prefixIcon: const Icon(Icons.email_outlined),
-                    onFieldSubmitted: (_) => _submit(),
-                  ),
-                  const SizedBox(height: 20),
-                  AppButton(
-                    text: 'Send Reset Link',
-                    isLoading: resetState.isLoading,
-                    onPressed: _submit,
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Enter your email and we will send you a password reset link.',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 32),
+                    AppTextField(
+                      controller: _emailController,
+                      labelText: 'Email',
+                      hintText: 'Enter your email',
+                      keyboardType: TextInputType.emailAddress,
+                      textInputAction: TextInputAction.done,
+                      validator: InputValidators.email,
+                      focusNode: _emailFocusNode,
+                      prefixIcon: const Icon(Icons.email_outlined),
+                      onFieldSubmitted: (_) => _submit(),
+                    ),
+                    const SizedBox(height: 20),
+                    AppButton(
+                      text: 'Send Reset Link',
+                      isLoading: resetState.isLoading,
+                      onPressed: _submit,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

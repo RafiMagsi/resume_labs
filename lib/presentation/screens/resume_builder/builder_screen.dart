@@ -307,66 +307,75 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
         isLoading: formState.isLoading,
         message: formState.isEditing ? 'Updating resume...' : 'Saving resume...',
         child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final isWide = constraints.maxWidth >= 980;
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final shortestSide = MediaQuery.sizeOf(context).shortestSide;
+                final isWide = constraints.maxWidth >= 980 || shortestSide >= 720;
 
-              final formContent = _BuilderFormContent(
-                formState: formState,
-                formNotifier: formNotifier,
-                titleController: _titleController,
-                summaryController: _summaryController,
-                titleFocusNode: _titleFocusNode,
-                summaryFocusNode: _summaryFocusNode,
-                isAiLoading: isAiLoading,
-                onNext: _handleNext,
-                onBack: _handleBack,
-                onSave: _handleSave,
-                onGenerateSummary: _handleGenerateSummary,
-                onImproveBullet: _handleImproveBullet,
-                onSuggestSkills: _handleSuggestSkills,
-              );
-
-              final preview = ResumePreview(
-                title: formState.title,
-                personalSummary: formState.personalSummary,
-                workExperiences: formState.workExperiences,
-                educations: formState.educations,
-                skills: formState.skills,
-              );
-
-              if (isWide) {
-                return Row(
-                  children: [
-                    Expanded(
-                      flex: 6,
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(20),
-                        child: formContent,
-                      ),
-                    ),
-                    Expanded(
-                      flex: 5,
-                      child: Container(
-                        padding: const EdgeInsets.fromLTRB(0, 20, 20, 20),
-                        child: preview,
-                      ),
-                    ),
-                  ],
+                final formContent = _BuilderFormContent(
+                  formState: formState,
+                  formNotifier: formNotifier,
+                  titleController: _titleController,
+                  summaryController: _summaryController,
+                  titleFocusNode: _titleFocusNode,
+                  summaryFocusNode: _summaryFocusNode,
+                  isAiLoading: isAiLoading,
+                  onNext: _handleNext,
+                  onBack: _handleBack,
+                  onSave: _handleSave,
+                  onGenerateSummary: _handleGenerateSummary,
+                  onImproveBullet: _handleImproveBullet,
+                  onSuggestSkills: _handleSuggestSkills,
                 );
-              }
 
-              return SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    formContent,
-                    const SizedBox(height: 20),
-                    preview,
-                  ],
-                ),
-              );
-            },
+                final preview = ResumePreview(
+                  title: formState.title,
+                  personalSummary: formState.personalSummary,
+                  workExperiences: formState.workExperiences,
+                  educations: formState.educations,
+                  skills: formState.skills,
+                );
+
+                if (isWide) {
+                  return Row(
+                    children: [
+                      Expanded(
+                        flex: 6,
+                        child: SingleChildScrollView(
+                          keyboardDismissBehavior:
+                              ScrollViewKeyboardDismissBehavior.onDrag,
+                          padding: const EdgeInsets.all(20),
+                          child: formContent,
+                        ),
+                      ),
+                      Expanded(
+                        flex: 5,
+                        child: Container(
+                          padding: const EdgeInsets.fromLTRB(0, 20, 20, 20),
+                          child: preview,
+                        ),
+                      ),
+                    ],
+                  );
+                }
+
+                return SingleChildScrollView(
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      formContent,
+                      const SizedBox(height: 20),
+                      preview,
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ),
