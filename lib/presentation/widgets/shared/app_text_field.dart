@@ -48,13 +48,19 @@ class AppTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveKeyboardType = (textInputAction == TextInputAction.newline &&
+            maxLines != 1 &&
+            keyboardType == TextInputType.text)
+        ? TextInputType.multiline
+        : keyboardType;
+
     return Semantics(
       textField: true,
       label: semanticsLabel ?? labelText,
       child: TextFormField(
         controller: controller,
         validator: validator,
-        keyboardType: keyboardType,
+        keyboardType: effectiveKeyboardType,
         textInputAction: textInputAction,
         obscureText: obscureText,
         enabled: enabled,
