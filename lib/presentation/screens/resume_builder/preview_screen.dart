@@ -1,90 +1,198 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:printing/printing.dart';
 
+import '../../../domain/entities/resume.dart';
 import '../../../domain/entities/resume_template.dart';
+import '../../providers/pdf/pdf_export_provider.dart';
 import '../../providers/resume/resume_form_provider.dart';
 import '../../widgets/shared/app_button.dart';
+import '../../widgets/shared/loading_overlay.dart';
 
 final selectedResumeTemplateProvider =
     StateProvider<ResumeTemplate>((ref) => ResumeTemplate.classic);
 
-class PreviewScreen extends ConsumerWidget {
+class PreviewScreen extends ConsumerStatefulWidget {
   const PreviewScreen({super.key});
 
   static const String routeName = 'preview';
   static const String routePath = '/preview';
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PreviewScreen> createState() => _PreviewScreenState();
+}
+
+class _PreviewScreenState extends ConsumerState<PreviewScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    ref.listenManual(pdfExportProvider, (previous, next) async {
+      await next.whenOrNull(
+        data: (data) async {
+          if (!mounted) return;
+          final filePath = data.exportedFilePath;
+          if (filePath == null || filePath.trim().isEmpty) return;
+
+          try {
+            final bytes = await File(filePath).readAsBytes();
+
+            await Printing.sharePdf(
+              bytes: bytes,
+              filename: filePath.split(Platform.pathSeparator).last,
+            );
+          } catch (e) {
+            if (!mounted) return;
+            await _showErrorDialog(
+              title: 'Share Failed',
+              message: 'PDF was exported but could not be shared.\n\n$e',
+              onRetry: _handleExport,
+            );
+          }
+        },
+        error: (error, _) async {
+          if (!mounted) return;
+          await _showErrorDialog(
+            title: 'Export Failed',
+            message: _mapErrorToMessage(error),
+            onRetry: _handleExport,
+          );
+        },
+      );
+    });
+  }
+
+  Future<void> _handleExport() async {
+    final formState = ref.read(resumeFormProvider);
+    final template = ref.read(selectedResumeTemplateProvider);
+
+    final resume = Resume(
+      id: formState.resumeId ?? DateTime.now().microsecondsSinceEpoch.toString(),
+      userId: formState.userId ?? '',
+      title: formState.title.trim(),
+      personalSummary: formState.personalSummary.trim(),
+      workExperiences: formState.workExperiences,
+      educations: formState.educations,
+      skills: formState.skills,
+      createdAt: formState.createdAt ?? DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+
+    await ref.read(pdfExportProvider.notifier).exportPdf(
+          resume: resume,
+          template: template,
+        );
+  }
+
+  String _mapErrorToMessage(Object error) {
+    final text = error.toString().replaceFirst('AsyncError: ', '').trim();
+    if (text.isEmpty) {
+      return 'Unable to export PDF right now. Please try again.';
+    }
+    return text;
+  }
+
+  Future<void> _showErrorDialog({
+    required String title,
+    required String message,
+    VoidCallback? onRetry,
+  }) {
+    return showDialog<void>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          if (onRetry != null)
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                onRetry();
+              },
+              child: const Text('Retry'),
+            ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Dismiss'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final formState = ref.watch(resumeFormProvider);
     final selectedTemplate = ref.watch(selectedResumeTemplateProvider);
+    final exportState = ref.watch(pdfExportProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Resume Preview'),
         centerTitle: true,
       ),
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final isWide = constraints.maxWidth >= 900;
+      body: LoadingOverlay(
+        isLoading: exportState.isLoading,
+        message: 'Exporting PDF...',
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isWide = constraints.maxWidth >= 900;
 
-            final controls = _PreviewControls(
-              selectedTemplate: selectedTemplate,
-              onTemplateChanged: (template) {
-                if (template == null) return;
-                ref.read(selectedResumeTemplateProvider.notifier).state =
-                    template;
-              },
-              onExportPdf: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Export PDF will be connected in Phase 13.'),
+              final controls = _PreviewControls(
+                selectedTemplate: selectedTemplate,
+                onTemplateChanged: (template) {
+                  if (template == null) return;
+                  ref.read(selectedResumeTemplateProvider.notifier).state =
+                      template;
+                },
+                onExportPdf: _handleExport,
+                onBackToEdit: () {
+                  Navigator.of(context).pop();
+                },
+              );
+
+              final preview = _ResumePdfPreview(
+                template: selectedTemplate,
+                title: formState.title,
+                personalSummary: formState.personalSummary,
+                workExperiences: formState.workExperiences,
+                educations: formState.educations,
+                skills: formState.skills,
+              );
+
+              if (isWide) {
+                return Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: 320,
+                        child: controls,
+                      ),
+                      const SizedBox(width: 20),
+                      Expanded(child: preview),
+                    ],
                   ),
                 );
-              },
-              onBackToEdit: () {
-                Navigator.of(context).pop();
-              },
-            );
+              }
 
-            final preview = _ResumePdfPreview(
-              template: selectedTemplate,
-              title: formState.title,
-              personalSummary: formState.personalSummary,
-              workExperiences: formState.workExperiences,
-              educations: formState.educations,
-              skills: formState.skills,
-            );
-
-            if (isWide) {
-              return Padding(
+              return SingleChildScrollView(
                 padding: const EdgeInsets.all(20),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Column(
                   children: [
-                    SizedBox(
-                      width: 320,
-                      child: controls,
-                    ),
-                    const SizedBox(width: 20),
-                    Expanded(child: preview),
+                    controls,
+                    const SizedBox(height: 20),
+                    preview,
                   ],
                 ),
               );
-            }
-
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  controls,
-                  const SizedBox(height: 20),
-                  preview,
-                ],
-              ),
-            );
-          },
+            },
+          ),
         ),
       ),
     );
@@ -134,7 +242,7 @@ class _PreviewControls extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Choose a resume template and review the final PDF-style layout.',
+            'Choose a resume template and export the final PDF.',
             style: TextStyle(
               fontSize: 14,
               color: Color(0xFF64748B),
