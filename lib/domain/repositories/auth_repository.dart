@@ -21,4 +21,6 @@ abstract interface class AuthRepository {
   });
 
   Future<Either<Failure, UserProfile?>> getCurrentUser();
+
+  Stream<UserProfile?> authStateChanges();
 }
