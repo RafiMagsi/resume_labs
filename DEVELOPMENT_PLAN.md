@@ -410,7 +410,7 @@
 
 ## Phase 18: Firebase Security Rules & Firestore Indexing (1 day)
 
-### 18.1 Security Rules
+### 18.1 Security Rules - done
 - [ ] Apply rules: users can only read/write their own resumes
 - [ ] Test with multiple user accounts
 
