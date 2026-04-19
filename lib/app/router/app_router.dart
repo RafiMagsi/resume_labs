@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:resume_labs/domain/usecases/auth/reset_password_usecase.dart';
 
 import '../../presentation/screens/auth/login_screen.dart';
 import '../../presentation/screens/auth/register_screen.dart';
@@ -8,6 +9,7 @@ import '../../presentation/screens/history/history_screen.dart';
 import '../../presentation/screens/resume_builder/builder_screen.dart';
 import '../../presentation/screens/resume_builder/preview_screen.dart';
 import '../../presentation/screens/splash/splash_screen.dart';
+import '../../presentation/screens/auth/password_reset_screen.dart';
 
 final isAuthenticatedProvider = StateProvider<bool>((ref) => false);
 
@@ -51,6 +53,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: PreviewScreen.routeName,
         builder: (context, state) => const PreviewScreen(),
       ),
+      GoRoute(
+        path: PasswordResetScreen.routePath,
+        name: PasswordResetScreen.routeName,
+        builder: (context, state) => const PasswordResetScreen(),
+      ),
     ],
     redirect: (BuildContext context, GoRouterState state) {
       final location = state.matchedLocation;
@@ -59,6 +66,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         SplashScreen.routePath,
         LoginScreen.routePath,
         RegisterScreen.routePath,
+        PasswordResetScreen.routePath,
       };
 
       if (!isAuthenticated && !authPaths.contains(location)) {
