@@ -2,6 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
+import 'package:resume_labs/data/repositories/pdf_repository_impl.dart';
+import 'package:resume_labs/data/services/pdf_service.dart';
+import 'package:resume_labs/domain/repositories/pdf_repository.dart';
+import 'package:resume_labs/domain/usecases/pdf/export_pdf_usecase.dart';
 
 import '../data/datasources/local/resume_local_datasource.dart';
 import '../data/datasources/local/resume_local_datasource_impl.dart';
@@ -153,4 +157,18 @@ final improveBulletUseCaseProvider = Provider<ImproveBulletUseCase>((ref) {
 final suggestSkillsUseCaseProvider = Provider<SuggestSkillsUseCase>((ref) {
   final repository = ref.watch(aiRepositoryProvider);
   return SuggestSkillsUseCase(repository);
+});
+
+final pdfServiceProvider = Provider<PdfService>((ref) {
+  return PdfService();
+});
+
+final pdfRepositoryProvider = Provider<PdfRepository>((ref) {
+  final pdfService = ref.watch(pdfServiceProvider);
+  return PdfRepositoryImpl(pdfService);
+});
+
+final exportPdfUseCaseProvider = Provider<ExportPdfUseCase>((ref) {
+  final repository = ref.watch(pdfRepositoryProvider);
+  return ExportPdfUseCase(repository);
 });
