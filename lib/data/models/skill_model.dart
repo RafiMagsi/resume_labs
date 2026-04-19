@@ -1,7 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import '../../domain/entities/skill.dart';
-
 part 'skill_model.freezed.dart';
 part 'skill_model.g.dart';
 
@@ -14,22 +12,4 @@ class SkillModel with _$SkillModel {
 
   factory SkillModel.fromJson(Map<String, dynamic> json) =>
       _$SkillModelFromJson(json);
-}
-
-extension SkillModelMapper on SkillModel {
-  Skill toEntity() {
-    return Skill(
-      name: name,
-      category: category,
-    );
-  }
-}
-
-extension SkillEntityMapper on Skill {
-  SkillModel toModel() {
-    return SkillModel(
-      name: name,
-      category: category,
-    );
-  }
 }

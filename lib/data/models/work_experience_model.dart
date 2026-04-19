@@ -1,7 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import '../../domain/entities/work_experience.dart';
-
 part 'work_experience_model.freezed.dart';
 part 'work_experience_model.g.dart';
 
@@ -19,32 +17,4 @@ class WorkExperienceModel with _$WorkExperienceModel {
 
   factory WorkExperienceModel.fromJson(Map<String, dynamic> json) =>
       _$WorkExperienceModelFromJson(json);
-}
-
-extension WorkExperienceModelMapper on WorkExperienceModel {
-  WorkExperience toEntity() {
-    return WorkExperience(
-      company: company,
-      role: role,
-      location: location,
-      startDate: startDate,
-      endDate: endDate,
-      bulletPoints: bulletPoints,
-      isCurrentRole: isCurrentRole,
-    );
-  }
-}
-
-extension WorkExperienceEntityMapper on WorkExperience {
-  WorkExperienceModel toModel() {
-    return WorkExperienceModel(
-      company: company,
-      role: role,
-      location: location,
-      startDate: startDate,
-      endDate: endDate,
-      bulletPoints: bulletPoints,
-      isCurrentRole: isCurrentRole,
-    );
-  }
 }
