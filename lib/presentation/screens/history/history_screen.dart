@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:resume_labs/injection/injection_container.dart';
+import 'package:resume_labs/presentation/widgets/shared/error_dialog.dart';
 
 import '../../../domain/entities/resume.dart';
 import '../../providers/resume/resume_form_provider.dart';
@@ -8,6 +10,8 @@ import '../../providers/resume/resume_list_provider.dart';
 import '../../widgets/shared/app_button.dart';
 import '../resume_builder/builder_screen.dart';
 import '../resume_builder/preview_screen.dart';
+import '../../../core/errors/failure.dart';
+import '../../widgets/shared/error_dialog.dart';
 
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
@@ -216,15 +220,20 @@ class HistoryScreen extends ConsumerWidget {
               if (!context.mounted) return;
 
               result.match(
-                (failure) {
+                (failure) async {
                   Navigator.of(context).pop(false);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(failure.message),
-                    ),
+                  await ErrorDialog.show(
+                    context,
+                    failure: failure,
+                    onRetry: () async {
+                      final deleteUseCase = ref.read(deleteResumeUseCaseProvider);
+                      await deleteUseCase(resume.id);
+                      ref.invalidate(resumeListProvider);
+                    },
+                    title: 'Delete Failed',
                   );
                 },
-                (_) {
+                (_) async {
                   Navigator.of(context).pop(true);
                   ref.invalidate(resumeListProvider);
                   ScaffoldMessenger.of(context).showSnackBar(

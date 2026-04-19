@@ -11,6 +11,8 @@ import '../../providers/pdf/pdf_export_provider.dart';
 import '../../providers/resume/resume_form_provider.dart';
 import '../../widgets/shared/app_button.dart';
 import '../../widgets/shared/loading_overlay.dart';
+import '../../../core/errors/failure.dart';
+import '../../widgets/shared/error_dialog.dart';
 
 final selectedResumeTemplateProvider =
     StateProvider<ResumeTemplate>((ref) => ResumeTemplate.classic);
@@ -26,6 +28,30 @@ class PreviewScreen extends ConsumerStatefulWidget {
 }
 
 class _PreviewScreenState extends ConsumerState<PreviewScreen> {
+
+
+  Failure _mapProviderErrorToFailure(Object error) {
+    final message = error.toString().replaceFirst('AsyncError: ', '').trim();
+
+    if (message.toLowerCase().contains('timeout')) {
+      return const NetworkFailure('Request timed out. Please try again.');
+    }
+
+    if (message.toLowerCase().contains('internet') ||
+        message.toLowerCase().contains('network') ||
+        message.toLowerCase().contains('connection')) {
+      return NetworkFailure(message.isEmpty ? 'No internet connection.' : message);
+    }
+
+    if (message.toLowerCase().contains('pdf')) {
+      return PdfFailure(message.isEmpty ? 'Failed to export PDF.' : message);
+    }
+
+    return ServerFailure(
+      message.isEmpty ? 'Unable to export PDF right now. Please try again.' : message,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -46,19 +72,22 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
             );
           } catch (e) {
             if (!mounted) return;
-            await _showErrorDialog(
-              title: 'Share Failed',
-              message: 'PDF was exported but could not be shared.\n\n$e',
+            await ErrorDialog.show(
+              context,
+              failure: ServerFailure('PDF was exported but could not be shared.'),
               onRetry: _handleExport,
+              title: 'Share Failed',
             );
           }
         },
         error: (error, _) async {
           if (!mounted) return;
-          await _showErrorDialog(
-            title: 'Export Failed',
-            message: _mapErrorToMessage(error),
+
+          await ErrorDialog.show(
+            context,
+            failure: _mapProviderErrorToFailure(error),
             onRetry: _handleExport,
+            title: 'Export Failed',
           );
         },
       );

@@ -348,9 +348,9 @@
 - [ ] Map typed Failure to user-friendly AppStrings message
 
 ### 15.2 Global Error Handling
-- [ ] AsyncValue.error states in providers show error dialog
-- [ ] Network errors trigger error dialog with retry
-- [ ] API timeout (15s) shows clear message
+- [ ] Route provider `AsyncValue.error` states through shared `ErrorDialog` instead of ad-hoc dialogs/snackbars
+- [ ] Network-related failures show Retry action that re-triggers the failed provider action or invalidates the provider
+- [ ] Timeout failures show a clear user-facing message such as `Request timed out. Please try again.` and do not expose raw exception text
 
 ### 15.3 Input Validation
 - [ ] Email validation in auth screens

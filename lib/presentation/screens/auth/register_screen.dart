@@ -8,6 +8,8 @@ import '../../widgets/shared/app_button.dart';
 import '../../widgets/shared/app_text_field.dart';
 import '../../widgets/shared/loading_overlay.dart';
 import '../history/history_screen.dart';
+import '../../../core/errors/failure.dart';
+import '../../widgets/shared/error_dialog.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -30,6 +32,34 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   late final FocusNode _passwordFocusNode;
   late final FocusNode _confirmPasswordFocusNode;
 
+  Failure _mapProviderErrorToFailure(Object error) {
+    final message = error.toString().replaceFirst('AsyncError: ', '').trim();
+
+    if (message.toLowerCase().contains('timeout')) {
+      return const NetworkFailure('Request timed out. Please try again.');
+    }
+
+    if (message.toLowerCase().contains('internet') ||
+        message.toLowerCase().contains('network') ||
+        message.toLowerCase().contains('connection')) {
+      return NetworkFailure(message.isEmpty ? 'No internet connection.' : message);
+    }
+
+    if (message.toLowerCase().contains('auth')) {
+      return AuthFailure(message.isEmpty ? 'Authentication failed.' : message);
+    }
+
+    if (message.toLowerCase().contains('password') ||
+        message.toLowerCase().contains('email')) {
+      return ValidationFailure(message);
+    }
+
+    return ServerFailure(
+      message.isEmpty
+          ? 'Unable to create your account right now. Please try again.'
+          : message,
+    );
+  }
   @override
   void initState() {
     super.initState();
@@ -47,11 +77,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           if (!mounted) return;
           context.go(HistoryScreen.routePath);
         },
-        error: (error, _) {
+        error: (error, _) async {
           if (!mounted) return;
-          _showErrorDialog(
+
+          await ErrorDialog.show(
+            context,
+            failure: _mapProviderErrorToFailure(error),
+            onRetry: _submit,
             title: 'Registration Failed',
-            message: _mapErrorToMessage(error),
           );
         },
       );
