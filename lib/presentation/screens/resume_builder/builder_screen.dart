@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:resume_labs/domain/entities/skill.dart';
 
 import '../../../core/utils/input_validators.dart';
 import '../../providers/auth/auth_provider.dart';
@@ -9,6 +10,8 @@ import '../../widgets/resume/section_form.dart';
 import '../../widgets/shared/app_button.dart';
 import '../../widgets/shared/app_text_field.dart';
 import '../../widgets/shared/loading_overlay.dart';
+import '../../providers/ai/ai_suggestions_provider.dart';
+import '../../widgets/ai/ai_suggestion_dialog.dart';
 
 class BuilderScreen extends ConsumerStatefulWidget {
   const BuilderScreen({super.key});
@@ -111,6 +114,128 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
     );
   }
 
+  Future<void> _handleGenerateSummary() async {
+    final formState = ref.read(resumeFormProvider);
+
+    final allBullets = formState.workExperiences
+        .expand((e) => e.bulletPoints)
+        .toList();
+
+    if (allBullets.isEmpty) {
+      await _showErrorDialog(
+        title: 'Missing Work Experience',
+        message: 'Add work experience bullets first so AI can generate a meaningful summary.',
+      );
+      return;
+    }
+
+    await ref.read(aiSuggestionsProvider.notifier).generateSummary(
+          jobTitle: formState.title.trim().isEmpty
+              ? 'Professional Resume'
+              : formState.title.trim(),
+          skills: formState.skills.map((e) => e.name).toList(),
+          workHighlights: allBullets,
+        );
+
+    final aiState = ref.read(aiSuggestionsProvider);
+    final suggestion = aiState.valueOrNull?.generatedSummary;
+
+    if (!mounted) return;
+
+    if (suggestion == null || suggestion.trim().isEmpty) {
+      final error = aiState.hasError
+          ? aiState.error.toString()
+          : 'Unable to generate AI summary.';
+      await _showErrorDialog(
+        title: 'AI Suggestion Failed',
+        message: error,
+      );
+      return;
+    }
+
+    await AiSuggestionDialog.show(
+      context,
+      title: 'Generated Personal Summary',
+      description: 'Review the AI-generated summary before applying it.',
+      suggestion: suggestion,
+      acceptText: 'Use Summary',
+      onAccept: () {
+        ref.read(resumeFormProvider.notifier).updatePersonalSummary(suggestion);
+        _summaryController.text = suggestion;
+        _summaryController.selection = TextSelection.fromPosition(
+          TextPosition(offset: _summaryController.text.length),
+        );
+      },
+    );
+  }
+
+  Future<String?> _handleImproveBullet(String bullet) async {
+    await ref.read(aiSuggestionsProvider.notifier).improveBullet(
+          bullet: bullet,
+          jobTitle: ref.read(resumeFormProvider).title.trim(),
+        );
+
+    final aiState = ref.read(aiSuggestionsProvider);
+    final suggestion = aiState.valueOrNull?.improvedBullet;
+
+    if (!mounted) return null;
+
+    if (suggestion == null || suggestion.trim().isEmpty) {
+      final error = aiState.hasError
+          ? aiState.error.toString()
+          : 'Unable to improve bullet.';
+      await _showErrorDialog(
+        title: 'AI Suggestion Failed',
+        message: error,
+      );
+      return null;
+    }
+
+    String? acceptedValue;
+    await AiSuggestionDialog.show(
+      context,
+      title: 'Improved Bullet Point',
+      description: 'Review the improved bullet before applying it.',
+      suggestion: suggestion,
+      acceptText: 'Use Bullet',
+      onAccept: () {
+        acceptedValue = suggestion;
+      },
+    );
+
+    return acceptedValue;
+  }
+
+  Future<List<String>?> _handleSuggestSkills() async {
+    final formState = ref.read(resumeFormProvider);
+
+    await ref.read(aiSuggestionsProvider.notifier).suggestSkills(
+          jobTitle: formState.title.trim().isEmpty
+              ? 'Professional Resume'
+              : formState.title.trim(),
+          existingSkills: formState.skills.map((e) => e.name).toList(),
+          personalSummary: formState.personalSummary,
+        );
+
+    final aiState = ref.read(aiSuggestionsProvider);
+    final suggestions = aiState.valueOrNull?.suggestedSkills ?? [];
+
+    if (!mounted) return null;
+
+    if (suggestions.isEmpty) {
+      final error = aiState.hasError
+          ? aiState.error.toString()
+          : 'Unable to suggest skills.';
+      await _showErrorDialog(
+        title: 'AI Suggestion Failed',
+        message: error,
+      );
+      return null;
+    }
+
+    return suggestions;
+  }
+
   Future<void> _showErrorDialog({
     required String title,
     required String message,
@@ -194,6 +319,9 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
                 onNext: _handleNext,
                 onBack: _handleBack,
                 onSave: _handleSave,
+                onGenerateSummary: _handleGenerateSummary,
+                onImproveBullet: _handleImproveBullet,
+                onSuggestSkills: _handleSuggestSkills,
               );
 
               final preview = ResumePreview(
@@ -253,6 +381,9 @@ class _BuilderFormContent extends StatelessWidget {
   final Future<void> Function() onNext;
   final VoidCallback onBack;
   final Future<void> Function() onSave;
+  final Future<void> Function() onGenerateSummary;
+  final Future<String?> Function(String bullet) onImproveBullet;
+  final Future<List<String>?> Function() onSuggestSkills;
 
   const _BuilderFormContent({
     required this.formState,
@@ -264,6 +395,9 @@ class _BuilderFormContent extends StatelessWidget {
     required this.onNext,
     required this.onBack,
     required this.onSave,
+    required this.onGenerateSummary,
+    required this.onImproveBullet,
+    required this.onSuggestSkills,
   });
 
   @override
@@ -291,6 +425,13 @@ class _BuilderFormContent extends StatelessWidget {
         return SectionForm(
           title: 'Personal Information',
           subtitle: 'Add a resume title and a strong personal summary.',
+          trailing: AppButton(
+            text: 'AI Summary',
+            expand: false,
+            variant: AppButtonVariant.secondary,
+            icon: Icons.auto_awesome_rounded,
+            onPressed: onGenerateSummary,
+          ),
           child: Column(
             children: [
               AppTextField(
@@ -351,6 +492,7 @@ class _BuilderFormContent extends StatelessWidget {
           onAdd: formNotifier.addWorkExperience,
           onUpdate: formNotifier.updateWorkExperience,
           onRemove: formNotifier.removeWorkExperience,
+          onImproveBullet: onImproveBullet,
         );
 
       case 2:
@@ -369,6 +511,15 @@ class _BuilderFormContent extends StatelessWidget {
           onAdd: formNotifier.addSkill,
           onUpdate: formNotifier.updateSkill,
           onRemove: formNotifier.removeSkill,
+          onSuggestSkills: onSuggestSkills,
+          onAcceptSuggestedSkill: (skillName) {
+            formNotifier.addSkill(
+              Skill(
+                name: skillName,
+                category: 'Suggested',
+              ),
+            );
+          },
         );
 
       default:

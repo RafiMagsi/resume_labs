@@ -87,6 +87,7 @@ class WorkExperienceSectionForm extends StatelessWidget {
   final void Function(int index, WorkExperience item) onUpdate;
   final ValueChanged<int> onRemove;
   final String? errorText;
+  final Future<String?> Function(String bullet)? onImproveBullet;
 
   const WorkExperienceSectionForm({
     super.key,
@@ -95,6 +96,7 @@ class WorkExperienceSectionForm extends StatelessWidget {
     required this.onUpdate,
     required this.onRemove,
     this.errorText,
+    this.onImproveBullet,
   });
 
   @override
@@ -109,6 +111,7 @@ class WorkExperienceSectionForm extends StatelessWidget {
         onPressed: () => _showWorkExperienceSheet(
           context,
           onSave: onAdd,
+          onImproveBullet: onImproveBullet,
         ),
       ),
       child: Column(
@@ -129,6 +132,7 @@ class WorkExperienceSectionForm extends StatelessWidget {
                     context,
                     initialValue: items[index],
                     onSave: (value) => onUpdate(index, value),
+                    onImproveBullet: onImproveBullet,
                   ),
                   onDelete: () => onRemove(index),
                 ),
@@ -227,6 +231,8 @@ class SkillsSectionForm extends StatelessWidget {
   final void Function(int index, Skill item) onUpdate;
   final ValueChanged<int> onRemove;
   final String? errorText;
+  final Future<List<String>?> Function()? onSuggestSkills;
+  final ValueChanged<String>? onAcceptSuggestedSkill;
 
   const SkillsSectionForm({
     super.key,
@@ -235,6 +241,8 @@ class SkillsSectionForm extends StatelessWidget {
     required this.onUpdate,
     required this.onRemove,
     this.errorText,
+    this.onSuggestSkills,
+    this.onAcceptSuggestedSkill,
   });
 
   @override
@@ -242,14 +250,42 @@ class SkillsSectionForm extends StatelessWidget {
     return SectionForm(
       title: 'Skills',
       subtitle: 'Add important technical or professional skills.',
-      trailing: AppButton(
-        text: 'Add',
-        expand: false,
-        icon: Icons.add,
-        onPressed: () => _showSkillSheet(
-          context,
-          onSave: onAdd,
-        ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AppButton(
+            text: 'Suggest',
+            expand: false,
+            variant: AppButtonVariant.secondary,
+            icon: Icons.auto_awesome_rounded,
+            onPressed: onSuggestSkills == null
+                ? null
+                : () async {
+                    final results = await onSuggestSkills!.call();
+                    if (results == null || results.isEmpty || !context.mounted) return;
+
+                    await _showSuggestedSkillsDialog(
+                      context,
+                      suggestions: results,
+                      onAccept: (skillName) {
+                        if (onAcceptSuggestedSkill != null) {
+                          onAcceptSuggestedSkill!(skillName);
+                        }
+                      },
+                    );
+                  },
+          ),
+          const SizedBox(width: 8),
+          AppButton(
+            text: 'Add',
+            expand: false,
+            icon: Icons.add,
+            onPressed: () => _showSkillSheet(
+              context,
+              onSave: onAdd,
+            ),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -581,6 +617,7 @@ Future<void> _showWorkExperienceSheet(
   BuildContext context, {
   WorkExperience? initialValue,
   required ValueChanged<WorkExperience> onSave,
+  Future<String?> Function(String bullet)? onImproveBullet,
 }) async {
   final companyController = TextEditingController(text: initialValue?.company ?? '');
   final roleController = TextEditingController(text: initialValue?.role ?? '');
@@ -700,6 +737,7 @@ Future<void> _showWorkExperienceSheet(
                     ),
                     const SizedBox(height: 18),
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
                           child: AppTextField(
@@ -709,17 +747,44 @@ Future<void> _showWorkExperienceSheet(
                           ),
                         ),
                         const SizedBox(width: 12),
-                        AppButton(
-                          text: 'Add',
-                          expand: false,
-                          onPressed: () {
-                            final text = bulletController.text.trim();
-                            if (text.isEmpty) return;
-                            setState(() {
-                              bullets.add(text);
-                              bulletController.clear();
-                            });
-                          },
+                        Column(
+                          children: [
+                            AppButton(
+                              text: 'AI',
+                              expand: false,
+                              variant: AppButtonVariant.secondary,
+                              icon: Icons.auto_awesome_rounded,
+                              onPressed: onImproveBullet == null
+                                  ? null
+                                  : () async {
+                                      final text = bulletController.text.trim();
+                                      if (text.isEmpty) return;
+
+                                      final improved = await onImproveBullet(text);
+                                      if (improved == null || improved.trim().isEmpty || !context.mounted) {
+                                        return;
+                                      }
+
+                                      bulletController.text = improved;
+                                      bulletController.selection = TextSelection.fromPosition(
+                                        TextPosition(offset: bulletController.text.length),
+                                      );
+                                    },
+                            ),
+                            const SizedBox(height: 8),
+                            AppButton(
+                              text: 'Add',
+                              expand: false,
+                              onPressed: () {
+                                final text = bulletController.text.trim();
+                                if (text.isEmpty) return;
+                                setState(() {
+                                  bullets.add(text);
+                                  bulletController.clear();
+                                });
+                              },
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -1035,4 +1100,77 @@ String _formatDateRange(DateTime start, DateTime? end, bool isCurrentRole) {
   final startText = _formatMonthYear(start);
   final endText = isCurrentRole || end == null ? 'Present' : _formatMonthYear(end);
   return '$startText - $endText';
+}
+
+Future<void> _showSuggestedSkillsDialog(
+  BuildContext context, {
+  required List<String> suggestions,
+  required ValueChanged<String> onAccept,
+}) async {
+  await showDialog<void>(
+    context: context,
+    builder: (_) => Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'AI Skill Suggestions',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF0F172A),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ...suggestions.map(
+              (skill) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          skill,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF334155),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      AppButton(
+                        text: 'Accept',
+                        expand: false,
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          onAccept(skill);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            AppButton(
+              text: 'Dismiss',
+              variant: AppButtonVariant.secondary,
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }
