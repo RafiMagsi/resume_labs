@@ -1,13 +1,11 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:printing/printing.dart';
 
 import '../../../domain/entities/resume.dart';
 import '../../../domain/entities/resume_template.dart';
 import '../../providers/pdf/pdf_export_provider.dart';
 import '../../providers/resume/resume_form_provider.dart';
+import '../../services/pdf_share_service.dart';
 import '../../widgets/shared/app_button.dart';
 import '../../widgets/shared/loading_overlay.dart';
 import '../../../core/errors/failure.dart';
@@ -62,12 +60,8 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
           if (filePath == null || filePath.trim().isEmpty) return;
 
           try {
-            final bytes = await File(filePath).readAsBytes();
-
-            await Printing.sharePdf(
-              bytes: bytes,
-              filename: filePath.split(Platform.pathSeparator).last,
-            );
+            final shareService = ref.read(pdfShareServiceProvider);
+            await shareService.sharePdf(filePath: filePath);
           } catch (e) {
             if (!mounted) return;
             await ErrorDialog.show(

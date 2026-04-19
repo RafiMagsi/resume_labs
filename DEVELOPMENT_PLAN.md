@@ -398,11 +398,11 @@
 - [ ] Mock use cases
 - [ ] Screens: basic rendering and navigation (if flutter_test supports)
 
-### 17.4 Integration Tests
+### 17.4 Integration Tests - done
 - [ ] Full flow: signup → create resume → save → export PDF
 - [ ] Test on real emulator or device
 
-### 17.5 Coverage
+### 17.5 Coverage - done
 - [ ] Run `flutter test --coverage`
 - [ ] Aim for >80% coverage overall, >95% on mappers
 
