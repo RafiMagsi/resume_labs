@@ -44,14 +44,16 @@ class _InMemoryResumeRepository implements ResumeRepository {
   }
 
   @override
-  Future<Either<Failure, List<Resume>>> getAllResumes(String userId) async {
-    return Right(_items.where((e) => e.userId == userId).toList());
+  Future<Either<Failure, Resume?>> getResumeById(String resumeId) async {
+    for (final item in _items) {
+      if (item.id == resumeId) return Right(item);
+    }
+    return const Right(null);
   }
 
   @override
-  Future<Either<Failure, Resume>> getResume(String id) async {
-    final resume = _items.firstWhere((e) => e.id == id);
-    return Right(resume);
+  Future<Either<Failure, List<Resume>>> getResumesByUserId(String userId) async {
+    return Right(_items.where((e) => e.userId == userId).toList());
   }
 
   @override
@@ -63,13 +65,9 @@ class _InMemoryResumeRepository implements ResumeRepository {
   }
 }
 
-class _FakeExportPdfUseCase extends ExportPdfUseCase {
-  _FakeExportPdfUseCase() : super(_FakePdfRepository());
-}
-
 class _FakePdfRepository implements PdfRepository {
   @override
-  Future<Either<Failure, String>> exportPdf({
+  Future<Either<Failure, String>> exportResumePdf({
     required Resume resume,
     required ResumeTemplate template,
   }) async {
@@ -143,7 +141,9 @@ void main() {
             ),
           ),
           resumeRepositoryProvider.overrideWithValue(resumeRepository),
-          exportPdfUseCaseProvider.overrideWithValue(_FakeExportPdfUseCase()),
+          exportPdfUseCaseProvider.overrideWithValue(
+            ExportPdfUseCase(_FakePdfRepository()),
+          ),
           pdfShareServiceProvider.overrideWithValue(const _NoopPdfShareService()),
           // Keep History deterministic for this flow.
           resumeListProvider.overrideWith((ref) async => const <Resume>[]),
