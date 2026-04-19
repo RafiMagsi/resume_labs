@@ -1,6 +1,8 @@
 import 'package:fpdart/fpdart.dart';
 
 import '../../../core/errors/failure.dart';
+import '../../entities/resume.dart';
+import '../../entities/resume_template.dart';
 import '../../repositories/pdf_repository.dart';
 
 class ExportPdfUseCase {
@@ -9,10 +11,12 @@ class ExportPdfUseCase {
   const ExportPdfUseCase(this.repository);
 
   Future<Either<Failure, String>> call({
-    required String resumeId,
+    required Resume resume,
+    required ResumeTemplate template,
   }) {
     return repository.exportResumePdf(
-      resumeId: resumeId,
+      resume: resume,
+      template: template,
     );
   }
 }

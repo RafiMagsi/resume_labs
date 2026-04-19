@@ -26,3 +26,7 @@ final class ValidationFailure extends Failure {
 final class UnknownFailure extends Failure {
   const UnknownFailure(super.message);
 }
+
+final class PdfFailure extends Failure {
+  const PdfFailure(super.message);
+}
