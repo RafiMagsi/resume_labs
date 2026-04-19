@@ -4,20 +4,23 @@ import '../../../domain/entities/resume.dart';
 import '../../../injection/injection_container.dart';
 import '../auth/auth_provider.dart';
 
-final resumeListProvider = StreamProvider<List<Resume>>((ref) async* {
+final resumeListProvider = FutureProvider<List<Resume>>((ref) async {
   final authState = ref.watch(authProvider);
-
   final user = authState.valueOrNull;
+
   if (user == null) {
-    yield const [];
-    return;
+    return const [];
   }
 
   final useCase = ref.watch(getAllResumesUseCaseProvider);
   final result = await useCase(user.uid);
 
-  yield result.match(
+  return result.match(
     (_) => const <Resume>[],
-    (resumes) => resumes,
+    (resumes) {
+      final sorted = [...resumes]
+        ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+      return sorted;
+    },
   );
 });
