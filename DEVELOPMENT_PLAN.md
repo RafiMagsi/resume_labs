@@ -24,12 +24,33 @@
 - [ ] Configure Firebase iOS pods in `ios/Podfile` (if needed)
 
 ### 1.3 Project Structure & Boilerplate
-- [ ] Create folder structure: `lib/core/`, `lib/domain/`, `lib/data/`, `lib/presentation/`, `lib/injection/`
-- [ ] Create `core/constants/` with `app_colors.dart`, `app_strings.dart`, `app_sizes.dart`
-- [ ] Create `core/errors/` with `failure.dart` (sealed class) and `app_exception.dart`
-- [ ] Create `core/extensions/` with `string_extensions.dart`, `list_extensions.dart`
-- [ ] Create `core/network/` with `network_info.dart` (abstract) and implementation
-- [ ] Create `core/utils/` with `input_validators.dart`, `date_formatter.dart`
+- [ ] Create folder structure:
+  - `lib/core/constants/`
+  - `lib/core/errors/`
+  - `lib/core/extensions/`
+  - `lib/core/network/`
+  - `lib/core/utils/`
+  - `lib/domain/`
+  - `lib/data/`
+  - `lib/presentation/`
+  - `lib/injection/`
+- [ ] Create modern theme foundation in `core/constants/`:
+  - `app_colors.dart`
+  - `app_strings.dart`
+  - `app_sizes.dart`
+- [ ] Create error primitives in `core/errors/`:
+  - `failure.dart` (sealed failure hierarchy)
+  - `app_exception.dart` (typed app exceptions)
+- [ ] Create reusable extensions in `core/extensions/`:
+  - `string_extensions.dart`
+  - `list_extensions.dart`
+- [ ] Create network contracts in `core/network/`:
+  - `network_info.dart` (abstract)
+  - `network_info_impl.dart`
+- [ ] Create shared helpers in `core/utils/`:
+  - `input_validators.dart`
+  - `date_formatter.dart`
+  - keep all helpers framework-agnostic where possible
 
 ### 1.4 Main App Boilerplate
 - [ ] Create `app/app.dart` with ProviderScope > MaterialApp + GoRouter structure
