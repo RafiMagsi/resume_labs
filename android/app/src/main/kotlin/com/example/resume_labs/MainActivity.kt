@@ -1,4 +1,4 @@
-package com.example.resume_labs
+package com.nextfiction.resumeLabs
 
 import io.flutter.embedding.android.FlutterActivity
 
