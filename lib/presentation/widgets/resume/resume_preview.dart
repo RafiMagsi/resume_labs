@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_sizes.dart';
 import '../../../domain/entities/education.dart';
 import '../../../domain/entities/skill.dart';
 import '../../../domain/entities/work_experience.dart';
@@ -26,14 +28,14 @@ class ResumePreview extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        color: AppColors.screenSurface,
+        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+        border: Border.all(color: AppColors.border),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x140F172A),
+            color: AppColors.shadowCard,
             blurRadius: 18,
-            offset: Offset(0, 8),
+            offset: Offset(0, 6),
           ),
         ],
       ),
@@ -45,8 +47,8 @@ class ResumePreview extends StatelessWidget {
               title.trim().isEmpty ? 'Untitled Resume' : title.trim(),
               style: const TextStyle(
                 fontSize: 28,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF0F172A),
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 18),
@@ -59,7 +61,7 @@ class ResumePreview extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 14,
                   height: 1.6,
-                  color: Color(0xFF334155),
+                  color: AppColors.textSecondary,
                 ),
               ),
             ),
@@ -113,17 +115,16 @@ class ResumePreview extends StatelessWidget {
                                 vertical: 8,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF1F5F9),
+                                color: AppColors.secondarySurface,
                                 borderRadius: BorderRadius.circular(999),
-                                border:
-                                    Border.all(color: const Color(0xFFE2E8F0)),
+                                border: Border.all(color: AppColors.border),
                               ),
                               child: Text(
                                 '${skill.name} • ${skill.category}',
                                 style: const TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
-                                  color: Color(0xFF334155),
+                                  color: AppColors.textSecondary,
                                 ),
                               ),
                             ),
@@ -157,7 +158,7 @@ class _PreviewSection extends StatelessWidget {
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF6D5EF8),
+            color: AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 10),
@@ -180,7 +181,7 @@ class _PreviewEmptyState extends StatelessWidget {
       message,
       style: const TextStyle(
         fontSize: 14,
-        color: Color(0xFF94A3B8),
+        color: AppColors.textTertiary,
       ),
     );
   }
@@ -206,7 +207,7 @@ class _PreviewWorkExperienceItem extends StatelessWidget {
           style: const TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF0F172A),
+            color: AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 4),
@@ -214,7 +215,7 @@ class _PreviewWorkExperienceItem extends StatelessWidget {
           '${item.company} • ${item.location}',
           style: const TextStyle(
             fontSize: 14,
-            color: Color(0xFF475569),
+            color: AppColors.textSecondary,
           ),
         ),
         const SizedBox(height: 4),
@@ -222,7 +223,7 @@ class _PreviewWorkExperienceItem extends StatelessWidget {
           dateText,
           style: const TextStyle(
             fontSize: 13,
-            color: Color(0xFF64748B),
+            color: AppColors.textSecondary,
           ),
         ),
         if (item.bulletPoints.isNotEmpty) ...[
@@ -238,7 +239,7 @@ class _PreviewWorkExperienceItem extends StatelessWidget {
                     child: Icon(
                       Icons.circle,
                       size: 6,
-                      color: Color(0xFF6D5EF8),
+                      color: AppColors.primary,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -248,7 +249,7 @@ class _PreviewWorkExperienceItem extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 14,
                         height: 1.45,
-                        color: Color(0xFF334155),
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ),
@@ -279,7 +280,7 @@ class _PreviewEducationItem extends StatelessWidget {
           style: const TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF0F172A),
+            color: AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 4),
@@ -287,7 +288,7 @@ class _PreviewEducationItem extends StatelessWidget {
           '${item.school} • ${item.field}',
           style: const TextStyle(
             fontSize: 14,
-            color: Color(0xFF475569),
+            color: AppColors.textSecondary,
           ),
         ),
         const SizedBox(height: 4),
@@ -295,7 +296,7 @@ class _PreviewEducationItem extends StatelessWidget {
           'Graduation: ${_formatMonthYear(item.graduationDate)}${item.gpa != null ? ' • GPA: ${item.gpa}' : ''}',
           style: const TextStyle(
             fontSize: 13,
-            color: Color(0xFF64748B),
+            color: AppColors.textSecondary,
           ),
         ),
       ],

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_sizes.dart';
 import '../../presentation/providers/auth/auth_provider.dart';
 import '../../presentation/screens/auth/login_screen.dart';
 import '../../presentation/screens/auth/password_reset_screen.dart';
@@ -158,7 +160,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     errorBuilder: (context, state) => Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(AppSizes.screenPadding),
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 520),
@@ -168,7 +170,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   const Icon(
                     Icons.error_outline_rounded,
                     size: 64,
-                    color: Color(0xFFDC2626),
+                    color: AppColors.error,
                   ),
                   const SizedBox(height: 16),
                   const Text(
@@ -186,7 +188,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 14,
-                      color: Color(0xFF64748B),
+                      color: AppColors.textSecondary,
                       height: 1.4,
                     ),
                   ),

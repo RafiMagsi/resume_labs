@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:resume_labs/domain/entities/skill.dart';
 
+import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/input_validators.dart';
 import '../../../core/errors/failure.dart';
 import '../../providers/auth/auth_provider.dart';
@@ -476,7 +477,7 @@ class _BuilderFormContent extends StatelessWidget {
                   child: Text(
                     formState.validationErrors['title']!,
                     style: const TextStyle(
-                      color: Color(0xFFDC2626),
+                      color: AppColors.error,
                       fontSize: 13,
                     ),
                   ),
@@ -501,7 +502,7 @@ class _BuilderFormContent extends StatelessWidget {
                   child: Text(
                     formState.validationErrors['personalSummary']!,
                     style: const TextStyle(
-                      color: Color(0xFFDC2626),
+                      color: AppColors.error,
                       fontSize: 13,
                     ),
                   ),
@@ -586,21 +587,24 @@ class _StepHeader extends StatelessWidget {
                       child: Column(
                         children: [
                           Container(
-                            height: 40,
-                            width: 40,
+                            height: 24,
+                            width: 24,
                             decoration: BoxDecoration(
                               color: isActive || isCompleted
-                                  ? const Color(0xFF6D5EF8)
-                                  : const Color(0xFFE2E8F0),
+                                  ? AppColors.primary
+                                  : AppColors.white,
                               shape: BoxShape.circle,
+                              border: isActive || isCompleted
+                                  ? null
+                                  : Border.all(color: AppColors.inactive),
                             ),
                             child: Center(
                               child: Text(
                                 '${index + 1}',
                                 style: TextStyle(
                                   color: isActive || isCompleted
-                                      ? Colors.white
-                                      : const Color(0xFF64748B),
+                                      ? AppColors.white
+                                      : AppColors.textSecondary,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -611,12 +615,12 @@ class _StepHeader extends StatelessWidget {
                             _labels[index],
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 11,
                               fontWeight:
                                   isActive ? FontWeight.w700 : FontWeight.w500,
                               color: isActive
-                                  ? const Color(0xFF0F172A)
-                                  : const Color(0xFF64748B),
+                                  ? AppColors.primary
+                                  : AppColors.textSecondary,
                             ),
                           ),
                         ],
@@ -628,8 +632,8 @@ class _StepHeader extends StatelessWidget {
                           height: 2,
                           margin: const EdgeInsets.only(bottom: 24),
                           color: index < currentStep
-                              ? const Color(0xFF6D5EF8)
-                              : const Color(0xFFE2E8F0),
+                              ? AppColors.primary
+                              : AppColors.border,
                         ),
                       ),
                   ],

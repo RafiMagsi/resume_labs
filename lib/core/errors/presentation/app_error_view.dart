@@ -1,6 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../constants/app_colors.dart';
+import '../../constants/app_sizes.dart';
+
 class AppErrorView extends StatelessWidget {
   final Object error;
   final StackTrace? stackTrace;
@@ -26,7 +29,7 @@ class AppErrorView extends StatelessWidget {
         message ?? 'The app hit an unexpected error. Please try again.';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.appBackground,
       body: SafeArea(
         child: Center(
           child: Padding(
@@ -36,14 +39,14 @@ class AppErrorView extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  color: AppColors.screenSurface,
+                  borderRadius: BorderRadius.circular(AppSizes.dialogRadius),
+                  border: Border.all(color: AppColors.border),
                   boxShadow: const [
                     BoxShadow(
-                      color: Color(0x140F172A),
-                      blurRadius: 24,
-                      offset: Offset(0, 8),
+                      color: AppColors.shadowDialog,
+                      blurRadius: 28,
+                      offset: Offset(0, 10),
                     ),
                   ],
                 ),
@@ -54,13 +57,13 @@ class AppErrorView extends StatelessWidget {
                       width: 72,
                       height: 72,
                       decoration: const BoxDecoration(
-                        color: Color(0xFFFEE2E2),
+                        color: AppColors.errorSoft,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
                         Icons.error_outline_rounded,
                         size: 36,
-                        color: Color(0xFFDC2626),
+                        color: AppColors.error,
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -69,7 +72,7 @@ class AppErrorView extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: theme.textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF0F172A),
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -77,7 +80,7 @@ class AppErrorView extends StatelessWidget {
                       resolvedMessage,
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: const Color(0xFF475569),
+                        color: AppColors.textSecondary,
                         height: 1.5,
                       ),
                     ),
@@ -86,14 +89,14 @@ class AppErrorView extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
+                        color: AppColors.secondarySurface,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        border: Border.all(color: AppColors.border),
                       ),
                       child: SelectableText(
                         error.toString(),
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: const Color(0xFF334155),
+                          color: AppColors.textSecondary,
                           fontFamily: 'monospace',
                           height: 1.5,
                         ),
@@ -110,16 +113,16 @@ class AppErrorView extends StatelessWidget {
                             width: double.infinity,
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF8FAFC),
+                              color: AppColors.secondarySurface,
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: const Color(0xFFE2E8F0),
+                                color: AppColors.border,
                               ),
                             ),
                             child: SelectableText(
                               stackTrace.toString(),
                               style: theme.textTheme.bodySmall?.copyWith(
-                                color: const Color(0xFF334155),
+                                color: AppColors.textSecondary,
                                 fontFamily: 'monospace',
                                 height: 1.4,
                               ),
@@ -135,14 +138,6 @@ class AppErrorView extends StatelessWidget {
                         onPressed: onRetry,
                         icon: const Icon(Icons.refresh_rounded),
                         label: const Text('Try again'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF6D5EF8),
-                          foregroundColor: Colors.white,
-                          minimumSize: const Size.fromHeight(52),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
                       ),
                     ),
                   ],

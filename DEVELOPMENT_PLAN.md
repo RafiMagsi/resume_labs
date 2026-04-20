@@ -529,7 +529,7 @@ Phase 19–21 (Build, Testing, Deployment)
 
 ### TASKS
 # Replace all colors codes with Colors in the AppColors file, if color is missing in the file then add the colors in the file and use the new constant color name
-# Extract all components where you can
+# Extract all widgets from big files where you can
 # Move all string constants or messages to AppStrings
 # Update theme as Apple iOS style, use small border radius
 # Aim for >80% coverage overall, >95% on mappers

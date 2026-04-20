@@ -136,7 +136,7 @@ class _ButtonContent extends StatelessWidget {
     final textWidget = Text(
       text,
       style: TextStyle(
-        fontSize: 15.5,
+        fontSize: variant == AppButtonVariant.text ? 14 : 15.5,
         fontWeight: FontWeight.w600,
         color: textColor,
       ),

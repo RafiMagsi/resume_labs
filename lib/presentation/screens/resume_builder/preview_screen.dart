@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_sizes.dart';
 import '../../../domain/entities/resume.dart';
 import '../../../domain/entities/resume_template.dart';
 import '../../providers/pdf/pdf_export_provider.dart';
@@ -222,14 +224,14 @@ class _PreviewControls extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        color: AppColors.screenSurface,
+        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+        border: Border.all(color: AppColors.border),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x140F172A),
+            color: AppColors.shadowCard,
             blurRadius: 18,
-            offset: Offset(0, 8),
+            offset: Offset(0, 6),
           ),
         ],
       ),
@@ -241,7 +243,7 @@ class _PreviewControls extends StatelessWidget {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF0F172A),
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
@@ -249,7 +251,7 @@ class _PreviewControls extends StatelessWidget {
             'Choose a resume template and export the final PDF.',
             style: TextStyle(
               fontSize: 14,
-              color: Color(0xFF64748B),
+              color: AppColors.textSecondary,
               height: 1.4,
             ),
           ),
@@ -259,7 +261,7 @@ class _PreviewControls extends StatelessWidget {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF334155),
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
@@ -276,14 +278,14 @@ class _PreviewControls extends StatelessWidget {
             onChanged: isLoading ? null : onTemplateChanged,
             decoration: InputDecoration(
               filled: true,
-              fillColor: const Color(0xFFF8FAFC),
+              fillColor: AppColors.secondarySurface,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: AppColors.border),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: AppColors.border),
               ),
             ),
           ),
@@ -337,10 +339,10 @@ class _ResumePdfPreview extends StatelessWidget {
           decoration: BoxDecoration(
             color: _backgroundColor(template),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFD1D5DB)),
+            border: Border.all(color: AppColors.border),
             boxShadow: const [
               BoxShadow(
-                color: Color(0x140F172A),
+                color: AppColors.shadowCard,
                 blurRadius: 24,
                 offset: Offset(0, 10),
               ),
@@ -386,7 +388,7 @@ class _ResumePdfPreview extends StatelessWidget {
   Color _backgroundColor(ResumeTemplate template) {
     switch (template) {
       case ResumeTemplate.classic:
-        return Colors.white;
+        return AppColors.white;
       case ResumeTemplate.modern:
         return const Color(0xFFFCFCFF);
       case ResumeTemplate.minimal:
@@ -420,14 +422,14 @@ class _ClassicResumeLayout extends StatelessWidget {
           style: const TextStyle(
             fontSize: 30,
             fontWeight: FontWeight.w800,
-            color: Color(0xFF0F172A),
+            color: AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
         const Divider(height: 28, thickness: 1.2),
         _PreviewSection(
           title: 'Professional Summary',
-          color: const Color(0xFF0F172A),
+          color: AppColors.textPrimary,
           child: Text(
             personalSummary.trim().isEmpty
                 ? 'Your personal summary will appear here.'
@@ -435,14 +437,14 @@ class _ClassicResumeLayout extends StatelessWidget {
             style: const TextStyle(
               fontSize: 14,
               height: 1.55,
-              color: Color(0xFF334155),
+              color: AppColors.textSecondary,
             ),
           ),
         ),
         const SizedBox(height: 18),
         _PreviewSection(
           title: 'Work Experience',
-          color: const Color(0xFF0F172A),
+          color: AppColors.textPrimary,
           child: workExperiences.isEmpty
               ? const _PreviewEmptyState(
                   message: 'No work experience added yet.',
@@ -461,7 +463,7 @@ class _ClassicResumeLayout extends StatelessWidget {
         const SizedBox(height: 18),
         _PreviewSection(
           title: 'Education',
-          color: const Color(0xFF0F172A),
+          color: AppColors.textPrimary,
           child: educations.isEmpty
               ? const _PreviewEmptyState(
                   message: 'No education added yet.',
@@ -480,7 +482,7 @@ class _ClassicResumeLayout extends StatelessWidget {
         const SizedBox(height: 18),
         _PreviewSection(
           title: 'Skills',
-          color: const Color(0xFF0F172A),
+          color: AppColors.textPrimary,
           child: _SkillWrap(skills: skills),
         ),
       ],
@@ -513,7 +515,7 @@ class _ModernResumeLayout extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF6D5EF8), Color(0xFF8B7CFF)],
+              colors: [AppColors.primary, AppColors.primaryDark],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -524,14 +526,14 @@ class _ModernResumeLayout extends StatelessWidget {
             style: const TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w800,
-              color: Colors.white,
+              color: AppColors.textOnPrimary,
             ),
           ),
         ),
         const SizedBox(height: 20),
         _PreviewSection(
           title: 'Summary',
-          color: const Color(0xFF6D5EF8),
+          color: AppColors.primary,
           child: Text(
             personalSummary.trim().isEmpty
                 ? 'Your personal summary will appear here.'
@@ -539,14 +541,14 @@ class _ModernResumeLayout extends StatelessWidget {
             style: const TextStyle(
               fontSize: 14,
               height: 1.55,
-              color: Color(0xFF334155),
+              color: AppColors.textSecondary,
             ),
           ),
         ),
         const SizedBox(height: 18),
         _PreviewSection(
           title: 'Experience',
-          color: const Color(0xFF6D5EF8),
+          color: AppColors.primary,
           child: workExperiences.isEmpty
               ? const _PreviewEmptyState(
                   message: 'No work experience added yet.',
@@ -565,7 +567,7 @@ class _ModernResumeLayout extends StatelessWidget {
         const SizedBox(height: 18),
         _PreviewSection(
           title: 'Education',
-          color: const Color(0xFF6D5EF8),
+          color: AppColors.primary,
           child: educations.isEmpty
               ? const _PreviewEmptyState(
                   message: 'No education added yet.',
@@ -584,7 +586,7 @@ class _ModernResumeLayout extends StatelessWidget {
         const SizedBox(height: 18),
         _PreviewSection(
           title: 'Skills',
-          color: const Color(0xFF6D5EF8),
+          color: AppColors.primary,
           child: _SkillWrap(skills: skills, accent: true),
         ),
       ],
@@ -617,14 +619,14 @@ class _MinimalResumeLayout extends StatelessWidget {
           style: const TextStyle(
             fontSize: 26,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF111827),
+            color: AppColors.textPrimary,
             letterSpacing: -0.3,
           ),
         ),
         const SizedBox(height: 20),
         _PreviewSection(
           title: 'Summary',
-          color: const Color(0xFF374151),
+          color: AppColors.textSecondary,
           child: Text(
             personalSummary.trim().isEmpty
                 ? 'Your personal summary will appear here.'
@@ -632,14 +634,14 @@ class _MinimalResumeLayout extends StatelessWidget {
             style: const TextStyle(
               fontSize: 14,
               height: 1.65,
-              color: Color(0xFF4B5563),
+              color: AppColors.textSecondary,
             ),
           ),
         ),
         const SizedBox(height: 18),
         _PreviewSection(
           title: 'Experience',
-          color: const Color(0xFF374151),
+          color: AppColors.textSecondary,
           child: workExperiences.isEmpty
               ? const _PreviewEmptyState(
                   message: 'No work experience added yet.',
@@ -658,7 +660,7 @@ class _MinimalResumeLayout extends StatelessWidget {
         const SizedBox(height: 18),
         _PreviewSection(
           title: 'Education',
-          color: const Color(0xFF374151),
+          color: AppColors.textSecondary,
           child: educations.isEmpty
               ? const _PreviewEmptyState(
                   message: 'No education added yet.',
@@ -677,7 +679,7 @@ class _MinimalResumeLayout extends StatelessWidget {
         const SizedBox(height: 18),
         _PreviewSection(
           title: 'Skills',
-          color: const Color(0xFF374151),
+          color: AppColors.textSecondary,
           child: _SkillWrap(skills: skills, minimal: true),
         ),
       ],
@@ -730,7 +732,7 @@ class _PreviewEmptyState extends StatelessWidget {
       message,
       style: const TextStyle(
         fontSize: 14,
-        color: Color(0xFF64748B),
+        color: AppColors.textSecondary,
       ),
     );
   }
@@ -755,8 +757,7 @@ class _PreviewWorkItem extends StatelessWidget {
       item.isCurrentRole,
     );
 
-    final bulletColor =
-        accent ? const Color(0xFF6D5EF8) : const Color(0xFF334155);
+    final bulletColor = accent ? AppColors.primary : AppColors.textSecondary;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -766,7 +767,7 @@ class _PreviewWorkItem extends StatelessWidget {
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
-            color: minimal ? const Color(0xFF111827) : const Color(0xFF0F172A),
+            color: AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 4),
@@ -774,7 +775,7 @@ class _PreviewWorkItem extends StatelessWidget {
           '${item.company} • ${item.location}',
           style: const TextStyle(
             fontSize: 14,
-            color: Color(0xFF475569),
+            color: AppColors.textSecondary,
           ),
         ),
         const SizedBox(height: 4),
@@ -782,7 +783,7 @@ class _PreviewWorkItem extends StatelessWidget {
           dateText,
           style: const TextStyle(
             fontSize: 13,
-            color: Color(0xFF64748B),
+            color: AppColors.textSecondary,
           ),
         ),
         if ((item.bulletPoints as List).isNotEmpty) ...[
@@ -808,7 +809,7 @@ class _PreviewWorkItem extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 14,
                         height: 1.45,
-                        color: Color(0xFF334155),
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ),
@@ -839,7 +840,7 @@ class _PreviewEducationItem extends StatelessWidget {
           style: const TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF0F172A),
+            color: AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 4),
@@ -847,7 +848,7 @@ class _PreviewEducationItem extends StatelessWidget {
           '${item.school} • ${item.field}',
           style: const TextStyle(
             fontSize: 14,
-            color: Color(0xFF475569),
+            color: AppColors.textSecondary,
           ),
         ),
         const SizedBox(height: 4),
@@ -855,7 +856,7 @@ class _PreviewEducationItem extends StatelessWidget {
           'Graduation: ${_formatMonthYear(item.graduationDate)}${item.gpa != null ? ' • GPA: ${item.gpa}' : ''}',
           style: const TextStyle(
             fontSize: 13,
-            color: Color(0xFF64748B),
+            color: AppColors.textSecondary,
           ),
         ),
       ],
@@ -883,13 +884,12 @@ class _SkillWrap extends StatelessWidget {
     }
 
     final background = accent
-        ? const Color(0xFFEDE9FE)
+        ? AppColors.primaryLight
         : minimal
-            ? const Color(0xFFF9FAFB)
-            : const Color(0xFFF1F5F9);
+            ? AppColors.secondarySurface
+            : AppColors.secondarySurface;
 
-    final textColor =
-        accent ? const Color(0xFF5B21B6) : const Color(0xFF334155);
+    final textColor = accent ? AppColors.primaryDark : AppColors.textSecondary;
 
     return Wrap(
       spacing: 8,
@@ -900,7 +900,7 @@ class _SkillWrap extends StatelessWidget {
           decoration: BoxDecoration(
             color: background,
             borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(color: AppColors.border),
           ),
           child: Text(
             '${skill.name} • ${skill.category}',

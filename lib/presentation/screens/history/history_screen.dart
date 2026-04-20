@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:resume_labs/injection/injection_container.dart';
 
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_sizes.dart';
+import '../../../core/errors/failure.dart';
 import '../../../domain/entities/resume.dart';
 import '../../providers/resume/resume_form_provider.dart';
 import '../../providers/resume/resume_list_provider.dart';
@@ -23,8 +26,8 @@ class HistoryScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Resume History'),
-        centerTitle: true,
+        title: const Text('My Resumes'),
+        centerTitle: false,
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -36,13 +39,13 @@ class HistoryScreen extends ConsumerWidget {
             if (resumes.isEmpty) {
               return ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(AppSizes.screenPadding),
                 children: [
                   const SizedBox(height: 80),
                   const Icon(
                     Icons.description_outlined,
                     size: 72,
-                    color: Color(0xFF94A3B8),
+                    color: AppColors.textTertiary,
                   ),
                   const SizedBox(height: 20),
                   const Text(
@@ -51,7 +54,7 @@ class HistoryScreen extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF0F172A),
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -60,7 +63,7 @@ class HistoryScreen extends ConsumerWidget {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
-                      color: Color(0xFF64748B),
+                      color: AppColors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -76,66 +79,40 @@ class HistoryScreen extends ConsumerWidget {
               );
             }
 
-            return ListView.separated(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
-              itemCount: resumes.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final resume = resumes[index];
-
-                return Dismissible(
-                  key: ValueKey(resume.id),
-                  direction: DismissDirection.endToStart,
-                  confirmDismiss: (_) => _showDeleteConfirmationDialog(
-                    context,
-                    resume: resume,
-                    ref: ref,
-                  ),
-                  background: Container(
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFDC2626),
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: const Icon(
-                      Icons.delete_outline,
-                      color: Colors.white,
-                    ),
-                  ),
-                  child: _ResumeHistoryCard(
-                    resume: resume,
-                    onTap: () {
-                      ref.read(resumeFormProvider.notifier).loadResume(resume);
-                      context.push(PreviewScreen.routePath);
-                    },
-                    onEdit: () {
-                      ref.read(resumeFormProvider.notifier).loadResume(resume);
-                      context.push(BuilderScreen.routePath);
-                    },
-                    onExport: () {
-                      ref.read(resumeFormProvider.notifier).loadResume(resume);
-                      context.push(PreviewScreen.routePath);
-                    },
-                    onDelete: () async {
-                      final confirmed = await _showDeleteConfirmationDialog(
-                        context,
-                        resume: resume,
-                        ref: ref,
-                      );
-                      if (confirmed == true) {
-                        ref.invalidate(resumeListProvider);
-                      }
-                    },
-                  ),
-                );
+            return _HistoryList(
+              resumes: resumes,
+              onTapResume: (resume) {
+                ref.read(resumeFormProvider.notifier).loadResume(resume);
+                context.push(PreviewScreen.routePath);
               },
+              onEditResume: (resume) {
+                ref.read(resumeFormProvider.notifier).loadResume(resume);
+                context.push(BuilderScreen.routePath);
+              },
+              onExportResume: (resume) {
+                ref.read(resumeFormProvider.notifier).loadResume(resume);
+                context.push(PreviewScreen.routePath);
+              },
+              onDeleteResume: (resume) async {
+                final confirmed = await _showDeleteConfirmationDialog(
+                  context,
+                  resume: resume,
+                  ref: ref,
+                );
+                if (confirmed == true) {
+                  ref.invalidate(resumeListProvider);
+                }
+              },
+              confirmDismiss: (resume) => _showDeleteConfirmationDialog(
+                context,
+                resume: resume,
+                ref: ref,
+              ),
             );
           },
           loading: () => ListView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSizes.lg),
             children: const [
               SizedBox(height: 40),
               Center(child: CircularProgressIndicator()),
@@ -143,13 +120,13 @@ class HistoryScreen extends ConsumerWidget {
           ),
           error: (error, _) => ListView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(AppSizes.screenPadding),
             children: [
               const SizedBox(height: 80),
               const Icon(
                 Icons.error_outline_rounded,
                 size: 72,
-                color: Color(0xFFDC2626),
+                color: AppColors.error,
               ),
               const SizedBox(height: 20),
               const Text(
@@ -158,16 +135,18 @@ class HistoryScreen extends ConsumerWidget {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF0F172A),
+                  color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                error.toString(),
+                error is Failure
+                    ? error.message
+                    : 'Something went wrong. Please try again.',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 14,
-                  color: Color(0xFF64748B),
+                  color: AppColors.textSecondary,
                 ),
               ),
               const SizedBox(height: 24),
@@ -245,7 +224,7 @@ class HistoryScreen extends ConsumerWidget {
             },
             child: const Text(
               'Delete',
-              style: TextStyle(color: Color(0xFFDC2626)),
+              style: TextStyle(color: AppColors.error),
             ),
           ),
         ],
@@ -279,20 +258,20 @@ class _ResumeHistoryCard extends StatelessWidget {
       label: 'Resume $title',
       hint: 'Tap to preview. Use the menu for edit, export, or delete.',
       child: InkWell(
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
         onTap: onTap,
         onLongPress: () => _showActionSheet(context),
         child: Container(
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            color: AppColors.screenSurface,
+            borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+            border: Border.all(color: AppColors.border),
             boxShadow: const [
               BoxShadow(
-                color: Color(0x140F172A),
+                color: AppColors.shadowCard,
                 blurRadius: 18,
-                offset: Offset(0, 8),
+                offset: Offset(0, 6),
               ),
             ],
           ),
@@ -303,12 +282,12 @@ class _ResumeHistoryCard extends StatelessWidget {
                 width: 46,
                 height: 46,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEDE9FE),
+                  color: AppColors.primaryLight,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Icon(
                   Icons.description_outlined,
-                  color: Color(0xFF6D5EF8),
+                  color: AppColors.primary,
                 ),
               ),
               const SizedBox(width: 14),
@@ -321,7 +300,7 @@ class _ResumeHistoryCard extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF0F172A),
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -329,7 +308,7 @@ class _ResumeHistoryCard extends StatelessWidget {
                       'Created: ${_formatDateTime(resume.createdAt)}',
                       style: const TextStyle(
                         fontSize: 13,
-                        color: Color(0xFF64748B),
+                        color: AppColors.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -337,7 +316,7 @@ class _ResumeHistoryCard extends StatelessWidget {
                       'Modified: ${_formatDateTime(resume.updatedAt)}',
                       style: const TextStyle(
                         fontSize: 13,
-                        color: Color(0xFF64748B),
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],
@@ -384,6 +363,7 @@ class _ResumeHistoryCard extends StatelessWidget {
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      backgroundColor: AppColors.screenSurface,
       builder: (_) => SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
@@ -409,11 +389,11 @@ class _ResumeHistoryCard extends StatelessWidget {
               ListTile(
                 leading: const Icon(
                   Icons.delete_outline,
-                  color: Color(0xFFDC2626),
+                  color: AppColors.error,
                 ),
                 title: const Text(
                   'Delete',
-                  style: TextStyle(color: Color(0xFFDC2626)),
+                  style: TextStyle(color: AppColors.error),
                 ),
                 onTap: () {
                   Navigator.of(context).pop();
@@ -423,6 +403,150 @@ class _ResumeHistoryCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _HistoryList extends StatefulWidget {
+  final List<Resume> resumes;
+  final ValueChanged<Resume> onTapResume;
+  final ValueChanged<Resume> onEditResume;
+  final ValueChanged<Resume> onExportResume;
+  final ValueChanged<Resume> onDeleteResume;
+  final Future<bool?> Function(Resume resume) confirmDismiss;
+
+  const _HistoryList({
+    required this.resumes,
+    required this.onTapResume,
+    required this.onEditResume,
+    required this.onExportResume,
+    required this.onDeleteResume,
+    required this.confirmDismiss,
+  });
+
+  @override
+  State<_HistoryList> createState() => _HistoryListState();
+}
+
+class _HistoryListState extends State<_HistoryList> {
+  final _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final query = _searchController.text.trim().toLowerCase();
+
+    final filtered = query.isEmpty
+        ? widget.resumes
+        : widget.resumes
+            .where(
+              (r) => r.title.trim().toLowerCase().contains(query),
+            )
+            .toList();
+
+    return ListView.separated(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(AppSizes.lg),
+      itemCount: filtered.length + 1,
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        if (index == 0) {
+          return _SearchBar(
+            controller: _searchController,
+            onChanged: (_) => setState(() {}),
+          );
+        }
+
+        final resume = filtered[index - 1];
+
+        return Dismissible(
+          key: ValueKey(resume.id),
+          direction: DismissDirection.endToStart,
+          confirmDismiss: (_) => widget.confirmDismiss(resume),
+          background: Container(
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            decoration: BoxDecoration(
+              color: AppColors.error,
+              borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+            ),
+            child: const Icon(
+              Icons.delete_outline,
+              color: AppColors.white,
+            ),
+          ),
+          child: _ResumeHistoryCard(
+            resume: resume,
+            onTap: () => widget.onTapResume(resume),
+            onEdit: () => widget.onEditResume(resume),
+            onExport: () => widget.onExportResume(resume),
+            onDelete: () => widget.onDeleteResume(resume),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _SearchBar extends StatelessWidget {
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+
+  const _SearchBar({
+    required this.controller,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 40,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: AppColors.secondarySurface,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.search_rounded,
+            size: 20,
+            color: AppColors.textSecondary,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: TextField(
+              controller: controller,
+              onChanged: onChanged,
+              textInputAction: TextInputAction.search,
+              decoration: const InputDecoration(
+                isDense: true,
+                border: InputBorder.none,
+                hintText: 'Search resumes',
+              ),
+            ),
+          ),
+          if (controller.text.trim().isNotEmpty)
+            IconButton(
+              tooltip: 'Clear',
+              onPressed: () {
+                controller.clear();
+                onChanged('');
+              },
+              icon: const Icon(
+                Icons.close_rounded,
+                size: 18,
+                color: AppColors.textSecondary,
+              ),
+            ),
+        ],
       ),
     );
   }

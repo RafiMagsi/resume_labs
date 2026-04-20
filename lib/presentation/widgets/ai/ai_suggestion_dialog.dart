@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_sizes.dart';
 import '../shared/app_button.dart';
 
 class AiSuggestionDialog extends StatelessWidget {
@@ -55,14 +57,14 @@ class AiSuggestionDialog extends StatelessWidget {
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AppSizes.dialogRadius),
       ),
       child: Container(
         padding: const EdgeInsets.all(20),
         constraints: const BoxConstraints(maxWidth: 560),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
+          color: AppColors.screenSurface,
+          borderRadius: BorderRadius.circular(AppSizes.dialogRadius),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -72,7 +74,7 @@ class AiSuggestionDialog extends StatelessWidget {
               children: [
                 Icon(
                   Icons.auto_awesome_rounded,
-                  color: Color(0xFF6D5EF8),
+                  color: AppColors.primary,
                 ),
                 SizedBox(width: 10),
                 Expanded(
@@ -81,7 +83,7 @@ class AiSuggestionDialog extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF0F172A),
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ),
@@ -93,7 +95,7 @@ class AiSuggestionDialog extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF0F172A),
+                color: AppColors.textPrimary,
               ),
             ),
             if (description != null) ...[
@@ -102,7 +104,7 @@ class AiSuggestionDialog extends StatelessWidget {
                 description!,
                 style: const TextStyle(
                   fontSize: 14,
-                  color: Color(0xFF64748B),
+                  color: AppColors.textSecondary,
                   height: 1.45,
                 ),
               ),
@@ -112,16 +114,16 @@ class AiSuggestionDialog extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFC),
+                color: AppColors.secondarySurface,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
+                border: Border.all(color: AppColors.border),
               ),
               child: SelectableText(
                 suggestion,
                 style: const TextStyle(
                   fontSize: 14,
                   height: 1.55,
-                  color: Color(0xFF334155),
+                  color: AppColors.textSecondary,
                 ),
               ),
             ),

@@ -73,6 +73,8 @@ class App extends ConsumerWidget {
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: AppColors.white,
+          isDense: true,
+          constraints: const BoxConstraints(minHeight: AppSizes.inputHeight),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
             borderSide: const BorderSide(color: AppColors.border),
