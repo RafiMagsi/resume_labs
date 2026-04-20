@@ -56,6 +56,8 @@ abstract final class AppColors {
 
   // Premium / paywall
   static const Color premiumGold = Color(0xFFFFB800);
+  static const Color premiumGoldStart = Color(0xFFFFB800);
+  static const Color premiumGoldEnd = Color(0xFFFFA500);
   static const Color premiumGradientStart = Color(0xFFFFB800);
   static const Color premiumGradientEnd = Color(0xFFFFA500);
 

@@ -13,7 +13,9 @@ import '../../widgets/shared/app_button.dart';
 import '../../widgets/resume/resume_card.dart';
 import '../resume_builder/builder_screen.dart';
 import '../resume_builder/preview_screen.dart';
+import '../resume_optimizer/resume_optimizer_screen.dart';
 import '../../widgets/shared/error_dialog.dart';
+import '../../widgets/shared/user_profile_sheet.dart';
 
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
@@ -29,6 +31,34 @@ class HistoryScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('My Resumes'),
         centerTitle: false,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: Center(
+              child: ElevatedButton.icon(
+                onPressed: () => context.push(ResumeOptimizerScreen.routePath),
+                icon: const Icon(Icons.auto_awesome_rounded, size: 18),
+                label: const Text(
+                  'AI Resume',
+                  style: TextStyle(fontSize: 13),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.person_rounded),
+            onPressed: () => UserProfileSheet.show(context),
+            tooltip: 'Account',
+          ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: () async {

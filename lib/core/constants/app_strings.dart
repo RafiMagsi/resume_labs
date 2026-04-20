@@ -5,7 +5,9 @@ abstract final class AppStrings {
   static const String usersCollection = 'users';
 
   // In-App Purchase
-  static const String premiumProductId = 'resume_labs_premium';
+  static const String creditsProductId = 'resume_labs_credits_10';
+  static const String creditsPrice = '\$5.99';
+  static const String creditsAmount = '10';
 
   // Generic
   static const String ok = 'OK';
@@ -43,16 +45,30 @@ abstract final class AppStrings {
   static const String authError =
       'Authentication failed. Please check your credentials.';
 
-  // Paywall
-  static const String unlockPremium = 'Unlock Premium';
-  static const String premiumFeatures = 'Premium Features';
-  static const String allTemplates = 'All 6 Professional Templates';
-  static const String aiContentGeneration = 'AI-powered content generation';
-  static const String unlimitedResumes = 'Unlimited resumes';
-  static const String oneTimePurchase = 'One-time purchase, forever';
-  static const String upgradeToPremium = 'Upgrade to Premium';
-  static const String restorePurchase = 'Restore Purchase';
-  static const String purchaseSuccess = 'Welcome to Premium!';
+  // Credits & Paywall
+  static const String unlockCredits = 'Buy Resume Optimizations';
+  static const String creditsFeature = 'AI-Powered Resume Optimization';
+  static const String creditsDescription = 'Get professional resume recommendations powered by AI';
+  static const String buyCredits = 'Buy 10 Optimizations';
+  static const String restoreCredits = 'Restore Purchases';
+  static const String creditsRemaining = 'Optimizations remaining';
+  static const String noCreditsError = 'No credits remaining';
+  static const String buyNow = 'Buy Now';
+  static const String purchaseSuccess = 'Credits added successfully!';
   static const String purchaseError = 'Failed to complete purchase';
   static const String restoreError = 'Failed to restore purchases';
+
+  // Resume Optimizer
+  static const String optimizeResume = 'Optimize Resume with AI';
+  static const String pasteYourResume = 'Paste or upload your existing resume';
+  static const String optimize = 'Optimize';
+  static const String optimizing = 'Optimizing your resume...';
+  static const String optimizationSuccess = 'Resume optimized successfully!';
+  static const String optimizedResume = 'Optimized Resume';
+  static const String originalResume = 'Original Resume';
+  static const String copy = 'Copy';
+  static const String importToResume = 'Import to Resume';
+  static const String optimizeAnother = 'Optimize Another Resume';
+  static const String resumeTooShort = 'Please enter a longer resume text';
+  static const String resumeOptimizationFailed = 'Failed to optimize resume';
 }

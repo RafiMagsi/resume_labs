@@ -7,9 +7,11 @@ import '../../models/user_profile_model.dart';
 abstract interface class FirestoreUserDatasource {
   Future<UserProfileModel> getUserDoc(String uid);
 
-  Future<void> setPremiumStatus(String uid, bool isPremium);
+  Stream<int> streamCredits(String uid);
 
-  Stream<bool> streamPremiumStatus(String uid);
+  Future<void> addCredits(String uid, int amount);
+
+  Future<void> deductCredit(String uid);
 
   Future<void> createUserDoc({
     required String uid,
@@ -39,32 +41,47 @@ class FirestoreUserDatasourceImpl implements FirestoreUserDatasource {
   }
 
   @override
-  Future<void> setPremiumStatus(String uid, bool isPremium) async {
-    try {
-      await _firestore
-          .collection(AppStrings.usersCollection)
-          .doc(uid)
-          .update({
-        'isPremium': isPremium,
-      });
-    } catch (e) {
-      throw AppException('Failed to update premium status: $e');
-    }
-  }
-
-  @override
-  Stream<bool> streamPremiumStatus(String uid) {
+  Stream<int> streamCredits(String uid) {
     return _firestore
         .collection(AppStrings.usersCollection)
         .doc(uid)
         .snapshots()
         .map((doc) {
-          if (!doc.exists) return false;
-          return doc.data()?['isPremium'] as bool? ?? false;
+          if (!doc.exists) return 0;
+          return doc.data()?['availableCredits'] as int? ?? 0;
         })
         .handleError((e) {
-          throw AppException('Failed to stream premium status: $e');
+          throw AppException('Failed to stream credits: $e');
         });
+  }
+
+  @override
+  Future<void> addCredits(String uid, int amount) async {
+    try {
+      await _firestore
+          .collection(AppStrings.usersCollection)
+          .doc(uid)
+          .update({
+        'availableCredits': FieldValue.increment(amount),
+        'lastPurchaseDate': DateTime.now(),
+      });
+    } catch (e) {
+      throw AppException('Failed to add credits: $e');
+    }
+  }
+
+  @override
+  Future<void> deductCredit(String uid) async {
+    try {
+      await _firestore
+          .collection(AppStrings.usersCollection)
+          .doc(uid)
+          .update({
+        'availableCredits': FieldValue.increment(-1),
+      });
+    } catch (e) {
+      throw AppException('Failed to deduct credit: $e');
+    }
   }
 
   @override
@@ -80,7 +97,7 @@ class FirestoreUserDatasourceImpl implements FirestoreUserDatasource {
         'uid': uid,
         'email': email,
         'createdAt': DateTime.now(),
-        'isPremium': false,
+        'availableCredits': 0,
       });
     } catch (e) {
       throw AppException('Failed to create user document: $e');

@@ -19,17 +19,17 @@ class PurchaseRepositoryImpl implements PurchaseRepository {
   }) : _userDatasource = userDatasource;
 
   @override
-  Stream<bool> get premiumStatusStream {
+  Stream<int> get creditsStream {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      return Stream.value(false);
+      return Stream.value(0);
     }
 
-    return _userDatasource.streamPremiumStatus(user.uid);
+    return _userDatasource.streamCredits(user.uid);
   }
 
   @override
-  Future<Either<Failure, void>> purchasePremium() async {
+  Future<Either<Failure, void>> purchaseCredits() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
@@ -49,12 +49,30 @@ class PurchaseRepositoryImpl implements PurchaseRepository {
         return Left(ServerFailure('Purchase failed'));
       }
 
-      await _userDatasource.setPremiumStatus(user.uid, true);
+      // Add 10 credits to user after successful purchase
+      await _userDatasource.addCredits(user.uid, 10);
       return Right(null);
     } on AppException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {
       return Left(ServerFailure('Purchase error: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> deductCredit() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        return Left(AuthFailure('User not authenticated'));
+      }
+
+      await _userDatasource.deductCredit(user.uid);
+      return Right(null);
+    } on AppException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure('Failed to deduct credit: $e'));
     }
   }
 
@@ -69,14 +87,18 @@ class PurchaseRepositoryImpl implements PurchaseRepository {
       await _inAppPurchase.restorePurchases();
 
       // Listen to purchase stream to detect restored purchases
-      var hasPremium = false;
+      int restoredCount = 0;
       await _inAppPurchase.purchaseStream.first.then((purchases) {
-        hasPremium = purchases.any(
-          (p) => p.productID == AppStrings.premiumProductId,
-        );
+        restoredCount = purchases
+            .where((p) => p.productID == AppStrings.creditsProductId)
+            .length;
       });
 
-      await _userDatasource.setPremiumStatus(user.uid, hasPremium);
+      // Add 10 credits for each restored purchase
+      if (restoredCount > 0) {
+        await _userDatasource.addCredits(user.uid, 10 * restoredCount);
+      }
+
       return Right(null);
     } on AppException catch (e) {
       return Left(ServerFailure(e.message));
@@ -93,7 +115,7 @@ class PurchaseRepositoryImpl implements PurchaseRepository {
       }
 
       final response = await _inAppPurchase.queryProductDetails(
-        {AppStrings.premiumProductId},
+        {AppStrings.creditsProductId},
       );
 
       if (response.productDetails.isEmpty) {

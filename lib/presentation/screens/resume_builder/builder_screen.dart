@@ -18,9 +18,6 @@ import '../../widgets/shared/photo_picker.dart';
 import '../../providers/ai/ai_suggestions_provider.dart';
 import '../../widgets/ai/ai_suggestion_dialog.dart';
 import '../../widgets/shared/error_dialog.dart';
-import '../../widgets/shared/paywall_bottom_sheet.dart';
-import '../../widgets/shared/premium_gate.dart';
-import '../../providers/purchase/premium_status_provider.dart';
 import '../history/history_screen.dart';
 
 class BuilderScreen extends ConsumerStatefulWidget {
@@ -136,10 +133,6 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
   }
 
   Future<void> _handleGenerateSummary() async {
-    if (!PremiumGate.checkPremiumOrShowPaywall(context, ref)) {
-      return;
-    }
-
     final formState = ref.read(resumeFormProvider);
 
     final allBullets =
@@ -197,10 +190,6 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
   }
 
   Future<String?> _handleImproveBullet(String bullet) async {
-    if (!PremiumGate.checkPremiumOrShowPaywall(context, ref)) {
-      return null;
-    }
-
     await ref.read(aiSuggestionsProvider.notifier).improveBullet(
           bullet: bullet,
           jobTitle: ref.read(resumeFormProvider).title.trim(),
@@ -240,10 +229,6 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
   }
 
   Future<List<String>?> _handleSuggestSkills() async {
-    if (!PremiumGate.checkPremiumOrShowPaywall(context, ref)) {
-      return null;
-    }
-
     final formState = ref.read(resumeFormProvider);
 
     await ref.read(aiSuggestionsProvider.notifier).suggestSkills(

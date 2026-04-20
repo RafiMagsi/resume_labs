@@ -5,8 +5,13 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../injection/injection_container.dart';
 
-class PaywallBottomSheet extends StatelessWidget {
-  const PaywallBottomSheet({super.key});
+class CreditsPaywall extends ConsumerWidget {
+  final VoidCallback onClose;
+
+  const CreditsPaywall({
+    super.key,
+    required this.onClose,
+  });
 
   static void show(BuildContext context, WidgetRef ref) {
     showModalBottomSheet<void>(
@@ -15,39 +20,37 @@ class PaywallBottomSheet extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) => const PaywallBottomSheet(),
+      builder: (_) => CreditsPaywall(
+        onClose: () => Navigator.pop(context),
+      ),
     );
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Consumer(
-      builder: (context, ref, _) {
-        return SingleChildScrollView(
-          child: Container(
-            padding: EdgeInsets.fromLTRB(
-              16,
-              24,
-              16,
-              24 + MediaQuery.of(context).viewInsets.bottom,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildHeader(context),
-                const SizedBox(height: 24),
-                _buildFeatureList(),
-                const SizedBox(height: 24),
-                _buildPriceSection(context),
-                const SizedBox(height: 16),
-                _buildUpgradeButton(context, ref),
-                const SizedBox(height: 12),
-                _buildRestoreButton(context, ref),
-              ],
-            ),
-          ),
-        );
-      },
+  Widget build(BuildContext context, WidgetRef ref) {
+    return SingleChildScrollView(
+      child: Container(
+        padding: EdgeInsets.fromLTRB(
+          16,
+          24,
+          16,
+          24 + MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildHeader(context),
+            const SizedBox(height: 24),
+            _buildFeatureList(),
+            const SizedBox(height: 24),
+            _buildPriceSection(context),
+            const SizedBox(height: 16),
+            _buildBuyButton(context, ref),
+            const SizedBox(height: 12),
+            _buildRestoreButton(context, ref),
+          ],
+        ),
+      ),
     );
   }
 
@@ -60,20 +63,20 @@ class PaywallBottomSheet extends StatelessWidget {
             shape: BoxShape.circle,
             gradient: LinearGradient(
               colors: [
-                AppColors.premiumGradientStart,
-                AppColors.premiumGradientEnd,
+                AppColors.premiumGoldStart,
+                AppColors.premiumGoldEnd,
               ],
             ),
           ),
           child: const Icon(
-            Icons.star_rounded,
+            Icons.auto_awesome_rounded,
             size: 32,
             color: AppColors.white,
           ),
         ),
         const SizedBox(height: 16),
         Text(
-          AppStrings.unlockPremium,
+          AppStrings.unlockCredits,
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
@@ -87,11 +90,15 @@ class PaywallBottomSheet extends StatelessWidget {
   Widget _buildFeatureList() {
     return Column(
       children: [
-        _buildFeatureItem(Icons.dashboard_rounded, AppStrings.allTemplates),
+        _buildFeatureItem(
+          Icons.auto_awesome_rounded,
+          AppStrings.creditsFeature,
+        ),
         const SizedBox(height: 12),
-        _buildFeatureItem(Icons.auto_awesome_rounded, AppStrings.aiContentGeneration),
-        const SizedBox(height: 12),
-        _buildFeatureItem(Icons.description_rounded, AppStrings.unlimitedResumes),
+        _buildFeatureItem(
+          Icons.description_rounded,
+          AppStrings.creditsDescription,
+        ),
       ],
     );
   }
@@ -129,17 +136,38 @@ class PaywallBottomSheet extends StatelessWidget {
       ),
       child: Column(
         children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                AppStrings.creditsAmount,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primary,
+                    ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                AppStrings.optimizationSuccess,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
           Text(
-            '₹99.00',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: AppColors.primary,
-            ),
+            AppStrings.creditsPrice,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
+                ),
           ),
           const SizedBox(height: 4),
-          Text(
-            AppStrings.oneTimePurchase,
-            style: const TextStyle(
+          const Text(
+            'One-time purchase, use anytime',
+            style: TextStyle(
               fontSize: 12,
               color: AppColors.textSecondary,
             ),
@@ -149,7 +177,7 @@ class PaywallBottomSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildUpgradeButton(BuildContext context, WidgetRef ref) {
+  Widget _buildBuyButton(BuildContext context, WidgetRef ref) {
     return SizedBox(
       width: double.infinity,
       height: 48,
@@ -162,7 +190,7 @@ class PaywallBottomSheet extends StatelessWidget {
         ),
         onPressed: () => _handlePurchase(context, ref),
         child: const Text(
-          AppStrings.upgradeToPremium,
+          AppStrings.buyNow,
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -177,7 +205,7 @@ class PaywallBottomSheet extends StatelessWidget {
     return TextButton(
       onPressed: () => _handleRestore(context, ref),
       child: const Text(
-        AppStrings.restorePurchase,
+        AppStrings.restoreCredits,
         style: TextStyle(
           fontSize: 14,
           color: AppColors.textSecondary,
@@ -187,8 +215,10 @@ class PaywallBottomSheet extends StatelessWidget {
   }
 
   Future<void> _handlePurchase(BuildContext context, WidgetRef ref) async {
-    final useCase = ref.read(purchasePremiumUseCaseProvider);
+    final useCase = ref.read(purchaseCreditsUseCaseProvider);
     final result = await useCase();
+
+    if (!context.mounted) return;
 
     result.fold(
       (failure) {
@@ -197,10 +227,10 @@ class PaywallBottomSheet extends StatelessWidget {
         );
       },
       (_) {
-        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text(AppStrings.purchaseSuccess)),
         );
+        onClose();
       },
     );
   }
@@ -209,6 +239,8 @@ class PaywallBottomSheet extends StatelessWidget {
     final useCase = ref.read(restorePurchasesUseCaseProvider);
     final result = await useCase();
 
+    if (!context.mounted) return;
+
     result.fold(
       (failure) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -216,10 +248,10 @@ class PaywallBottomSheet extends StatelessWidget {
         );
       },
       (_) {
-        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Purchase restored successfully')),
+          const SnackBar(content: Text('Purchases restored successfully!')),
         );
+        onClose();
       },
     );
   }

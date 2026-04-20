@@ -43,11 +43,16 @@ import '../domain/usecases/ai/generate_summary_usecase.dart';
 import '../domain/usecases/ai/improve_bullet_usecase.dart';
 import '../domain/usecases/ai/suggest_skills_usecase.dart';
 import '../data/datasources/remote/firestore_user_datasource.dart';
+import '../data/datasources/remote/cv_optimization_datasource.dart';
 import '../data/repositories/purchase_repository_impl.dart';
+import '../data/repositories/cv_optimization_repository_impl.dart';
 import '../domain/repositories/purchase_repository.dart';
-import '../domain/usecases/purchase/check_premium_status_usecase.dart';
-import '../domain/usecases/purchase/purchase_premium_usecase.dart';
+import '../domain/repositories/cv_optimization_repository.dart';
+import '../domain/usecases/purchase/get_user_credits_usecase.dart';
+import '../domain/usecases/purchase/purchase_credits_usecase.dart';
+import '../domain/usecases/purchase/deduct_credit_usecase.dart';
 import '../domain/usecases/purchase/restore_purchases_usecase.dart';
+import '../domain/usecases/cv/optimize_cv_usecase.dart';
 
 final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
   return FirebaseAuth.instance;
@@ -218,17 +223,38 @@ final purchaseRepositoryProvider = Provider<PurchaseRepository>((ref) {
   return PurchaseRepositoryImpl(userDatasource: userDatasource);
 });
 
-final checkPremiumStatusUseCaseProvider = Provider<CheckPremiumStatusUseCase>((ref) {
+final getUserCreditsUseCaseProvider = Provider<GetUserCreditsUseCase>((ref) {
   final repository = ref.watch(purchaseRepositoryProvider);
-  return CheckPremiumStatusUseCase(repository);
+  return GetUserCreditsUseCase(repository);
 });
 
-final purchasePremiumUseCaseProvider = Provider<PurchasePremiumUseCase>((ref) {
+final purchaseCreditsUseCaseProvider = Provider<PurchaseCreditsUseCase>((ref) {
   final repository = ref.watch(purchaseRepositoryProvider);
-  return PurchasePremiumUseCase(repository);
+  return PurchaseCreditsUseCase(repository);
+});
+
+final deductCreditUseCaseProvider = Provider<DeductCreditUseCase>((ref) {
+  final repository = ref.watch(purchaseRepositoryProvider);
+  return DeductCreditUseCase(repository);
 });
 
 final restorePurchasesUseCaseProvider = Provider<RestorePurchasesUseCase>((ref) {
   final repository = ref.watch(purchaseRepositoryProvider);
   return RestorePurchasesUseCase(repository);
+});
+
+final cvOptimizationDataSourceProvider = Provider<CvOptimizationDatasource>((ref) {
+  final client = ref.watch(httpClientProvider);
+  return CvOptimizationDatasourceImpl(client);
+});
+
+final cvOptimizationRepositoryProvider = Provider<CvOptimizationRepository>((ref) {
+  final datasource = ref.watch(cvOptimizationDataSourceProvider);
+  return CvOptimizationRepositoryImpl(datasource);
+});
+
+final optimizeCvUseCaseProvider = Provider<OptimizeCvUseCase>((ref) {
+  final cvRepository = ref.watch(cvOptimizationRepositoryProvider);
+  final purchaseRepository = ref.watch(purchaseRepositoryProvider);
+  return OptimizeCvUseCase(cvRepository, purchaseRepository);
 });

@@ -8,6 +8,7 @@ import '../../presentation/providers/auth/auth_provider.dart';
 import '../../presentation/screens/auth/login_screen.dart';
 import '../../presentation/screens/auth/password_reset_screen.dart';
 import '../../presentation/screens/auth/register_screen.dart';
+import '../../presentation/screens/resume_optimizer/resume_optimizer_screen.dart';
 import '../../presentation/screens/history/history_screen.dart';
 import '../../presentation/screens/resume_builder/builder_screen.dart';
 import '../../presentation/screens/resume_builder/preview_screen.dart';
@@ -104,6 +105,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
           state: state,
           child: const PreviewScreen(),
+        ),
+      ),
+      GoRoute(
+        path: ResumeOptimizerScreen.routePath,
+        name: ResumeOptimizerScreen.routeName,
+        pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+          state: state,
+          child: const ResumeOptimizerScreen(),
         ),
       ),
     ],

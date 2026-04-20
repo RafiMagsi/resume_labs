@@ -34,6 +34,10 @@ migrate_working_dir/
 /coverage/
 .env
 DEVELOPMENT_PLAN.md
+claude/
+IMAGE_STORAGE.md
+STYLE_GUIDE.md
+DESIGN_AUDIT.md
 
 # Firebase config files (local / per-environment)
 android/app/google-services.json

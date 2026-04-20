@@ -2,26 +2,26 @@ class UserProfile {
   final String uid;
   final String email;
   final DateTime createdAt;
-  final bool isPremium;
+  final int availableCredits;
 
   const UserProfile({
     required this.uid,
     required this.email,
     required this.createdAt,
-    this.isPremium = false,
+    this.availableCredits = 0,
   });
 
   UserProfile copyWith({
     String? uid,
     String? email,
     DateTime? createdAt,
-    bool? isPremium,
+    int? availableCredits,
   }) {
     return UserProfile(
       uid: uid ?? this.uid,
       email: email ?? this.email,
       createdAt: createdAt ?? this.createdAt,
-      isPremium: isPremium ?? this.isPremium,
+      availableCredits: availableCredits ?? this.availableCredits,
     );
   }
 
@@ -33,10 +33,13 @@ class UserProfile {
         other.uid == uid &&
         other.email == email &&
         other.createdAt == createdAt &&
-        other.isPremium == isPremium;
+        other.availableCredits == availableCredits;
   }
 
   @override
   int get hashCode =>
-      uid.hashCode ^ email.hashCode ^ createdAt.hashCode ^ isPremium.hashCode;
+      uid.hashCode ^
+      email.hashCode ^
+      createdAt.hashCode ^
+      availableCredits.hashCode;
 }
