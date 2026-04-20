@@ -56,7 +56,8 @@ class ResumeCard extends StatelessWidget {
                                     if (loadingProgress == null) return child;
                                     return Shimmer.fromColors(
                                       baseColor: AppColors.border,
-                                      highlightColor: AppColors.secondarySurface,
+                                      highlightColor:
+                                          AppColors.secondarySurface,
                                       child: Container(
                                         width: 60,
                                         height: 60,
@@ -227,8 +228,8 @@ class ResumeCard extends StatelessWidget {
                           runSpacing: 2,
                           children: resume.skills.take(3).map((skill) {
                             return Container(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
                                 color: AppColors.primaryLight,
                                 borderRadius: BorderRadius.circular(3),

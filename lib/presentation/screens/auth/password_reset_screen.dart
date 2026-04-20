@@ -95,15 +95,15 @@ class _PasswordResetScreenState extends ConsumerState<PasswordResetScreen> {
   Widget build(BuildContext context) {
     final resetState = ref.watch(resetPasswordProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Reset Password'),
-        centerTitle: true,
-      ),
-      body: LoadingOverlay(
-        isLoading: resetState.isLoading,
-        message: 'Sending reset link...',
-        child: SafeArea(
+    return LoadingOverlay(
+      isLoading: resetState.isLoading,
+      message: 'Sending reset link...',
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Reset Password'),
+          centerTitle: true,
+        ),
+        body: SafeArea(
           child: GestureDetector(
             behavior: HitTestBehavior.translucent,
             onTap: () => FocusManager.instance.primaryFocus?.unfocus(),

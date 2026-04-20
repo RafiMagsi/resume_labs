@@ -145,6 +145,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
       userId: formState.userId ?? '',
       title: formState.title.trim(),
       personalSummary: formState.personalSummary.trim(),
+      photoUrl: formState.photoUrl,
       workExperiences: formState.workExperiences,
       educations: formState.educations,
       skills: formState.skills,
@@ -168,6 +169,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
       userId: formState.userId ?? '',
       title: formState.title.trim(),
       personalSummary: formState.personalSummary.trim(),
+      photoUrl: formState.photoUrl,
       workExperiences: formState.workExperiences,
       educations: formState.educations,
       skills: formState.skills,
@@ -223,6 +225,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
                 template: selectedTemplate,
                 title: formState.title,
                 personalSummary: formState.personalSummary,
+                photoUrl: formState.photoUrl,
                 workExperiences: formState.workExperiences,
                 educations: formState.educations,
                 skills: formState.skills,
@@ -406,10 +409,11 @@ class _PreviewControls extends StatelessWidget {
   }
 }
 
-class _ResumePdfPreview extends StatelessWidget {
+class _ResumePdfPreview extends ConsumerStatefulWidget {
   final ResumeTemplate template;
   final String title;
   final String personalSummary;
+  final String? photoUrl;
   final List<WorkExperience> workExperiences;
   final List<Education> educations;
   final List<Skill> skills;
@@ -420,6 +424,7 @@ class _ResumePdfPreview extends StatelessWidget {
     required this.template,
     required this.title,
     required this.personalSummary,
+    required this.photoUrl,
     required this.workExperiences,
     required this.educations,
     required this.skills,
@@ -427,30 +432,123 @@ class _ResumePdfPreview extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  ConsumerState<_ResumePdfPreview> createState() => _ResumePdfPreviewState();
+}
+
+class _ResumePdfPreviewState extends ConsumerState<_ResumePdfPreview> {
+  var _generationToken = 0;
+  var _isGenerating = false;
+
+  @override
+  void didUpdateWidget(covariant _ResumePdfPreview oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.template != widget.template) {
+      setState(() => _isGenerating = true);
+    }
+  }
+
+  Future<Uint8List> _buildPdf(PdfPageFormat _) async {
     final resume = Resume(
       id: DateTime.now().microsecondsSinceEpoch.toString(),
       userId: '',
-      title: title.trim(),
-      personalSummary: personalSummary.trim(),
-      workExperiences: workExperiences,
-      educations: educations,
-      skills: skills,
+      title: widget.title.trim(),
+      personalSummary: widget.personalSummary.trim(),
+      photoUrl: widget.photoUrl,
+      workExperiences: widget.workExperiences,
+      educations: widget.educations,
+      skills: widget.skills,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );
 
-    return PdfPreview(
-      build: (_) => buildPdfBytes(resume, template),
-      canChangeOrientation: false,
-      canChangePageFormat: false,
-      canDebug: false,
-      allowPrinting: false,
-      allowSharing: false,
-      pdfFileName:
-          resume.title.trim().isEmpty ? 'resume.pdf' : '${resume.title}.pdf',
-      initialPageFormat: PdfPageFormat.a4,
-      padding: EdgeInsets.zero,
+    final token = ++_generationToken;
+    if (!_isGenerating && mounted) {
+      setState(() => _isGenerating = true);
+    }
+
+    try {
+      return await widget.buildPdfBytes(resume, widget.template);
+    } finally {
+      if (mounted && token == _generationToken) {
+        setState(() => _isGenerating = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final fileName = widget.title.trim().isEmpty
+        ? 'resume.pdf'
+        : '${widget.title.trim()}.pdf';
+
+    return Stack(
+      children: [
+        PdfPreview(
+          // Force PdfPreview to fully rebuild on template change; otherwise it
+          // can keep showing the cached document and never re-call `build`.
+          key: ValueKey('pdf-preview-${widget.template.name}'),
+          build: _buildPdf,
+          canChangeOrientation: false,
+          canChangePageFormat: false,
+          canDebug: false,
+          allowPrinting: false,
+          allowSharing: false,
+          pdfFileName: fileName,
+          initialPageFormat: PdfPageFormat.a4,
+          padding: EdgeInsets.zero,
+        ),
+        Positioned.fill(
+          child: IgnorePointer(
+            ignoring: !_isGenerating,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 160),
+              child: _isGenerating
+                  ? Container(
+                      color: AppColors.modalBarrier,
+                      alignment: Alignment.center,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.screenSurface,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: AppColors.border),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: AppColors.shadowDialog,
+                              blurRadius: 24,
+                              offset: Offset(0, 10),
+                            ),
+                          ],
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(
+                              height: 22,
+                              width: 22,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                            SizedBox(width: 12),
+                            Text(
+                              'Loading preview...',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

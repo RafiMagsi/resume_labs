@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
@@ -90,11 +92,27 @@ class PdfService {
   /// Loads a profile photo image from a URL.
   Future<pw.ImageProvider?> _loadPhotoImage(String photoUrl) async {
     try {
-      if (photoUrl.isEmpty || !photoUrl.startsWith('http')) {
+      if (photoUrl.isEmpty) {
         return null;
       }
 
-      final response = await http.get(Uri.parse(photoUrl)).timeout(
+      final normalizedPath =
+          photoUrl.startsWith('file://') ? photoUrl.substring(7) : photoUrl;
+
+      if (!kIsWeb && !normalizedPath.startsWith('http')) {
+        final file = File(normalizedPath);
+        if (await file.exists()) {
+          final bytes = await file.readAsBytes();
+          if (bytes.isNotEmpty) {
+            return pw.MemoryImage(bytes);
+          }
+        }
+        return null;
+      }
+
+      if (!normalizedPath.startsWith('http')) return null;
+
+      final response = await http.get(Uri.parse(normalizedPath)).timeout(
             const Duration(seconds: 10),
             onTimeout: () => http.Response('timeout', 408),
           );

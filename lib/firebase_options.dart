@@ -64,7 +64,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '346453081708',
     projectId: 'resume-labs-cdc63',
     storageBucket: 'resume-labs-cdc63.firebasestorage.app',
-    iosClientId: '346453081708-42sjllvvup56b3roq5eka0gn4dd62ra8.apps.googleusercontent.com',
+    iosClientId:
+        '346453081708-42sjllvvup56b3roq5eka0gn4dd62ra8.apps.googleusercontent.com',
     iosBundleId: 'com.nextfiction.resumelabs.ai.RunnerTests',
   );
 
@@ -74,7 +75,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '346453081708',
     projectId: 'resume-labs-cdc63',
     storageBucket: 'resume-labs-cdc63.firebasestorage.app',
-    iosClientId: '346453081708-qklpc6tp71mjq2ii1oo4cbqkgbjsrj2g.apps.googleusercontent.com',
+    iosClientId:
+        '346453081708-qklpc6tp71mjq2ii1oo4cbqkgbjsrj2g.apps.googleusercontent.com',
     iosBundleId: 'com.example.resumeLabs',
   );
 
@@ -87,5 +89,4 @@ class DefaultFirebaseOptions {
     storageBucket: 'resume-labs-cdc63.firebasestorage.app',
     measurementId: 'G-65ZLSFGBJZ',
   );
-
 }

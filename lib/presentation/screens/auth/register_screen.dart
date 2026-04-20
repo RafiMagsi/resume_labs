@@ -131,15 +131,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Widget build(BuildContext context) {
     final signUpState = ref.watch(signUpProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Account'),
-        centerTitle: true,
-      ),
-      body: LoadingOverlay(
-        isLoading: signUpState.isLoading,
-        message: 'Creating your account...',
-        child: SafeArea(
+    return LoadingOverlay(
+      isLoading: signUpState.isLoading,
+      message: 'Creating your account...',
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Create Account'),
+          centerTitle: true,
+        ),
+        body: SafeArea(
           child: GestureDetector(
             behavior: HitTestBehavior.translucent,
             onTap: () => FocusManager.instance.primaryFocus?.unfocus(),

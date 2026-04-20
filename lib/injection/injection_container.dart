@@ -42,6 +42,12 @@ import '../domain/repositories/ai_repository.dart';
 import '../domain/usecases/ai/generate_summary_usecase.dart';
 import '../domain/usecases/ai/improve_bullet_usecase.dart';
 import '../domain/usecases/ai/suggest_skills_usecase.dart';
+import '../data/datasources/remote/firestore_user_datasource.dart';
+import '../data/repositories/purchase_repository_impl.dart';
+import '../domain/repositories/purchase_repository.dart';
+import '../domain/usecases/purchase/check_premium_status_usecase.dart';
+import '../domain/usecases/purchase/purchase_premium_usecase.dart';
+import '../domain/usecases/purchase/restore_purchases_usecase.dart';
 
 final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
   return FirebaseAuth.instance;
@@ -73,7 +79,11 @@ final resumeLocalDataSourceProvider = Provider<ResumeLocalDataSource>((ref) {
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final dataSource = ref.watch(firebaseAuthDataSourceProvider);
-  return AuthRepositoryImpl(dataSource);
+  final userDatasource = ref.watch(firestoreUserDataSourceProvider);
+  return AuthRepositoryImpl(
+    dataSource,
+    userDatasource: userDatasource,
+  );
 });
 
 final resumeRepositoryProvider = Provider<ResumeRepository>((ref) {
@@ -197,4 +207,28 @@ final docxRepositoryProvider = Provider<DocxRepository>((ref) {
 final exportDocxUseCaseProvider = Provider<ExportDocxUseCase>((ref) {
   final repository = ref.watch(docxRepositoryProvider);
   return ExportDocxUseCase(repository);
+});
+
+final firestoreUserDataSourceProvider = Provider<FirestoreUserDatasource>((ref) {
+  return FirestoreUserDatasourceImpl();
+});
+
+final purchaseRepositoryProvider = Provider<PurchaseRepository>((ref) {
+  final userDatasource = ref.watch(firestoreUserDataSourceProvider);
+  return PurchaseRepositoryImpl(userDatasource: userDatasource);
+});
+
+final checkPremiumStatusUseCaseProvider = Provider<CheckPremiumStatusUseCase>((ref) {
+  final repository = ref.watch(purchaseRepositoryProvider);
+  return CheckPremiumStatusUseCase(repository);
+});
+
+final purchasePremiumUseCaseProvider = Provider<PurchasePremiumUseCase>((ref) {
+  final repository = ref.watch(purchaseRepositoryProvider);
+  return PurchasePremiumUseCase(repository);
+});
+
+final restorePurchasesUseCaseProvider = Provider<RestorePurchasesUseCase>((ref) {
+  final repository = ref.watch(purchaseRepositoryProvider);
+  return RestorePurchasesUseCase(repository);
 });

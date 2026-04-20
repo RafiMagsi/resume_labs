@@ -1,6 +1,12 @@
 abstract final class AppStrings {
   static const String appName = 'Resume Labs AI';
 
+  // Firestore collections
+  static const String usersCollection = 'users';
+
+  // In-App Purchase
+  static const String premiumProductId = 'resume_labs_premium';
+
   // Generic
   static const String ok = 'OK';
   static const String cancel = 'Cancel';
@@ -36,4 +42,17 @@ abstract final class AppStrings {
   static const String cacheError = 'Unable to load cached data.';
   static const String authError =
       'Authentication failed. Please check your credentials.';
+
+  // Paywall
+  static const String unlockPremium = 'Unlock Premium';
+  static const String premiumFeatures = 'Premium Features';
+  static const String allTemplates = 'All 6 Professional Templates';
+  static const String aiContentGeneration = 'AI-powered content generation';
+  static const String unlimitedResumes = 'Unlimited resumes';
+  static const String oneTimePurchase = 'One-time purchase, forever';
+  static const String upgradeToPremium = 'Upgrade to Premium';
+  static const String restorePurchase = 'Restore Purchase';
+  static const String purchaseSuccess = 'Welcome to Premium!';
+  static const String purchaseError = 'Failed to complete purchase';
+  static const String restoreError = 'Failed to restore purchases';
 }

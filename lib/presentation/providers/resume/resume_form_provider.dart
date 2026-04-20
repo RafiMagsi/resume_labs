@@ -244,15 +244,16 @@ class ResumeFormNotifier extends Notifier<ResumeFormState> {
         );
         return false;
       },
-      (_) {
+      (savedResume) {
         ref.invalidate(resumeListProvider);
         state = state.copyWith(
           isLoading: false,
           successMessage: state.isEditing
               ? 'Resume updated successfully'
               : 'Resume created successfully',
-          resumeId: resume.id,
-          createdAt: resume.createdAt,
+          resumeId: savedResume.id,
+          photoUrl: savedResume.photoUrl,
+          createdAt: savedResume.createdAt,
           isEditing: true,
         );
         return true;

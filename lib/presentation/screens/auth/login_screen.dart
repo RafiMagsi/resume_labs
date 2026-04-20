@@ -112,15 +112,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final signInState = ref.watch(signInProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sign In'),
-        centerTitle: true,
-      ),
-      body: LoadingOverlay(
-        isLoading: signInState.isLoading,
-        message: 'Signing you in...',
-        child: SafeArea(
+    return LoadingOverlay(
+      isLoading: signInState.isLoading,
+      message: 'Signing you in...',
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Sign In'),
+          centerTitle: true,
+        ),
+        body: SafeArea(
           child: GestureDetector(
             behavior: HitTestBehavior.translucent,
             onTap: () => FocusManager.instance.primaryFocus?.unfocus(),

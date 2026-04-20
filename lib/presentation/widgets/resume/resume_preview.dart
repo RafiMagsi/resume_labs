@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_colors.dart';
@@ -7,6 +9,7 @@ import '../../../domain/entities/work_experience.dart';
 import 'resume_paper.dart';
 
 class ResumePreview extends StatelessWidget {
+  final String? photoUrl;
   final String title;
   final String personalSummary;
   final List<WorkExperience> workExperiences;
@@ -15,6 +18,7 @@ class ResumePreview extends StatelessWidget {
 
   const ResumePreview({
     super.key,
+    required this.photoUrl,
     required this.title,
     required this.personalSummary,
     required this.workExperiences,
@@ -33,14 +37,25 @@ class ResumePreview extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title.trim().isEmpty ? 'Untitled Resume' : title.trim(),
-              style: const TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary,
-                height: 1.1,
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _PreviewAvatar(photoUrl: photoUrl),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    title.trim().isEmpty ? 'Untitled Resume' : title.trim(),
+                    style: const TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textPrimary,
+                      height: 1.1,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 6),
             Container(
@@ -135,6 +150,64 @@ class ResumePreview extends StatelessWidget {
                     ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PreviewAvatar extends StatelessWidget {
+  final String? photoUrl;
+
+  const _PreviewAvatar({
+    required this.photoUrl,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final url = (photoUrl ?? '').trim();
+    if (url.isEmpty) {
+      return _placeholder();
+    }
+
+    final image = url.startsWith('http')
+        ? Image.network(
+            url,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _placeholder(),
+          )
+        : Image.file(
+            File(url),
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _placeholder(),
+          );
+
+    return Container(
+      width: 56,
+      height: 56,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: AppColors.border, width: 1.5),
+        color: AppColors.secondarySurface,
+      ),
+      child: ClipOval(child: image),
+    );
+  }
+
+  Widget _placeholder() {
+    return Container(
+      width: 56,
+      height: 56,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: AppColors.border, width: 1.5),
+        color: AppColors.secondarySurface,
+      ),
+      child: const Center(
+        child: Icon(
+          Icons.person_outline,
+          size: 28,
+          color: AppColors.textTertiary,
         ),
       ),
     );

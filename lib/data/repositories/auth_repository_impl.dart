@@ -3,14 +3,19 @@ import 'package:fpdart/fpdart.dart';
 import '../../core/errors/app_exception.dart';
 import '../../core/errors/failure.dart';
 import '../../data/datasources/remote/firebase_auth_datasource.dart';
+import '../../data/datasources/remote/firestore_user_datasource.dart';
 import '../../data/mappers/user_profile_mapper.dart';
 import '../../domain/entities/user_profile.dart';
 import '../../domain/repositories/auth_repository.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final FirebaseAuthDataSource dataSource;
+  final FirestoreUserDatasource userDatasource;
 
-  const AuthRepositoryImpl(this.dataSource);
+  const AuthRepositoryImpl(
+    this.dataSource, {
+    required this.userDatasource,
+  });
 
   @override
   Future<Either<Failure, UserProfile>> signUp({
@@ -21,6 +26,11 @@ class AuthRepositoryImpl implements AuthRepository {
       final result = await dataSource.signUp(
         email: email,
         password: password,
+      );
+
+      await userDatasource.createUserDoc(
+        uid: result.uid,
+        email: email,
       );
 
       return Right(result.toEntity());

@@ -11,6 +11,7 @@ class UserProfileModel with _$UserProfileModel {
     required String uid,
     required String email,
     required DateTime createdAt,
+    @Default(false) bool isPremium,
   }) = _UserProfileModel;
 
   factory UserProfileModel.fromJson(Map<String, dynamic> json) =>
@@ -23,6 +24,7 @@ extension UserProfileModelMapper on UserProfileModel {
       uid: uid,
       email: email,
       createdAt: createdAt,
+      isPremium: isPremium,
     );
   }
 }
@@ -33,6 +35,7 @@ extension UserProfileEntityMapper on UserProfile {
       uid: uid,
       email: email,
       createdAt: createdAt,
+      isPremium: isPremium,
     );
   }
 }

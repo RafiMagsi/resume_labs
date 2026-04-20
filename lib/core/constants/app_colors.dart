@@ -54,6 +54,11 @@ abstract final class AppColors {
   static const Color passwordGood = Colors.amber;
   static const Color passwordStrong = Colors.green;
 
+  // Premium / paywall
+  static const Color premiumGold = Color(0xFFFFB800);
+  static const Color premiumGradientStart = Color(0xFFFFB800);
+  static const Color premiumGradientEnd = Color(0xFFFFA500);
+
   // Backwards-compatible aliases (prefer the new names in new code).
   static const Color background = appBackground;
   static const Color surface = screenSurface;
