@@ -38,6 +38,36 @@ class ResumeCard extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (resume.photoUrl != null && resume.photoUrl!.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: ClipOval(
+                        child: Container(
+                          width: 60,
+                          height: 60,
+                          color: AppColors.secondarySurface,
+                          child: resume.photoUrl!.startsWith('http')
+                              ? Image.network(
+                                  resume.photoUrl!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Center(
+                                      child: Icon(
+                                        Icons.person_outline,
+                                        size: 32,
+                                        color: AppColors.textTertiary,
+                                      ),
+                                    );
+                                  },
+                                )
+                              : Icon(
+                                  Icons.person_outline,
+                                  size: 32,
+                                  color: AppColors.textTertiary,
+                                ),
+                        ),
+                      ),
+                    ),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -128,16 +158,87 @@ class ResumeCard extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Container(
+                width: double.infinity,
                 height: 100,
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: AppColors.secondarySurface,
                   borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.border, width: 0.5),
                 ),
-                child: Center(
-                  child: Icon(
-                    Icons.description_outlined,
-                    size: 40,
-                    color: AppColors.textTertiary,
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        resume.title.isEmpty ? 'Untitled Resume' : resume.title,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (resume.personalSummary.isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          resume.personalSummary,
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: AppColors.textSecondary,
+                            height: 1.3,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                      if (resume.workExperiences.isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          '${resume.workExperiences.first.role} at ${resume.workExperiences.first.company}',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                      if (resume.skills.isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        Wrap(
+                          spacing: 4,
+                          runSpacing: 2,
+                          children: resume.skills.take(3).map((skill) {
+                            return Container(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryLight,
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                              child: Text(
+                                skill.name,
+                                style: const TextStyle(
+                                  fontSize: 9,
+                                  color: AppColors.primaryDark,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                        if (resume.skills.length > 3)
+                          Text(
+                            '+${resume.skills.length - 3} more',
+                            style: const TextStyle(
+                              fontSize: 9,
+                              color: AppColors.textTertiary,
+                            ),
+                          ),
+                      ],
+                    ],
                   ),
                 ),
               ),

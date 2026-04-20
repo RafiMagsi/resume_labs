@@ -10,6 +10,7 @@ abstract class BaseResumeTemplate {
   void build(
     pw.Document pdf,
     Resume resume, {
+    pw.ImageProvider? photoImage,
     required pw.Font regularFont,
     required pw.Font mediumFont,
     required pw.Font semiBoldFont,
@@ -135,6 +136,26 @@ abstract class BaseResumeTemplate {
           ),
         );
       }).toList(),
+    );
+  }
+
+  pw.Widget profilePhoto(
+    pw.ImageProvider? photoImage, {
+    double size = 80,
+  }) {
+    if (photoImage == null) {
+      return pw.SizedBox(width: 0, height: 0);
+    }
+    return pw.Container(
+      width: size,
+      height: size,
+      decoration: pw.BoxDecoration(
+        shape: pw.BoxShape.circle,
+        border: pw.Border.all(color: PdfColors.grey400, width: 1),
+      ),
+      child: pw.ClipOval(
+        child: pw.Image(photoImage, fit: pw.BoxFit.cover),
+      ),
     );
   }
 

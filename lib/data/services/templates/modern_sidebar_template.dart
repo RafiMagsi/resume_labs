@@ -9,6 +9,7 @@ class ModernSidebarTemplate extends BaseResumeTemplate {
   void build(
     pw.Document pdf,
     Resume resume, {
+    pw.ImageProvider? photoImage,
     required pw.Font regularFont,
     required pw.Font mediumFont,
     required pw.Font semiBoldFont,
@@ -30,6 +31,7 @@ class ModernSidebarTemplate extends BaseResumeTemplate {
                   mediumFont,
                   semiBoldFont,
                   boldFont,
+                  photoImage,
                 ),
               ),
               pw.SizedBox(width: 16),
@@ -55,6 +57,7 @@ class ModernSidebarTemplate extends BaseResumeTemplate {
     pw.Font mediumFont,
     pw.Font semiBoldFont,
     pw.Font boldFont,
+    pw.ImageProvider? photoImage,
   ) {
     return pw.Container(
       padding: const pw.EdgeInsets.all(16),
@@ -64,8 +67,12 @@ class ModernSidebarTemplate extends BaseResumeTemplate {
         border: pw.Border.all(color: const PdfColor.fromInt(0xFFE5E7EB)),
       ),
       child: pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        crossAxisAlignment: pw.CrossAxisAlignment.center,
         children: [
+          if (photoImage != null) ...[
+            profilePhoto(photoImage, size: 80),
+            pw.SizedBox(height: 12),
+          ],
           pw.Text(
             resume.title.isEmpty ? 'Untitled Resume' : resume.title,
             style: pw.TextStyle(
@@ -73,6 +80,7 @@ class ModernSidebarTemplate extends BaseResumeTemplate {
               fontSize: 18,
               color: PdfColors.grey900,
             ),
+            textAlign: pw.TextAlign.center,
           ),
           pw.SizedBox(height: 10),
           pw.Container(

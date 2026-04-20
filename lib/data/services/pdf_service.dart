@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:http/http.dart' as http;
 import 'package:pdf/widgets.dart' as pw;
 
 import '../../domain/entities/resume.dart';
@@ -37,6 +38,11 @@ class PdfService {
       fallback: pw.Font.helveticaBold(),
     );
 
+    pw.ImageProvider? photoImage;
+    if (resume.photoUrl != null && resume.photoUrl!.isNotEmpty) {
+      photoImage = await _loadPhotoImage(resume.photoUrl!);
+    }
+
     final theme = pw.ThemeData.withFont(
       base: regularFont,
       bold: boldFont,
@@ -54,6 +60,7 @@ class PdfService {
       pdf,
       resume,
       template,
+      photoImage: photoImage,
       regularFont: regularFont,
       mediumFont: mediumFont,
       semiBoldFont: semiBoldFont,
@@ -81,11 +88,30 @@ class PdfService {
     }
   }
 
+  /// Loads a profile photo image from a URL.
+  Future<pw.ImageProvider?> _loadPhotoImage(String photoUrl) async {
+    try {
+      if (photoUrl.startsWith('http')) {
+        final response = await http.get(Uri.parse(photoUrl)).timeout(
+          const Duration(seconds: 10),
+          onTimeout: () => http.Response('timeout', 408),
+        );
+        if (response.statusCode == 200) {
+          return pw.MemoryImage(response.bodyBytes);
+        }
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Routes to the appropriate template builder based on [ResumeTemplate].
   void _buildTemplate(
     pw.Document pdf,
     Resume resume,
     ResumeTemplate template, {
+    pw.ImageProvider? photoImage,
     required pw.Font regularFont,
     required pw.Font mediumFont,
     required pw.Font semiBoldFont,
@@ -96,6 +122,7 @@ class PdfService {
         ClassicTemplate().build(
           pdf,
           resume,
+          photoImage: photoImage,
           regularFont: regularFont,
           mediumFont: mediumFont,
           semiBoldFont: semiBoldFont,
@@ -105,6 +132,7 @@ class PdfService {
         ModernTemplate().build(
           pdf,
           resume,
+          photoImage: photoImage,
           regularFont: regularFont,
           mediumFont: mediumFont,
           semiBoldFont: semiBoldFont,
@@ -114,6 +142,7 @@ class PdfService {
         ModernCleanTemplate().build(
           pdf,
           resume,
+          photoImage: photoImage,
           regularFont: regularFont,
           mediumFont: mediumFont,
           semiBoldFont: semiBoldFont,
@@ -123,6 +152,7 @@ class PdfService {
         ModernSidebarTemplate().build(
           pdf,
           resume,
+          photoImage: photoImage,
           regularFont: regularFont,
           mediumFont: mediumFont,
           semiBoldFont: semiBoldFont,
@@ -132,6 +162,7 @@ class PdfService {
         MinimalTemplate().build(
           pdf,
           resume,
+          photoImage: photoImage,
           regularFont: regularFont,
           mediumFont: mediumFont,
           semiBoldFont: semiBoldFont,
@@ -141,6 +172,7 @@ class PdfService {
         ExecutiveTemplate().build(
           pdf,
           resume,
+          photoImage: photoImage,
           regularFont: regularFont,
           mediumFont: mediumFont,
           semiBoldFont: semiBoldFont,

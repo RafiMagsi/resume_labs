@@ -9,6 +9,7 @@ class ExecutiveTemplate extends BaseResumeTemplate {
   void build(
     pw.Document pdf,
     Resume resume, {
+    pw.ImageProvider? photoImage,
     required pw.Font regularFont,
     required pw.Font mediumFont,
     required pw.Font semiBoldFont,
@@ -19,17 +20,33 @@ class ExecutiveTemplate extends BaseResumeTemplate {
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.symmetric(horizontal: 32, vertical: 34),
         build: (context) => [
-          pw.Text(
-            resume.title.isEmpty ? 'Untitled Resume' : resume.title,
-            style: pw.TextStyle(
-              font: boldFont,
-              fontSize: 24,
-              color: PdfColors.grey900,
-              letterSpacing: -0.2,
-            ),
+          pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              if (photoImage != null) ...[
+                profilePhoto(photoImage, size: 70),
+                pw.SizedBox(width: 16),
+              ],
+              pw.Expanded(
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      resume.title.isEmpty ? 'Untitled Resume' : resume.title,
+                      style: pw.TextStyle(
+                        font: boldFont,
+                        fontSize: 24,
+                        color: PdfColors.grey900,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    pw.SizedBox(height: 8),
+                    pw.Container(height: 1.2, color: PdfColors.grey300),
+                  ],
+                ),
+              ),
+            ],
           ),
-          pw.SizedBox(height: 8),
-          pw.Container(height: 1.2, color: PdfColors.grey300),
           pw.SizedBox(height: 14),
           _sectionTitle('Professional Summary', semiBoldFont),
           pw.SizedBox(height: 8),

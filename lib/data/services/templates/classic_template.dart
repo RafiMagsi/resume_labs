@@ -9,6 +9,7 @@ class ClassicTemplate extends BaseResumeTemplate {
   void build(
     pw.Document pdf,
     Resume resume, {
+    pw.ImageProvider? photoImage,
     required pw.Font regularFont,
     required pw.Font mediumFont,
     required pw.Font semiBoldFont,
@@ -19,7 +20,7 @@ class ClassicTemplate extends BaseResumeTemplate {
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.symmetric(horizontal: 32, vertical: 36),
         build: (context) => [
-          _header(resume, boldFont, mediumFont),
+          _header(resume, boldFont, mediumFont, photoImage),
           pw.SizedBox(height: 18),
           _sectionTitle('Professional Summary', semiBoldFont),
           pw.SizedBox(height: 8),
@@ -76,20 +77,32 @@ class ClassicTemplate extends BaseResumeTemplate {
     Resume resume,
     pw.Font boldFont,
     pw.Font mediumFont,
+    pw.ImageProvider? photoImage,
   ) {
-    return pw.Column(
+    return pw.Row(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        pw.Text(
-          resume.title.isEmpty ? 'Untitled Resume' : resume.title,
-          style: pw.TextStyle(
-            font: boldFont,
-            fontSize: 24,
-            color: PdfColors.black,
+        if (photoImage != null) ...[
+          profilePhoto(photoImage, size: 70),
+          pw.SizedBox(width: 16),
+        ],
+        pw.Expanded(
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(
+                resume.title.isEmpty ? 'Untitled Resume' : resume.title,
+                style: pw.TextStyle(
+                  font: boldFont,
+                  fontSize: 24,
+                  color: PdfColors.black,
+                ),
+              ),
+              pw.SizedBox(height: 6),
+              pw.Container(height: 1.2, color: PdfColors.grey400),
+            ],
           ),
         ),
-        pw.SizedBox(height: 6),
-        pw.Container(height: 1.2, color: PdfColors.grey400),
       ],
     );
   }

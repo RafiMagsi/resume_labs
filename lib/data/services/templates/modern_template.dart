@@ -9,6 +9,7 @@ class ModernTemplate extends BaseResumeTemplate {
   void build(
     pw.Document pdf,
     Resume resume, {
+    pw.ImageProvider? photoImage,
     required pw.Font regularFont,
     required pw.Font mediumFont,
     required pw.Font semiBoldFont,
@@ -19,7 +20,7 @@ class ModernTemplate extends BaseResumeTemplate {
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.symmetric(horizontal: 28, vertical: 30),
         build: (context) => [
-          _header(resume, boldFont),
+          _header(resume, boldFont, photoImage),
           pw.SizedBox(height: 20),
           _section(
             title: 'Summary',
@@ -82,7 +83,11 @@ class ModernTemplate extends BaseResumeTemplate {
     );
   }
 
-  pw.Widget _header(Resume resume, pw.Font boldFont) {
+  pw.Widget _header(
+    Resume resume,
+    pw.Font boldFont,
+    pw.ImageProvider? photoImage,
+  ) {
     return pw.Container(
       width: double.infinity,
       padding: const pw.EdgeInsets.all(20),
@@ -95,13 +100,34 @@ class ModernTemplate extends BaseResumeTemplate {
           ],
         ),
       ),
-      child: pw.Text(
-        resume.title.isEmpty ? 'Untitled Resume' : resume.title,
-        style: pw.TextStyle(
-          font: boldFont,
-          fontSize: 24,
-          color: PdfColors.white,
-        ),
+      child: pw.Row(
+        crossAxisAlignment: pw.CrossAxisAlignment.center,
+        children: [
+          if (photoImage != null) ...[
+            pw.Container(
+              width: 70,
+              height: 70,
+              decoration: pw.BoxDecoration(
+                shape: pw.BoxShape.circle,
+                border: pw.Border.all(color: PdfColors.white, width: 2),
+              ),
+              child: pw.ClipOval(
+                child: pw.Image(photoImage, fit: pw.BoxFit.cover),
+              ),
+            ),
+            pw.SizedBox(width: 16),
+          ],
+          pw.Expanded(
+            child: pw.Text(
+              resume.title.isEmpty ? 'Untitled Resume' : resume.title,
+              style: pw.TextStyle(
+                font: boldFont,
+                fontSize: 24,
+                color: PdfColors.white,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

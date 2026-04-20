@@ -9,6 +9,7 @@ class MinimalTemplate extends BaseResumeTemplate {
   void build(
     pw.Document pdf,
     Resume resume, {
+    pw.ImageProvider? photoImage,
     required pw.Font regularFont,
     required pw.Font mediumFont,
     required pw.Font semiBoldFont,
@@ -19,13 +20,24 @@ class MinimalTemplate extends BaseResumeTemplate {
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.symmetric(horizontal: 36, vertical: 36),
         build: (context) => [
-          pw.Text(
-            resume.title.isEmpty ? 'Untitled Resume' : resume.title,
-            style: pw.TextStyle(
-              font: boldFont,
-              fontSize: 22,
-              color: PdfColors.grey900,
-            ),
+          pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              if (photoImage != null) ...[
+                profilePhoto(photoImage, size: 70),
+                pw.SizedBox(width: 16),
+              ],
+              pw.Expanded(
+                child: pw.Text(
+                  resume.title.isEmpty ? 'Untitled Resume' : resume.title,
+                  style: pw.TextStyle(
+                    font: boldFont,
+                    fontSize: 22,
+                    color: PdfColors.grey900,
+                  ),
+                ),
+              ),
+            ],
           ),
           pw.SizedBox(height: 20),
           _sectionTitle('Summary', semiBoldFont),
