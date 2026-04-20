@@ -1,5 +1,4 @@
-import 'dart:typed_data';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
 import 'package:pdf/widgets.dart' as pw;
@@ -91,17 +90,21 @@ class PdfService {
   /// Loads a profile photo image from a URL.
   Future<pw.ImageProvider?> _loadPhotoImage(String photoUrl) async {
     try {
-      if (photoUrl.startsWith('http')) {
-        final response = await http.get(Uri.parse(photoUrl)).timeout(
-          const Duration(seconds: 10),
-          onTimeout: () => http.Response('timeout', 408),
-        );
-        if (response.statusCode == 200) {
-          return pw.MemoryImage(response.bodyBytes);
-        }
+      if (photoUrl.isEmpty || !photoUrl.startsWith('http')) {
+        return null;
+      }
+
+      final response = await http.get(Uri.parse(photoUrl)).timeout(
+            const Duration(seconds: 10),
+            onTimeout: () => http.Response('timeout', 408),
+          );
+
+      if (response.statusCode == 200 && response.bodyBytes.isNotEmpty) {
+        return pw.MemoryImage(response.bodyBytes);
       }
       return null;
-    } catch (_) {
+    } catch (e) {
+      debugPrint('Error loading profile photo: $e');
       return null;
     }
   }

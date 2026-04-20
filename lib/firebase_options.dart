@@ -25,15 +25,9 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -48,17 +42,17 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'AIzaSyC0i7mp8ZOZJzNtIsqqmLZd3uWXpAMpO0E',
-    appId: '1:346453081708:web:ed3704fba76ea732ab2249',
+    appId: '1:346453081708:web:be8b6defaaefa65eab2249',
     messagingSenderId: '346453081708',
     projectId: 'resume-labs-cdc63',
     authDomain: 'resume-labs-cdc63.firebaseapp.com',
     storageBucket: 'resume-labs-cdc63.firebasestorage.app',
-    measurementId: 'G-EMGMVWRCXB',
+    measurementId: 'G-BK0Z5E7T1C',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDlqVxlLAiIUZVKOpBwQ1WhpIJsHoT2kaI',
-    appId: '1:346453081708:android:a55236899fab877dab2249',
+    appId: '1:346453081708:android:ad540f3de23a88bdab2249',
     messagingSenderId: '346453081708',
     projectId: 'resume-labs-cdc63',
     storageBucket: 'resume-labs-cdc63.firebasestorage.app',
@@ -66,10 +60,32 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBEOdfwJMmJnCNKhcmkPHc9cb1oFLKCnHM',
-    appId: '1:346453081708:ios:efdee746ef6e6cd6ab2249',
+    appId: '1:346453081708:ios:9c01d5df7d266395ab2249',
     messagingSenderId: '346453081708',
     projectId: 'resume-labs-cdc63',
     storageBucket: 'resume-labs-cdc63.firebasestorage.app',
-    iosBundleId: 'com.nextfiction.resume-labs',
+    iosClientId: '346453081708-42sjllvvup56b3roq5eka0gn4dd62ra8.apps.googleusercontent.com',
+    iosBundleId: 'com.nextfiction.resumelabs.ai.RunnerTests',
   );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyBEOdfwJMmJnCNKhcmkPHc9cb1oFLKCnHM',
+    appId: '1:346453081708:ios:22351e1c2b319063ab2249',
+    messagingSenderId: '346453081708',
+    projectId: 'resume-labs-cdc63',
+    storageBucket: 'resume-labs-cdc63.firebasestorage.app',
+    iosClientId: '346453081708-qklpc6tp71mjq2ii1oo4cbqkgbjsrj2g.apps.googleusercontent.com',
+    iosBundleId: 'com.example.resumeLabs',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyC0i7mp8ZOZJzNtIsqqmLZd3uWXpAMpO0E',
+    appId: '1:346453081708:web:238c1edc8f5abf9bab2249',
+    messagingSenderId: '346453081708',
+    projectId: 'resume-labs-cdc63',
+    authDomain: 'resume-labs-cdc63.firebaseapp.com',
+    storageBucket: 'resume-labs-cdc63.firebasestorage.app',
+    measurementId: 'G-65ZLSFGBJZ',
+  );
+
 }
