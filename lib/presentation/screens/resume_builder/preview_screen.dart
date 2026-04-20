@@ -3,11 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
+import '../../../domain/entities/education.dart';
 import '../../../domain/entities/resume.dart';
 import '../../../domain/entities/resume_template.dart';
+import '../../../domain/entities/skill.dart';
+import '../../../domain/entities/work_experience.dart';
 import '../../providers/pdf/pdf_export_provider.dart';
 import '../../providers/resume/resume_form_provider.dart';
 import '../../services/pdf_share_service.dart';
+import '../../widgets/resume/resume_paper.dart';
 import '../../widgets/shared/app_button.dart';
 import '../../widgets/shared/loading_overlay.dart';
 import '../../../core/errors/failure.dart';
@@ -313,9 +317,9 @@ class _ResumePdfPreview extends StatelessWidget {
   final ResumeTemplate template;
   final String title;
   final String personalSummary;
-  final List<dynamic> workExperiences;
-  final List<dynamic> educations;
-  final List<dynamic> skills;
+  final List<WorkExperience> workExperiences;
+  final List<Education> educations;
+  final List<Skill> skills;
 
   const _ResumePdfPreview({
     required this.template,
@@ -329,29 +333,12 @@ class _ResumePdfPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pagePadding = MediaQuery.sizeOf(context).width < 380 ? 16.0 : 28.0;
-    return Center(
-      child: AspectRatio(
-        aspectRatio: 1 / 1.414,
-        child: Container(
-          width: double.infinity,
-          constraints: const BoxConstraints(maxWidth: 700),
-          padding: EdgeInsets.all(pagePadding),
-          decoration: BoxDecoration(
-            color: _backgroundColor(template),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.border),
-            boxShadow: const [
-              BoxShadow(
-                color: AppColors.shadowCard,
-                blurRadius: 24,
-                offset: Offset(0, 10),
-              ),
-            ],
-          ),
-          child: SingleChildScrollView(
-            child: _buildTemplate(),
-          ),
-        ),
+    return ResumePaper(
+      padding: EdgeInsets.all(pagePadding),
+      backgroundColor: _backgroundColor(template),
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: _buildTemplate(),
       ),
     );
   }
@@ -400,9 +387,9 @@ class _ResumePdfPreview extends StatelessWidget {
 class _ClassicResumeLayout extends StatelessWidget {
   final String title;
   final String personalSummary;
-  final List<dynamic> workExperiences;
-  final List<dynamic> educations;
-  final List<dynamic> skills;
+  final List<WorkExperience> workExperiences;
+  final List<Education> educations;
+  final List<Skill> skills;
 
   const _ClassicResumeLayout({
     required this.title,
@@ -420,13 +407,15 @@ class _ClassicResumeLayout extends StatelessWidget {
         Text(
           title.trim().isEmpty ? 'Untitled Resume' : title.trim(),
           style: const TextStyle(
-            fontSize: 30,
+            fontSize: 26,
             fontWeight: FontWeight.w800,
             color: AppColors.textPrimary,
+            height: 1.1,
           ),
         ),
-        const SizedBox(height: 8),
-        const Divider(height: 28, thickness: 1.2),
+        const SizedBox(height: 6),
+        Container(height: 1, color: AppColors.divider),
+        const SizedBox(height: 16),
         _PreviewSection(
           title: 'Professional Summary',
           color: AppColors.textPrimary,
@@ -435,13 +424,13 @@ class _ClassicResumeLayout extends StatelessWidget {
                 ? 'Your personal summary will appear here.'
                 : personalSummary.trim(),
             style: const TextStyle(
-              fontSize: 14,
+              fontSize: 13.5,
               height: 1.55,
               color: AppColors.textSecondary,
             ),
           ),
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 16),
         _PreviewSection(
           title: 'Work Experience',
           color: AppColors.textPrimary,
@@ -460,7 +449,7 @@ class _ClassicResumeLayout extends StatelessWidget {
                       .toList(),
                 ),
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 16),
         _PreviewSection(
           title: 'Education',
           color: AppColors.textPrimary,
@@ -479,7 +468,7 @@ class _ClassicResumeLayout extends StatelessWidget {
                       .toList(),
                 ),
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 16),
         _PreviewSection(
           title: 'Skills',
           color: AppColors.textPrimary,
@@ -493,9 +482,9 @@ class _ClassicResumeLayout extends StatelessWidget {
 class _ModernResumeLayout extends StatelessWidget {
   final String title;
   final String personalSummary;
-  final List<dynamic> workExperiences;
-  final List<dynamic> educations;
-  final List<dynamic> skills;
+  final List<WorkExperience> workExperiences;
+  final List<Education> educations;
+  final List<Skill> skills;
 
   const _ModernResumeLayout({
     required this.title,
@@ -510,45 +499,60 @@ class _ModernResumeLayout extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(20),
+        DecoratedBox(
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppColors.primary, AppColors.primaryDark],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            color: AppColors.primarySoft,
             borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.border),
           ),
-          child: Text(
-            title.trim().isEmpty ? 'Untitled Resume' : title.trim(),
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              color: AppColors.textOnPrimary,
+          child: Padding(
+            padding: const EdgeInsets.all(18),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 6,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    title.trim().isEmpty ? 'Untitled Resume' : title.trim(),
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textPrimary,
+                      height: 1.15,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
         _PreviewSection(
           title: 'Summary',
-          color: AppColors.primary,
+          color: AppColors.primaryDark,
           child: Text(
             personalSummary.trim().isEmpty
                 ? 'Your personal summary will appear here.'
                 : personalSummary.trim(),
             style: const TextStyle(
-              fontSize: 14,
+              fontSize: 13.5,
               height: 1.55,
               color: AppColors.textSecondary,
             ),
           ),
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 16),
         _PreviewSection(
           title: 'Experience',
-          color: AppColors.primary,
+          color: AppColors.primaryDark,
           child: workExperiences.isEmpty
               ? const _PreviewEmptyState(
                   message: 'No work experience added yet.',
@@ -564,10 +568,10 @@ class _ModernResumeLayout extends StatelessWidget {
                       .toList(),
                 ),
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 16),
         _PreviewSection(
           title: 'Education',
-          color: AppColors.primary,
+          color: AppColors.primaryDark,
           child: educations.isEmpty
               ? const _PreviewEmptyState(
                   message: 'No education added yet.',
@@ -583,10 +587,10 @@ class _ModernResumeLayout extends StatelessWidget {
                       .toList(),
                 ),
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 16),
         _PreviewSection(
           title: 'Skills',
-          color: AppColors.primary,
+          color: AppColors.primaryDark,
           child: _SkillWrap(skills: skills, accent: true),
         ),
       ],
@@ -597,9 +601,9 @@ class _ModernResumeLayout extends StatelessWidget {
 class _MinimalResumeLayout extends StatelessWidget {
   final String title;
   final String personalSummary;
-  final List<dynamic> workExperiences;
-  final List<dynamic> educations;
-  final List<dynamic> skills;
+  final List<WorkExperience> workExperiences;
+  final List<Education> educations;
+  final List<Skill> skills;
 
   const _MinimalResumeLayout({
     required this.title,
@@ -617,13 +621,16 @@ class _MinimalResumeLayout extends StatelessWidget {
         Text(
           title.trim().isEmpty ? 'Untitled Resume' : title.trim(),
           style: const TextStyle(
-            fontSize: 26,
-            fontWeight: FontWeight.w700,
+            fontSize: 24,
+            fontWeight: FontWeight.w800,
             color: AppColors.textPrimary,
             letterSpacing: -0.3,
+            height: 1.15,
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 6),
+        Container(height: 1, color: AppColors.divider),
+        const SizedBox(height: 16),
         _PreviewSection(
           title: 'Summary',
           color: AppColors.textSecondary,
@@ -632,13 +639,13 @@ class _MinimalResumeLayout extends StatelessWidget {
                 ? 'Your personal summary will appear here.'
                 : personalSummary.trim(),
             style: const TextStyle(
-              fontSize: 14,
+              fontSize: 13.5,
               height: 1.65,
               color: AppColors.textSecondary,
             ),
           ),
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 16),
         _PreviewSection(
           title: 'Experience',
           color: AppColors.textSecondary,
@@ -657,7 +664,7 @@ class _MinimalResumeLayout extends StatelessWidget {
                       .toList(),
                 ),
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 16),
         _PreviewSection(
           title: 'Education',
           color: AppColors.textSecondary,
@@ -676,7 +683,7 @@ class _MinimalResumeLayout extends StatelessWidget {
                       .toList(),
                 ),
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 16),
         _PreviewSection(
           title: 'Skills',
           color: AppColors.textSecondary,
@@ -703,16 +710,27 @@ class _PreviewSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title.toUpperCase(),
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1.1,
-            color: color,
-          ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: color,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Container(
+                height: 1,
+                color: AppColors.divider,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
         child,
       ],
     );
@@ -731,15 +749,16 @@ class _PreviewEmptyState extends StatelessWidget {
     return Text(
       message,
       style: const TextStyle(
-        fontSize: 14,
-        color: AppColors.textSecondary,
+        fontSize: 13.5,
+        height: 1.4,
+        color: AppColors.textTertiary,
       ),
     );
   }
 }
 
 class _PreviewWorkItem extends StatelessWidget {
-  final dynamic item;
+  final WorkExperience item;
   final bool accent;
   final bool minimal;
 
@@ -758,6 +777,10 @@ class _PreviewWorkItem extends StatelessWidget {
     );
 
     final bulletColor = accent ? AppColors.primary : AppColors.textSecondary;
+    final bullets = item.bulletPoints
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -765,7 +788,7 @@ class _PreviewWorkItem extends StatelessWidget {
         Text(
           item.role,
           style: TextStyle(
-            fontSize: 15,
+            fontSize: 14.5,
             fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,
           ),
@@ -774,7 +797,7 @@ class _PreviewWorkItem extends StatelessWidget {
         Text(
           '${item.company} • ${item.location}',
           style: const TextStyle(
-            fontSize: 14,
+            fontSize: 13.5,
             color: AppColors.textSecondary,
           ),
         ),
@@ -782,13 +805,13 @@ class _PreviewWorkItem extends StatelessWidget {
         Text(
           dateText,
           style: const TextStyle(
-            fontSize: 13,
+            fontSize: 12.5,
             color: AppColors.textSecondary,
           ),
         ),
-        if ((item.bulletPoints as List).isNotEmpty) ...[
+        if (bullets.isNotEmpty) ...[
           const SizedBox(height: 8),
-          ...(item.bulletPoints as List).map(
+          ...bullets.map(
             (bullet) => Padding(
               padding: const EdgeInsets.only(bottom: 5),
               child: Row(
@@ -798,16 +821,16 @@ class _PreviewWorkItem extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 7),
                     child: Icon(
                       minimal ? Icons.remove : Icons.circle,
-                      size: minimal ? 14 : 6,
+                      size: minimal ? 14 : 5,
                       color: bulletColor,
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      bullet.toString(),
+                      bullet,
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 13.5,
                         height: 1.45,
                         color: AppColors.textSecondary,
                       ),
@@ -824,7 +847,7 @@ class _PreviewWorkItem extends StatelessWidget {
 }
 
 class _PreviewEducationItem extends StatelessWidget {
-  final dynamic item;
+  final Education item;
 
   const _PreviewEducationItem({
     required this.item,
@@ -838,7 +861,7 @@ class _PreviewEducationItem extends StatelessWidget {
         Text(
           item.degree,
           style: const TextStyle(
-            fontSize: 15,
+            fontSize: 14.5,
             fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,
           ),
@@ -847,7 +870,7 @@ class _PreviewEducationItem extends StatelessWidget {
         Text(
           '${item.school} • ${item.field}',
           style: const TextStyle(
-            fontSize: 14,
+            fontSize: 13.5,
             color: AppColors.textSecondary,
           ),
         ),
@@ -855,7 +878,7 @@ class _PreviewEducationItem extends StatelessWidget {
         Text(
           'Graduation: ${_formatMonthYear(item.graduationDate)}${item.gpa != null ? ' • GPA: ${item.gpa}' : ''}',
           style: const TextStyle(
-            fontSize: 13,
+            fontSize: 12.5,
             color: AppColors.textSecondary,
           ),
         ),
@@ -865,7 +888,7 @@ class _PreviewEducationItem extends StatelessWidget {
 }
 
 class _SkillWrap extends StatelessWidget {
-  final List<dynamic> skills;
+  final List<Skill> skills;
   final bool accent;
   final bool minimal;
 
@@ -903,9 +926,11 @@ class _SkillWrap extends StatelessWidget {
             border: Border.all(color: AppColors.border),
           ),
           child: Text(
-            '${skill.name} • ${skill.category}',
+            skill.category.trim().isEmpty
+                ? skill.name
+                : '${skill.name} • ${skill.category}',
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 12.5,
               fontWeight: FontWeight.w500,
               color: textColor,
             ),

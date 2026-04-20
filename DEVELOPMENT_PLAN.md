@@ -533,3 +533,5 @@ Phase 19–21 (Build, Testing, Deployment)
 # Move all string constants or messages to AppStrings
 # Update theme as Apple iOS style, use small border radius
 # Aim for >80% coverage overall, >95% on mappers
+# Create From LinkedIn (linked-in login)
+# Create CV from existing docx or pdf

@@ -16,11 +16,8 @@ final resumeListProvider = FutureProvider<List<Resume>>((ref) async {
   final result = await useCase(user.uid);
 
   return result.match(
-    (_) => const <Resume>[],
-    (resumes) {
-      final sorted = [...resumes]
-        ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
-      return sorted;
-    },
+    (failure) => throw failure,
+    (resumes) =>
+        [...resumes]..sort((a, b) => b.updatedAt.compareTo(a.updatedAt)),
   );
 });

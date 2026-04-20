@@ -17,10 +17,22 @@ class PdfService {
     required Resume resume,
     required ResumeTemplate template,
   }) async {
-    final regularFont = await _loadFont('assets/fonts/Inter-Regular.ttf');
-    final mediumFont = await _loadFont('assets/fonts/Inter-Medium.ttf');
-    final semiBoldFont = await _loadFont('assets/fonts/Inter-SemiBold.ttf');
-    final boldFont = await _loadFont('assets/fonts/Inter-Bold.ttf');
+    final regularFont = await _loadFontWithFallback(
+      primary: 'assets/fonts/Inter-Regular.ttf',
+      fallback: pw.Font.helvetica(),
+    );
+    final mediumFont = await _loadFontWithFallback(
+      primary: 'assets/fonts/Inter-Medium.ttf',
+      fallback: pw.Font.helvetica(),
+    );
+    final semiBoldFont = await _loadFontWithFallback(
+      primary: 'assets/fonts/Inter-SemiBold.ttf',
+      fallback: pw.Font.helveticaBold(),
+    );
+    final boldFont = await _loadFontWithFallback(
+      primary: 'assets/fonts/Inter-Bold.ttf',
+      fallback: pw.Font.helveticaBold(),
+    );
 
     final theme = pw.ThemeData.withFont(
       base: regularFont,
@@ -74,6 +86,17 @@ class PdfService {
   Future<pw.Font> _loadFont(String path) async {
     final data = await rootBundle.load(path);
     return pw.Font.ttf(data);
+  }
+
+  Future<pw.Font> _loadFontWithFallback({
+    required String primary,
+    required pw.Font fallback,
+  }) async {
+    try {
+      return await _loadFont(primary);
+    } catch (_) {
+      return fallback;
+    }
   }
 
   void _buildClassicTemplate(

@@ -5,6 +5,7 @@ import '../../../domain/entities/resume.dart';
 import '../../../domain/entities/skill.dart';
 import '../../../domain/entities/work_experience.dart';
 import '../../../injection/injection_container.dart';
+import 'resume_list_provider.dart';
 
 final resumeFormProvider =
     NotifierProvider<ResumeFormNotifier, ResumeFormState>(
@@ -238,6 +239,7 @@ class ResumeFormNotifier extends Notifier<ResumeFormState> {
         return false;
       },
       (_) {
+        ref.invalidate(resumeListProvider);
         state = state.copyWith(
           isLoading: false,
           successMessage: state.isEditing

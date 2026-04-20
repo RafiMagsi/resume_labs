@@ -104,7 +104,8 @@ void main() {
     }
     expect(find.byKey(const ValueKey('loading-overlay')), findsNothing);
 
-    await router.push(RegisterScreen.routePath);
+    // `push` completes when the pushed route is popped; don't await it here.
+    router.go(RegisterScreen.routePath);
     for (var i = 0; i < 10; i++) {
       await tester.pump(const Duration(milliseconds: 50));
       if (find.byType(RegisterScreen).evaluate().isNotEmpty) break;

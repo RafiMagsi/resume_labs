@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../core/errors/app_exception.dart';
 import '../../models/resume_model.dart';
@@ -23,6 +24,11 @@ class ResumeLocalDataSourceImpl implements ResumeLocalDataSource {
     try {
       final box = await _openBox();
       await box.put(resume.id, resume);
+      if (kDebugMode) {
+        debugPrint(
+          'Hive: cached resume in $_boxName (id=${resume.id}, userId=${resume.userId})',
+        );
+      }
     } catch (_) {
       throw const CacheException(
         'Failed to cache resume.',
@@ -39,6 +45,11 @@ class ResumeLocalDataSourceImpl implements ResumeLocalDataSource {
         for (final resume in resumes) resume.id: resume,
       };
       await box.putAll(map);
+      if (kDebugMode) {
+        debugPrint(
+          'Hive: cached ${resumes.length} resumes in $_boxName',
+        );
+      }
     } catch (_) {
       throw const CacheException(
         'Failed to cache resumes.',

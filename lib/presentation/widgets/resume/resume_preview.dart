@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_sizes.dart';
 import '../../../domain/entities/education.dart';
 import '../../../domain/entities/skill.dart';
 import '../../../domain/entities/work_experience.dart';
+import 'resume_paper.dart';
 
 class ResumePreview extends StatelessWidget {
   final String title;
@@ -24,34 +24,30 @@ class ResumePreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        color: AppColors.screenSurface,
-        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
-        border: Border.all(color: AppColors.border),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.shadowCard,
-            blurRadius: 18,
-            offset: Offset(0, 6),
-          ),
-        ],
-      ),
+    final pagePadding = MediaQuery.sizeOf(context).width < 380 ? 18.0 : 24.0;
+    return ResumePaper(
+      maxWidth: 900,
+      padding: EdgeInsets.all(pagePadding),
       child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               title.trim().isEmpty ? 'Untitled Resume' : title.trim(),
               style: const TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w700,
+                fontSize: 26,
+                fontWeight: FontWeight.w800,
                 color: AppColors.textPrimary,
+                height: 1.1,
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 6),
+            Container(
+              height: 1,
+              color: AppColors.divider,
+            ),
+            const SizedBox(height: 16),
             _PreviewSection(
               title: 'Professional Summary',
               child: Text(
@@ -59,13 +55,13 @@ class ResumePreview extends StatelessWidget {
                     ? 'Your personal summary will appear here.'
                     : personalSummary.trim(),
                 style: const TextStyle(
-                  fontSize: 14,
+                  fontSize: 13.5,
                   height: 1.6,
                   color: AppColors.textSecondary,
                 ),
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 16),
             _PreviewSection(
               title: 'Work Experience',
               child: workExperiences.isEmpty
@@ -74,14 +70,16 @@ class ResumePreview extends StatelessWidget {
                     )
                   : Column(
                       children: workExperiences
-                          .map((item) => Padding(
-                                padding: const EdgeInsets.only(bottom: 14),
-                                child: _PreviewWorkExperienceItem(item: item),
-                              ))
+                          .map(
+                            (item) => Padding(
+                              padding: const EdgeInsets.only(bottom: 14),
+                              child: _PreviewWorkExperienceItem(item: item),
+                            ),
+                          )
                           .toList(),
                     ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 16),
             _PreviewSection(
               title: 'Education',
               child: educations.isEmpty
@@ -90,14 +88,16 @@ class ResumePreview extends StatelessWidget {
                     )
                   : Column(
                       children: educations
-                          .map((item) => Padding(
-                                padding: const EdgeInsets.only(bottom: 14),
-                                child: _PreviewEducationItem(item: item),
-                              ))
+                          .map(
+                            (item) => Padding(
+                              padding: const EdgeInsets.only(bottom: 14),
+                              child: _PreviewEducationItem(item: item),
+                            ),
+                          )
                           .toList(),
                     ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 16),
             _PreviewSection(
               title: 'Skills',
               child: skills.isEmpty
@@ -120,9 +120,11 @@ class ResumePreview extends StatelessWidget {
                                 border: Border.all(color: AppColors.border),
                               ),
                               child: Text(
-                                '${skill.name} • ${skill.category}',
+                                skill.category.trim().isEmpty
+                                    ? skill.name
+                                    : '${skill.name} • ${skill.category}',
                                 style: const TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 12.5,
                                   fontWeight: FontWeight.w500,
                                   color: AppColors.textSecondary,
                                 ),
