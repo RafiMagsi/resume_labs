@@ -8,6 +8,8 @@ import '../../domain/entities/resume_template.dart';
 import '../../domain/entities/skill.dart';
 import '../../domain/entities/work_experience.dart';
 
+/// Generates DOCX resume matching PDF output exactly.
+/// Content structure and text are identical across all templates.
 class DocxService {
   const DocxService();
 
@@ -20,74 +22,226 @@ class DocxService {
       author: 'Resume Labs AI',
     );
 
-    _addHeader(document, resume, template);
-    _addSummary(document, resume.personalSummary);
-    _addWorkExperience(document, resume.workExperiences);
-    _addEducation(document, resume.educations);
-    _addSkills(document, resume.skills);
+    switch (template) {
+      case ResumeTemplate.classic:
+        _buildClassic(document, resume);
+      case ResumeTemplate.modern:
+        _buildModern(document, resume);
+      case ResumeTemplate.modernClean:
+        _buildModernClean(document, resume);
+      case ResumeTemplate.modernSidebar:
+        _buildModernSidebar(document, resume);
+      case ResumeTemplate.minimal:
+        _buildMinimal(document, resume);
+      case ResumeTemplate.executive:
+        _buildExecutive(document, resume);
+    }
 
     final bytes = DocxGenerator().generate(document);
     return Uint8List.fromList(bytes);
   }
 
-  void _addHeader(Document document, Resume resume, ResumeTemplate template) {
-    final title =
-        resume.title.trim().isEmpty ? 'Untitled Resume' : resume.title;
-    document.addParagraph(Paragraph.heading(title, level: 1));
-    document.addParagraph(
-      Paragraph.caption('Template: ${template.name.toUpperCase()}'),
-    );
+  /// Classic template: traditional centered layout
+  void _buildClassic(Document document, Resume resume) {
+    _addHeader(document, resume.title);
+    _addSection(document, 'PROFESSIONAL SUMMARY', resume.personalSummary);
+    _addWorkExperienceSection(document, resume.workExperiences);
+    _addEducationSection(document, resume.educations);
+    _addSkillsSection(document, resume.skills);
   }
 
-  void _addSummary(Document document, String summary) {
-    document.addParagraph(Paragraph.heading('Professional Summary', level: 2));
-    document.addParagraph(
-      Paragraph.text(
-        summary.trim().isEmpty ? 'No personal summary provided.' : summary,
-      ),
-    );
+  /// Modern template: gradient header style
+  void _buildModern(Document document, Resume resume) {
+    _addHeader(document, resume.title);
+    _addSection(document, 'Summary', resume.personalSummary);
+    _addWorkExperienceSection(document, resume.workExperiences);
+    _addEducationSection(document, resume.educations);
+    _addSkillsSection(document, resume.skills);
   }
 
-  void _addWorkExperience(Document document, List<WorkExperience> items) {
+  /// Modern Clean template: clean sidebar header
+  void _buildModernClean(Document document, Resume resume) {
+    _addHeader(document, resume.title);
+    _addSection(document, 'Summary', resume.personalSummary);
+    _addWorkExperienceSection(document, resume.workExperiences);
+    _addEducationSection(document, resume.educations);
+    _addSkillsSection(document, resume.skills);
+  }
+
+  /// Modern Sidebar template: two-column layout (content-heavy)
+  void _buildModernSidebar(Document document, Resume resume) {
+    _addHeader(document, resume.title);
+    document.addParagraph(Paragraph.heading('Skills', level: 2));
+    if (resume.skills.isNotEmpty) {
+      for (final skill in resume.skills) {
+        final skillText = skill.category.isEmpty
+            ? skill.name
+            : '${skill.name} • ${skill.category}';
+        document.addParagraph(Paragraph.text(skillText));
+      }
+    } else {
+      document.addParagraph(Paragraph.text('No skills added.'));
+    }
+
+    document.addParagraph(Paragraph.heading('Education', level: 2));
+    if (resume.educations.isNotEmpty) {
+      for (final edu in resume.educations) {
+        document.addParagraph(
+          Paragraph.text(
+            edu.degree.isEmpty ? 'Degree' : edu.degree,
+          ),
+        );
+        document.addParagraph(
+          Paragraph.text(
+            '${edu.school.isEmpty ? 'School' : edu.school} • ${_formatMonthYear(edu.graduationDate)}',
+          ),
+        );
+      }
+    } else {
+      document.addParagraph(Paragraph.text('No education added.'));
+    }
+
+    _addSection(document, 'Summary', resume.personalSummary);
+    _addWorkExperienceSection(document, resume.workExperiences);
+  }
+
+  /// Minimal template: clean sans-serif, maximalist whitespace
+  void _buildMinimal(Document document, Resume resume) {
+    _addHeader(document, resume.title);
+    _addSection(document, 'Summary', resume.personalSummary);
+    _addWorkExperienceDashStyle(document, resume.workExperiences);
+    _addEducationSection(document, resume.educations);
+    _addSkillsSection(document, resume.skills);
+  }
+
+  /// Executive template: professional two-column layout
+  void _buildExecutive(Document document, Resume resume) {
+    _addHeader(document, resume.title);
+    _addSection(document, 'PROFESSIONAL SUMMARY', resume.personalSummary);
+    _addWorkExperienceSection(document, resume.workExperiences);
+
+    document.addParagraph(Paragraph.heading('EDUCATION & SKILLS', level: 2));
+
+    document.addParagraph(Paragraph.heading('Education', level: 3));
+    if (resume.educations.isEmpty) {
+      document.addParagraph(Paragraph.text('No education added.'));
+    } else {
+      for (final item in resume.educations) {
+        document.addParagraph(Paragraph.text(item.degree));
+        document.addParagraph(
+          Paragraph.text(
+            '${item.school} - ${item.field}',
+          ),
+        );
+        document.addParagraph(
+          Paragraph.text(
+            'Graduation: ${_formatMonthYear(item.graduationDate)}${item.gpa != null ? ' - GPA: ${item.gpa}' : ''}',
+          ),
+        );
+      }
+    }
+
+    document.addParagraph(Paragraph.heading('Skills', level: 3));
+    if (resume.skills.isEmpty) {
+      document.addParagraph(Paragraph.text('No skills added.'));
+    } else {
+      for (final skill in resume.skills) {
+        final skillText = skill.category.isEmpty
+            ? skill.name
+            : '${skill.name} • ${skill.category}';
+        document.addParagraph(Paragraph.text(skillText));
+      }
+    }
+  }
+
+  /// Add title header (same for all templates)
+  void _addHeader(Document document, String title) {
+    final displayTitle =
+        title.trim().isEmpty ? 'Untitled Resume' : title.trim();
+    document.addParagraph(Paragraph.heading(displayTitle, level: 1));
+  }
+
+  /// Add section with heading and content
+  void _addSection(Document document, String heading, String content) {
+    document.addParagraph(Paragraph.heading(heading, level: 2));
+    final text = content.trim().isEmpty ? 'No content provided.' : content;
+    document.addParagraph(Paragraph.text(text));
+  }
+
+  /// Work experience with bullet points (standard style)
+  void _addWorkExperienceSection(
+      Document document, List<WorkExperience> items) {
     document.addParagraph(Paragraph.heading('Work Experience', level: 2));
+
     if (items.isEmpty) {
       document.addParagraph(Paragraph.text('No work experience added.'));
       return;
     }
 
     for (final item in items) {
-      document.addParagraph(
-        Paragraph(
-          runs: [
-            TextRun(item.role.trim().isEmpty ? 'Role' : item.role, bold: true),
-            TextRun(' — '),
-            TextRun(
-              item.company.trim().isEmpty ? 'Company' : item.company,
-              bold: true,
-            ),
-            if (item.location.trim().isNotEmpty) TextRun(' • ${item.location}'),
-          ],
-        ),
-      );
+      _addWorkExperienceItem(document, item, 'bullet');
+    }
+  }
 
-      document.addParagraph(
-        Paragraph.caption(
-          _formatDateRange(item.startDate, item.endDate, item.isCurrentRole),
-        ),
-      );
+  /// Work experience with dash style (for minimal template)
+  void _addWorkExperienceDashStyle(
+      Document document, List<WorkExperience> items) {
+    document.addParagraph(Paragraph.heading('Experience', level: 2));
 
-      final bullets = item.bulletPoints
-          .map((e) => e.trim())
-          .where((e) => e.isNotEmpty)
-          .toList();
-      for (final bullet in bullets) {
+    if (items.isEmpty) {
+      document.addParagraph(Paragraph.text('No work experience added.'));
+      return;
+    }
+
+    for (final item in items) {
+      _addWorkExperienceItem(document, item, 'dash');
+    }
+  }
+
+  /// Add individual work experience entry
+  void _addWorkExperienceItem(
+    Document document,
+    WorkExperience item,
+    String bulletStyle,
+  ) {
+    document.addParagraph(
+      Paragraph(
+        runs: [
+          TextRun(item.role.isEmpty ? 'Role' : item.role, bold: true),
+        ],
+      ),
+    );
+
+    document.addParagraph(
+      Paragraph.text(
+        '${item.company.isEmpty ? 'Company' : item.company} - ${item.location.isEmpty ? 'Location' : item.location}',
+      ),
+    );
+
+    document.addParagraph(
+      Paragraph.text(
+        _formatDateRange(item.startDate, item.endDate, item.isCurrentRole),
+      ),
+    );
+
+    final bullets = item.bulletPoints
+        .map((e) => e.toString().trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+
+    for (final bullet in bullets) {
+      if (bulletStyle == 'dash') {
+        document.addParagraph(Paragraph.text('• $bullet'));
+      } else {
         document.addParagraph(Paragraph.bulletItem(bullet));
       }
     }
   }
 
-  void _addEducation(Document document, List<Education> items) {
+  /// Education section
+  void _addEducationSection(Document document, List<Education> items) {
     document.addParagraph(Paragraph.heading('Education', level: 2));
+
     if (items.isEmpty) {
       document.addParagraph(Paragraph.text('No education added.'));
       return;
@@ -97,40 +251,43 @@ class DocxService {
       document.addParagraph(
         Paragraph(
           runs: [
-            TextRun(item.degree.trim().isEmpty ? 'Degree' : item.degree,
-                bold: true),
-            if (item.field.trim().isNotEmpty) TextRun(' • ${item.field}'),
+            TextRun(item.degree.isEmpty ? 'Degree' : item.degree, bold: true),
           ],
         ),
       );
 
       document.addParagraph(
         Paragraph.text(
-          '${item.school.trim().isEmpty ? 'School' : item.school} • ${_formatMonthYear(item.graduationDate)}'
-          '${item.gpa != null ? ' • GPA: ${item.gpa}' : ''}',
+          '${item.school.isEmpty ? 'School' : item.school} - ${item.field.isEmpty ? 'Field' : item.field}',
+        ),
+      );
+
+      document.addParagraph(
+        Paragraph.text(
+          'Graduation: ${_formatMonthYear(item.graduationDate)}${item.gpa != null ? ' - GPA: ${item.gpa}' : ''}',
         ),
       );
     }
   }
 
-  void _addSkills(Document document, List<Skill> skills) {
+  /// Skills section
+  void _addSkillsSection(Document document, List<Skill> skills) {
     document.addParagraph(Paragraph.heading('Skills', level: 2));
+
     if (skills.isEmpty) {
       document.addParagraph(Paragraph.text('No skills added.'));
       return;
     }
 
-    final lines = skills
-        .map((s) =>
-            s.category.trim().isEmpty ? s.name : '${s.name} (${s.category})')
-        .toList();
-
-    // Keep it readable in Word: one skill per bullet.
-    for (final line in lines) {
-      document.addParagraph(Paragraph.bulletItem(line));
+    for (final skill in skills) {
+      final skillText = skill.category.isEmpty
+          ? skill.name
+          : '${skill.name} - ${skill.category}';
+      document.addParagraph(Paragraph.bulletItem(skillText));
     }
   }
 
+  /// Format date as "Mon Year"
   String _formatMonthYear(DateTime date) {
     const months = [
       'Jan',
@@ -149,6 +306,7 @@ class DocxService {
     return '${months[date.month - 1]} ${date.year}';
   }
 
+  /// Format date range
   String _formatDateRange(DateTime start, DateTime? end, bool isCurrentRole) {
     final startText = _formatMonthYear(start);
     final endText =
