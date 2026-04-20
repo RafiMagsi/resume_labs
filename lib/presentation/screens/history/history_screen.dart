@@ -10,6 +10,7 @@ import '../../../domain/entities/resume.dart';
 import '../../providers/resume/resume_form_provider.dart';
 import '../../providers/resume/resume_list_provider.dart';
 import '../../widgets/shared/app_button.dart';
+import '../../widgets/resume/resume_card.dart';
 import '../resume_builder/builder_screen.dart';
 import '../resume_builder/preview_screen.dart';
 import '../../widgets/shared/error_dialog.dart';
@@ -233,181 +234,6 @@ class HistoryScreen extends ConsumerWidget {
   }
 }
 
-class _ResumeHistoryCard extends StatelessWidget {
-  final Resume resume;
-  final VoidCallback onTap;
-  final VoidCallback onEdit;
-  final VoidCallback onExport;
-  final VoidCallback onDelete;
-
-  const _ResumeHistoryCard({
-    required this.resume,
-    required this.onTap,
-    required this.onEdit,
-    required this.onExport,
-    required this.onDelete,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final title =
-        resume.title.trim().isEmpty ? 'Untitled Resume' : resume.title.trim();
-
-    return Semantics(
-      button: true,
-      label: 'Resume $title',
-      hint: 'Tap to preview. Use the menu for edit, export, or delete.',
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
-        onTap: onTap,
-        onLongPress: () => _showActionSheet(context),
-        child: Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: AppColors.screenSurface,
-            borderRadius: BorderRadius.circular(AppSizes.cardRadius),
-            border: Border.all(color: AppColors.border),
-            boxShadow: const [
-              BoxShadow(
-                color: AppColors.shadowCard,
-                blurRadius: 18,
-                offset: Offset(0, 6),
-              ),
-            ],
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(
-                  Icons.description_outlined,
-                  color: AppColors.primary,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Created: ${_formatDateTime(resume.createdAt)}',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Modified: ${_formatDateTime(resume.updatedAt)}',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              PopupMenuButton<String>(
-                tooltip: 'More actions',
-                onSelected: (value) {
-                  switch (value) {
-                    case 'edit':
-                      onEdit();
-                      break;
-                    case 'export':
-                      onExport();
-                      break;
-                    case 'delete':
-                      onDelete();
-                      break;
-                  }
-                },
-                itemBuilder: (_) => const [
-                  PopupMenuItem(
-                    value: 'edit',
-                    child: Text('Edit'),
-                  ),
-                  PopupMenuItem(
-                    value: 'export',
-                    child: Text('Export'),
-                  ),
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Text('Delete'),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _showActionSheet(BuildContext context) async {
-    await showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      backgroundColor: AppColors.screenSurface,
-      builder: (_) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.edit_outlined),
-                title: const Text('Edit'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  onEdit();
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.picture_as_pdf_outlined),
-                title: const Text('Export'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  onExport();
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.delete_outline,
-                  color: AppColors.error,
-                ),
-                title: const Text(
-                  'Delete',
-                  style: TextStyle(color: AppColors.error),
-                ),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  onDelete();
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _HistoryList extends StatefulWidget {
   final List<Resume> resumes;
   final ValueChanged<Resume> onTapResume;
@@ -481,9 +307,8 @@ class _HistoryListState extends State<_HistoryList> {
               color: AppColors.white,
             ),
           ),
-          child: _ResumeHistoryCard(
+          child: ResumeCard(
             resume: resume,
-            onTap: () => widget.onTapResume(resume),
             onEdit: () => widget.onEditResume(resume),
             onExport: () => widget.onExportResume(resume),
             onDelete: () => widget.onDeleteResume(resume),
@@ -552,27 +377,3 @@ class _SearchBar extends StatelessWidget {
   }
 }
 
-String _formatDateTime(DateTime date) {
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-
-  final day = date.day.toString().padLeft(2, '0');
-  final hour =
-      date.hour == 0 ? 12 : (date.hour > 12 ? date.hour - 12 : date.hour);
-  final minute = date.minute.toString().padLeft(2, '0');
-  final period = date.hour >= 12 ? 'PM' : 'AM';
-
-  return '$day ${months[date.month - 1]} ${date.year} • $hour:$minute $period';
-}

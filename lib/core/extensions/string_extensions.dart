@@ -1,7 +1,11 @@
 extension StringX on String {
   bool get isValidEmail {
+    // Practical email validation (not fully RFC-complete) that supports common
+    // real-world addresses like `hello+tag@example.co.uk`.
     final emailRegex = RegExp(
-      r'^[\w\-.]+@([\w-]+\.)+[\w-]{2,4}$',
+      r"^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@"
+      r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?"
+      r"(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+$",
     );
     return emailRegex.hasMatch(trim());
   }

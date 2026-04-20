@@ -1,0 +1,249 @@
+import 'package:flutter/material.dart';
+
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_sizes.dart';
+import '../../../domain/entities/resume.dart';
+import '../../../domain/entities/resume_template.dart';
+
+class ResumeCard extends StatelessWidget {
+  final Resume resume;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+  final VoidCallback onExport;
+
+  const ResumeCard({
+    super.key,
+    required this.resume,
+    required this.onEdit,
+    required this.onDelete,
+    required this.onExport,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+        side: const BorderSide(color: AppColors.border, width: 1),
+      ),
+      child: InkWell(
+        onTap: onEdit,
+        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          resume.title.isEmpty ? 'Untitled Resume' : resume.title,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            _TemplateTag(template: ResumeTemplate.values.first),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Updated ${_formatDate(resume.updatedAt)}',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textTertiary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuButton<String>(
+                    onSelected: (value) {
+                      switch (value) {
+                        case 'edit':
+                          onEdit();
+                        case 'export':
+                          onExport();
+                        case 'delete':
+                          onDelete();
+                      }
+                    },
+                    itemBuilder: (BuildContext context) => [
+                      const PopupMenuItem(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            Icon(Icons.edit_outlined, size: 18),
+                            SizedBox(width: 8),
+                            Text('Edit'),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'export',
+                        child: Row(
+                          children: [
+                            Icon(Icons.download_outlined, size: 18),
+                            SizedBox(width: 8),
+                            Text('Export'),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                            SizedBox(width: 8),
+                            Text('Delete', style: TextStyle(color: Colors.red)),
+                          ],
+                        ),
+                      ),
+                    ],
+                    child: const Icon(Icons.more_vert, color: AppColors.textSecondary),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Container(
+                height: 100,
+                decoration: BoxDecoration(
+                  color: AppColors.secondarySurface,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Icon(
+                    Icons.description_outlined,
+                    size: 40,
+                    color: AppColors.textTertiary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Created ${_formatDate(resume.createdAt)}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textTertiary,
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.description,
+                        size: 16,
+                        color: AppColors.textTertiary,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${resume.workExperiences.length} roles',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textTertiary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final diff = now.difference(date);
+
+    if (diff.inDays == 0) {
+      return 'today';
+    } else if (diff.inDays == 1) {
+      return 'yesterday';
+    } else if (diff.inDays < 7) {
+      return '${diff.inDays}d ago';
+    } else if (diff.inDays < 30) {
+      final weeks = (diff.inDays / 7).floor();
+      return '${weeks}w ago';
+    } else if (diff.inDays < 365) {
+      final months = (diff.inDays / 30).floor();
+      return '${months}mo ago';
+    } else {
+      return '${date.year}';
+    }
+  }
+}
+
+class _TemplateTag extends StatelessWidget {
+  final ResumeTemplate template;
+
+  const _TemplateTag({required this.template});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: _getTemplateColor().withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: _getTemplateColor().withValues(alpha: 0.3),
+          width: 0.5,
+        ),
+      ),
+      child: Text(
+        _getTemplateName(),
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: _getTemplateColor(),
+        ),
+      ),
+    );
+  }
+
+  String _getTemplateName() {
+    return template.name
+        .replaceAllMapped(
+          RegExp(r'([A-Z])'),
+          (match) => ' ${match.group(0)}',
+        )
+        .trim()
+        .split(' ')
+        .map((e) => e[0].toUpperCase() + e.substring(1))
+        .join(' ');
+  }
+
+  Color _getTemplateColor() {
+    switch (template) {
+      case ResumeTemplate.classic:
+        return const Color(0xFF6B7280);
+      case ResumeTemplate.modern:
+        return const Color(0xFF6D5EF8);
+      case ResumeTemplate.modernClean:
+        return const Color(0xFF8B5CF6);
+      case ResumeTemplate.modernSidebar:
+        return const Color(0xFF7C3AED);
+      case ResumeTemplate.minimal:
+        return const Color(0xFF059669);
+      case ResumeTemplate.executive:
+        return const Color(0xFF1F2937);
+    }
+  }
+}

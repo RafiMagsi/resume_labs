@@ -7,6 +7,7 @@ import '../../providers/auth/sign_up_provider.dart';
 import '../../widgets/shared/app_button.dart';
 import '../../widgets/shared/app_text_field.dart';
 import '../../widgets/shared/loading_overlay.dart';
+import '../../widgets/shared/password_strength_indicator.dart';
 import '../history/history_screen.dart';
 import '../../../core/errors/failure.dart';
 import '../../widgets/shared/error_dialog.dart';
@@ -191,8 +192,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         nextFocusNode: _confirmPasswordFocusNode,
                         autofillHints: const [AutofillHints.newPassword],
                         prefixIcon: const Icon(Icons.lock_outline),
+                        onChanged: (_) => setState(() {}),
                       ),
                       const SizedBox(height: 16),
+                      PasswordStrengthIndicator(
+                        password: _passwordController.text,
+                      ),
+                      const SizedBox(height: 20),
                       AppTextField(
                         controller: _confirmPasswordController,
                         labelText: 'Confirm Password',

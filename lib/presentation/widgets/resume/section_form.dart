@@ -7,6 +7,7 @@ import '../../../domain/entities/skill.dart';
 import '../../../domain/entities/work_experience.dart';
 import '../shared/app_button.dart';
 import '../shared/app_text_field.dart';
+import 'add_experience_sheet.dart';
 
 class SectionForm extends StatelessWidget {
   final String title;
@@ -113,7 +114,7 @@ class WorkExperienceSectionForm extends StatelessWidget {
         text: 'Add',
         expand: false,
         icon: Icons.add,
-        onPressed: () => _showWorkExperienceSheet(
+        onPressed: () => AddExperienceSheet.show(
           context,
           onSave: onAdd,
           onImproveBullet: onImproveBullet,
@@ -134,9 +135,9 @@ class WorkExperienceSectionForm extends StatelessWidget {
                     EdgeInsets.only(bottom: index == items.length - 1 ? 0 : 12),
                 child: _WorkExperienceCard(
                   item: items[index],
-                  onEdit: () => _showWorkExperienceSheet(
+                  onEdit: () => AddExperienceSheet.show(
                     context,
-                    initialValue: items[index],
+                    initialExperience: items[index],
                     onSave: (value) => onUpdate(index, value),
                     onImproveBullet: onImproveBullet,
                   ),
@@ -642,266 +643,6 @@ class _ItemActionButtons extends StatelessWidget {
       ],
     );
   }
-}
-
-Future<void> _showWorkExperienceSheet(
-  BuildContext context, {
-  WorkExperience? initialValue,
-  required ValueChanged<WorkExperience> onSave,
-  Future<String?> Function(String bullet)? onImproveBullet,
-}) async {
-  final companyController =
-      TextEditingController(text: initialValue?.company ?? '');
-  final roleController = TextEditingController(text: initialValue?.role ?? '');
-  final locationController =
-      TextEditingController(text: initialValue?.location ?? '');
-  final startDateController = TextEditingController(
-    text:
-        initialValue != null ? _formatDateForInput(initialValue.startDate) : '',
-  );
-  final endDateController = TextEditingController(
-    text: initialValue?.endDate != null
-        ? _formatDateForInput(initialValue!.endDate!)
-        : '',
-  );
-  final bulletController = TextEditingController();
-  final bullets = [...?initialValue?.bulletPoints];
-  final formKey = GlobalKey<FormState>();
-  bool isCurrentRole = initialValue?.isCurrentRole ?? false;
-  bool isImprovingBullet = false;
-
-  await showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: AppColors.screenSurface,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-    ),
-    builder: (sheetContext) {
-      return StatefulBuilder(
-        builder: (context, setState) {
-          Future<void> pickDate(TextEditingController controller) async {
-            final initialDate =
-                DateTime.tryParse(controller.text) ?? DateTime.now();
-            final date = await showDatePicker(
-              context: context,
-              initialDate: initialDate,
-              firstDate: DateTime(1970),
-              lastDate: DateTime(2100),
-            );
-            if (date != null) {
-              controller.text = _formatDateForInput(date);
-            }
-          }
-
-          return Padding(
-            padding: EdgeInsets.only(
-              left: 20,
-              right: 20,
-              top: 20,
-              bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-            ),
-            child: SingleChildScrollView(
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      initialValue == null
-                          ? 'Add Work Experience'
-                          : 'Edit Work Experience',
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    AppTextField(
-                      controller: companyController,
-                      labelText: 'Company',
-                      validator: _requiredValidator('Company is required'),
-                    ),
-                    const SizedBox(height: 14),
-                    AppTextField(
-                      controller: roleController,
-                      labelText: 'Role',
-                      validator: _requiredValidator('Role is required'),
-                    ),
-                    const SizedBox(height: 14),
-                    AppTextField(
-                      controller: locationController,
-                      labelText: 'Location',
-                      validator: _requiredValidator('Location is required'),
-                    ),
-                    const SizedBox(height: 14),
-                    AppTextField(
-                      controller: startDateController,
-                      labelText: 'Start Date (YYYY-MM-DD)',
-                      suffixIcon: IconButton(
-                        tooltip: 'Pick start date',
-                        onPressed: () => pickDate(startDateController),
-                        icon: const Icon(Icons.calendar_today_outlined),
-                      ),
-                      validator: _dateValidator('Start date is required'),
-                    ),
-                    const SizedBox(height: 14),
-                    SwitchListTile(
-                      value: isCurrentRole,
-                      onChanged: (value) {
-                        setState(() {
-                          isCurrentRole = value;
-                          if (value) {
-                            endDateController.clear();
-                          }
-                        });
-                      },
-                      title: const Text('This is my current role'),
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                    const SizedBox(height: 14),
-                    AppTextField(
-                      controller: endDateController,
-                      labelText: 'End Date (YYYY-MM-DD)',
-                      enabled: !isCurrentRole,
-                      suffixIcon: IconButton(
-                        tooltip: 'Pick end date',
-                        onPressed: isCurrentRole
-                            ? null
-                            : () => pickDate(endDateController),
-                        icon: const Icon(Icons.calendar_today_outlined),
-                      ),
-                      validator: isCurrentRole
-                          ? null
-                          : _dateValidator('End date is required'),
-                    ),
-                    const SizedBox(height: 18),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: AppTextField(
-                            controller: bulletController,
-                            labelText: 'Impact bullet',
-                            textInputAction: TextInputAction.done,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Column(
-                          children: [
-                            AppButton(
-                              text: 'AI',
-                              expand: false,
-                              variant: AppButtonVariant.secondary,
-                              icon: Icons.auto_awesome_rounded,
-                              isLoading: isImprovingBullet,
-                              onPressed: (onImproveBullet == null ||
-                                      isImprovingBullet)
-                                  ? null
-                                  : () async {
-                                      final text = bulletController.text.trim();
-                                      if (text.isEmpty) return;
-
-                                      setState(() => isImprovingBullet = true);
-                                      try {
-                                        final improved =
-                                            await onImproveBullet(text);
-                                        if (improved == null ||
-                                            improved.trim().isEmpty ||
-                                            !context.mounted) {
-                                          return;
-                                        }
-
-                                        bulletController.text = improved;
-                                        bulletController.selection =
-                                            TextSelection.fromPosition(
-                                          TextPosition(
-                                              offset:
-                                                  bulletController.text.length),
-                                        );
-                                      } finally {
-                                        if (context.mounted) {
-                                          setState(
-                                              () => isImprovingBullet = false);
-                                        }
-                                      }
-                                    },
-                            ),
-                            const SizedBox(height: 8),
-                            AppButton(
-                              text: 'Add',
-                              expand: false,
-                              onPressed: () {
-                                final text = bulletController.text.trim();
-                                if (text.isEmpty) return;
-                                setState(() {
-                                  bullets.add(text);
-                                  bulletController.clear();
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    if (bullets.isNotEmpty) ...[
-                      const SizedBox(height: 14),
-                      ...List.generate(
-                        bullets.length,
-                        (index) => ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(bullets[index]),
-                          trailing: IconButton(
-                            tooltip: 'Remove bullet',
-                            onPressed: () {
-                              setState(() {
-                                bullets.removeAt(index);
-                              });
-                            },
-                            icon: const Icon(
-                              Icons.delete_outline,
-                              color: AppColors.error,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 20),
-                    AppButton(
-                      text: initialValue == null
-                          ? 'Save Experience'
-                          : 'Update Experience',
-                      onPressed: () {
-                        if (!formKey.currentState!.validate()) return;
-
-                        onSave(
-                          WorkExperience(
-                            company: companyController.text.trim(),
-                            role: roleController.text.trim(),
-                            location: locationController.text.trim(),
-                            startDate:
-                                DateTime.parse(startDateController.text.trim()),
-                            endDate: isCurrentRole
-                                ? null
-                                : DateTime.parse(endDateController.text.trim()),
-                            bulletPoints: bullets,
-                            isCurrentRole: isCurrentRole,
-                          ),
-                        );
-
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      );
-    },
-  );
 }
 
 Future<void> _showEducationSheet(

@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:fpdart/fpdart.dart';
 
 import '../../core/errors/app_exception.dart';
@@ -11,16 +14,35 @@ import '../../domain/repositories/resume_repository.dart';
 class ResumeRepositoryImpl implements ResumeRepository {
   final FirestoreResumeDataSource remoteDataSource;
   final ResumeLocalDataSource localDataSource;
+  final FirebaseStorage? _firebaseStorage;
 
-  const ResumeRepositoryImpl({
+  ResumeRepositoryImpl({
     required this.remoteDataSource,
     required this.localDataSource,
-  });
+    FirebaseStorage? firebaseStorage,
+  }) : _firebaseStorage = firebaseStorage;
 
   @override
   Future<Either<Failure, Resume>> createResume(Resume resume) async {
     try {
-      final model = resume.toModel();
+      var resumeToSave = resume;
+
+      if (resume.photoUrl != null &&
+          resume.photoUrl!.isNotEmpty &&
+          !resume.photoUrl!.startsWith('http')) {
+        try {
+          final photoUrl = await _uploadResumePhoto(
+            resume.userId,
+            resume.id,
+            resume.photoUrl!,
+          );
+          resumeToSave = resume.copyWith(photoUrl: photoUrl);
+        } catch (e) {
+          resumeToSave = resume.copyWith(photoUrl: null);
+        }
+      }
+
+      final model = resumeToSave.toModel();
       final remoteResult = await remoteDataSource.createResume(model);
 
       await localDataSource.cacheResume(remoteResult);
@@ -38,7 +60,24 @@ class ResumeRepositoryImpl implements ResumeRepository {
   @override
   Future<Either<Failure, Resume>> updateResume(Resume resume) async {
     try {
-      final model = resume.toModel();
+      var resumeToSave = resume;
+
+      if (resume.photoUrl != null &&
+          resume.photoUrl!.isNotEmpty &&
+          !resume.photoUrl!.startsWith('http')) {
+        try {
+          final photoUrl = await _uploadResumePhoto(
+            resume.userId,
+            resume.id,
+            resume.photoUrl!,
+          );
+          resumeToSave = resume.copyWith(photoUrl: photoUrl);
+        } catch (e) {
+          resumeToSave = resume.copyWith(photoUrl: null);
+        }
+      }
+
+      final model = resumeToSave.toModel();
       final remoteResult = await remoteDataSource.updateResume(model);
 
       await localDataSource.cacheResume(remoteResult);
@@ -119,6 +158,32 @@ class ResumeRepositoryImpl implements ResumeRepository {
     } catch (_) {
       return const Left(
         UnknownFailure('An unexpected error occurred while loading resumes.'),
+      );
+    }
+  }
+
+  Future<String> _uploadResumePhoto(
+    String userId,
+    String resumeId,
+    String localPhotoPath,
+  ) async {
+    try {
+      final file = File(localPhotoPath);
+      if (!file.existsSync()) {
+        throw FileSystemException('Photo file not found', localPhotoPath);
+      }
+
+      final storagePath = 'resumes/$userId/$resumeId/photo';
+      final storage = _firebaseStorage ?? FirebaseStorage.instance;
+      final ref = storage.ref(storagePath);
+
+      await ref.putFile(file);
+      final downloadUrl = await ref.getDownloadURL();
+
+      return downloadUrl;
+    } catch (e) {
+      throw ServerException(
+        'Failed to upload resume photo: ${e.toString()}',
       );
     }
   }

@@ -12,6 +12,7 @@ import '../../widgets/resume/section_form.dart';
 import '../../widgets/shared/app_button.dart';
 import '../../widgets/shared/app_text_field.dart';
 import '../../widgets/shared/loading_overlay.dart';
+import '../../widgets/shared/photo_picker.dart';
 import '../../providers/ai/ai_suggestions_provider.dart';
 import '../../widgets/ai/ai_suggestion_dialog.dart';
 import '../../widgets/shared/error_dialog.dart';
@@ -461,6 +462,16 @@ class _BuilderFormContent extends StatelessWidget {
           ),
           child: Column(
             children: [
+              PhotoPicker(
+                photoUrl: formState.photoUrl,
+                onPickPhoto: (path) {
+                  formNotifier.updatePhotoUrl(path);
+                },
+                onRemovePhoto: () {
+                  formNotifier.updatePhotoUrl(null);
+                },
+              ),
+              const SizedBox(height: 24),
               AppTextField(
                 controller: titleController,
                 labelText: 'Resume Title',

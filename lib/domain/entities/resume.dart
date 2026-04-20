@@ -7,6 +7,7 @@ class Resume {
   final String userId;
   final String title;
   final String personalSummary;
+  final String? photoUrl;
   final List<WorkExperience> workExperiences;
   final List<Education> educations;
   final List<Skill> skills;
@@ -18,6 +19,7 @@ class Resume {
     required this.userId,
     required this.title,
     required this.personalSummary,
+    this.photoUrl,
     required this.workExperiences,
     required this.educations,
     required this.skills,
@@ -30,6 +32,7 @@ class Resume {
     String? userId,
     String? title,
     String? personalSummary,
+    String? photoUrl,
     List<WorkExperience>? workExperiences,
     List<Education>? educations,
     List<Skill>? skills,
@@ -41,6 +44,7 @@ class Resume {
       userId: userId ?? this.userId,
       title: title ?? this.title,
       personalSummary: personalSummary ?? this.personalSummary,
+      photoUrl: photoUrl ?? this.photoUrl,
       workExperiences: workExperiences ?? this.workExperiences,
       educations: educations ?? this.educations,
       skills: skills ?? this.skills,
@@ -58,6 +62,7 @@ class Resume {
         other.userId == userId &&
         other.title == title &&
         other.personalSummary == personalSummary &&
+        other.photoUrl == photoUrl &&
         _listEquals(other.workExperiences, workExperiences) &&
         _listEquals(other.educations, educations) &&
         _listEquals(other.skills, skills) &&
@@ -71,6 +76,7 @@ class Resume {
         userId.hashCode ^
         title.hashCode ^
         personalSummary.hashCode ^
+        (photoUrl?.hashCode ?? 0) ^
         Object.hashAll(workExperiences) ^
         Object.hashAll(educations) ^
         Object.hashAll(skills) ^

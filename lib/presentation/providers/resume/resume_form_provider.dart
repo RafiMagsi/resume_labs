@@ -24,6 +24,7 @@ class ResumeFormNotifier extends Notifier<ResumeFormState> {
       userId: resume.userId,
       title: resume.title,
       personalSummary: resume.personalSummary,
+      photoUrl: resume.photoUrl,
       workExperiences: resume.workExperiences,
       educations: resume.educations,
       skills: resume.skills,
@@ -73,6 +74,10 @@ class ResumeFormNotifier extends Notifier<ResumeFormState> {
       personalSummary: value,
       validationErrors: updatedErrors,
     );
+  }
+
+  void updatePhotoUrl(String? photoUrl) {
+    state = state.copyWith(photoUrl: photoUrl);
   }
 
   void addWorkExperience(WorkExperience experience) {
@@ -219,6 +224,7 @@ class ResumeFormNotifier extends Notifier<ResumeFormState> {
       userId: state.userId!,
       title: state.title.trim(),
       personalSummary: state.personalSummary.trim(),
+      photoUrl: state.photoUrl,
       workExperiences: state.workExperiences,
       educations: state.educations,
       skills: state.skills,
@@ -275,6 +281,7 @@ class ResumeFormState {
   final String? userId;
   final String title;
   final String personalSummary;
+  final String? photoUrl;
   final List<WorkExperience> workExperiences;
   final List<Education> educations;
   final List<Skill> skills;
@@ -291,6 +298,7 @@ class ResumeFormState {
     required this.userId,
     required this.title,
     required this.personalSummary,
+    this.photoUrl,
     required this.workExperiences,
     required this.educations,
     required this.skills,
@@ -311,6 +319,7 @@ class ResumeFormState {
       userId: userId,
       title: '',
       personalSummary: '',
+      photoUrl: null,
       workExperiences: const [],
       educations: const [],
       skills: const [],
@@ -329,6 +338,7 @@ class ResumeFormState {
     String? userId,
     String? title,
     String? personalSummary,
+    String? photoUrl,
     List<WorkExperience>? workExperiences,
     List<Education>? educations,
     List<Skill>? skills,
@@ -347,6 +357,7 @@ class ResumeFormState {
       userId: userId ?? this.userId,
       title: title ?? this.title,
       personalSummary: personalSummary ?? this.personalSummary,
+      photoUrl: photoUrl ?? this.photoUrl,
       workExperiences: workExperiences ?? this.workExperiences,
       educations: educations ?? this.educations,
       skills: skills ?? this.skills,

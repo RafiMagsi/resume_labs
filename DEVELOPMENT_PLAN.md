@@ -535,3 +535,4 @@ Phase 19–21 (Build, Testing, Deployment)
 # Aim for >80% coverage overall, >95% on mappers
 # Create From LinkedIn (linked-in login)
 # Create CV from existing docx or pdf
+# In app purchase for downloading CV

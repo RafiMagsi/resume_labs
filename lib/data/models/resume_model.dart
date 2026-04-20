@@ -14,6 +14,7 @@ class ResumeModel with _$ResumeModel {
     required String userId,
     required String title,
     required String personalSummary,
+    String? photoUrl,
     @Default(<WorkExperienceModel>[]) List<WorkExperienceModel> workExperiences,
     @Default(<EducationModel>[]) List<EducationModel> educations,
     @Default(<SkillModel>[]) List<SkillModel> skills,
