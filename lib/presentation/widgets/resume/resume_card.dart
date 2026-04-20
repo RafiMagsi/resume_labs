@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
@@ -50,6 +51,19 @@ class ResumeCard extends StatelessWidget {
                               ? Image.network(
                                   resume.photoUrl!,
                                   fit: BoxFit.cover,
+                                  loadingBuilder:
+                                      (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return Shimmer.fromColors(
+                                      baseColor: AppColors.border,
+                                      highlightColor: AppColors.secondarySurface,
+                                      child: Container(
+                                        width: 60,
+                                        height: 60,
+                                        color: AppColors.secondarySurface,
+                                      ),
+                                    );
+                                  },
                                   errorBuilder: (context, error, stackTrace) {
                                     return Center(
                                       child: Icon(

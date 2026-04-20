@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:resume_labs/domain/entities/skill.dart';
 
 import '../../../core/constants/app_colors.dart';
@@ -7,6 +8,7 @@ import '../../../core/utils/input_validators.dart';
 import '../../../core/errors/failure.dart';
 import '../../providers/auth/auth_provider.dart';
 import '../../providers/resume/resume_form_provider.dart';
+import '../../providers/resume/photo_upload_provider.dart';
 import '../../widgets/resume/resume_preview.dart';
 import '../../widgets/resume/section_form.dart';
 import '../../widgets/shared/app_button.dart';
@@ -16,6 +18,7 @@ import '../../widgets/shared/photo_picker.dart';
 import '../../providers/ai/ai_suggestions_provider.dart';
 import '../../widgets/ai/ai_suggestion_dialog.dart';
 import '../../widgets/shared/error_dialog.dart';
+import '../history/history_screen.dart';
 
 class BuilderScreen extends ConsumerStatefulWidget {
   const BuilderScreen({super.key});
@@ -78,6 +81,14 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
     }
   }
 
+  Future<void> _handlePhotoUpload(String localPath) async {
+    final uploadedUrl =
+        await ref.read(photoUploadProvider(localPath).future);
+    if (uploadedUrl != null) {
+      ref.read(resumeFormProvider.notifier).updatePhotoUrl(uploadedUrl);
+    }
+  }
+
   Future<void> _handleNext() async {
     final notifier = ref.read(resumeFormProvider.notifier);
     final isValid = notifier.validateCurrentStep();
@@ -115,7 +126,11 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
     _showSuccessDialog(
       title: 'Success',
       message: state.successMessage ?? 'Resume saved successfully.',
-    );
+    ).then((_) {
+      if (mounted) {
+        context.go(HistoryScreen.routePath);
+      }
+    });
   }
 
   Future<void> _handleGenerateSummary() async {
@@ -341,6 +356,7 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
                   onGenerateSummary: _handleGenerateSummary,
                   onImproveBullet: _handleImproveBullet,
                   onSuggestSkills: _handleSuggestSkills,
+                  onPhotoUpload: _handlePhotoUpload,
                 );
 
                 final preview = ResumePreview(
@@ -409,6 +425,7 @@ class _BuilderFormContent extends StatelessWidget {
   final Future<void> Function() onGenerateSummary;
   final Future<String?> Function(String bullet) onImproveBullet;
   final Future<List<String>?> Function() onSuggestSkills;
+  final Future<void> Function(String path) onPhotoUpload;
 
   const _BuilderFormContent({
     required this.formState,
@@ -424,6 +441,7 @@ class _BuilderFormContent extends StatelessWidget {
     required this.onGenerateSummary,
     required this.onImproveBullet,
     required this.onSuggestSkills,
+    required this.onPhotoUpload,
   });
 
   @override
@@ -464,9 +482,7 @@ class _BuilderFormContent extends StatelessWidget {
             children: [
               PhotoPicker(
                 photoUrl: formState.photoUrl,
-                onPickPhoto: (path) {
-                  formNotifier.updatePhotoUrl(path);
-                },
+                onPickPhoto: onPhotoUpload,
                 onRemovePhoto: () {
                   formNotifier.updatePhotoUrl(null);
                 },

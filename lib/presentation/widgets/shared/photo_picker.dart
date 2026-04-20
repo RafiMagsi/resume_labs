@@ -7,7 +7,7 @@ import '../../../core/constants/app_colors.dart';
 
 class PhotoPicker extends StatefulWidget {
   final String? photoUrl;
-  final ValueChanged<String> onPickPhoto;
+  final Future<void> Function(String) onPickPhoto;
   final VoidCallback? onRemovePhoto;
 
   const PhotoPicker({
@@ -36,7 +36,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
       );
 
       if (pickedFile != null && mounted) {
-        widget.onPickPhoto(pickedFile.path);
+        await widget.onPickPhoto(pickedFile.path);
       }
     } catch (e) {
       if (mounted) {
@@ -190,7 +190,17 @@ class _PhotoPickerState extends State<PhotoPicker> {
 
   Widget _buildPlaceholder() {
     return Container(
-      color: AppColors.secondarySurface,
+      width: 96,
+      height: 96,
+      decoration: BoxDecoration(
+        color: AppColors.secondarySurface,
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: AppColors.border,
+          width: 1.5,
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
       child: const Center(
         child: Icon(
           Icons.person_outline,

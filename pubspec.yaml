@@ -52,6 +52,7 @@ dependencies:
   hive_flutter: ^1.1.0
   path_provider: ^2.1.5
   image_picker: ^1.1.2
+  shimmer: ^3.0.0
 
   # Serialization / codegen-friendly annotations
   freezed_annotation: ^2.4.4
