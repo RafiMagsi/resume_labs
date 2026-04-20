@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../core/errors/failure.dart';
 import '../../providers/resume/resume_optimization_provider.dart';
 import '../../widgets/shared/credits_paywall.dart';
+import '../../widgets/shared/error_dialog.dart';
 import 'widgets/resume_optimizer_input.dart';
 import 'widgets/resume_optimization_result.dart';
 import 'widgets/resume_file_upload.dart';
@@ -23,18 +25,21 @@ class ResumeOptimizerScreen extends ConsumerStatefulWidget {
 class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
     with SingleTickerProviderStateMixin {
   late TextEditingController _resumeController;
+  late TextEditingController _optimizationPrompt;
   late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
     _resumeController = TextEditingController();
+    _optimizationPrompt = TextEditingController();
     _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
   void dispose() {
     _resumeController.dispose();
+    _optimizationPrompt.dispose();
     _tabController.dispose();
     super.dispose();
   }
@@ -48,15 +53,34 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
       return;
     }
 
-    final credits = ref.read(creditsAvailableProvider).value ?? 0;
-    if (credits <= 0) {
-      CreditsPaywall.show(context, ref);
-      return;
-    }
+    try {
+      final creditsAsync = ref.read(creditsAvailableProvider);
+      if (creditsAsync.hasError) {
+        ErrorDialog.show(
+          context,
+          failure: ServerFailure(creditsAsync.error.toString()),
+          title: 'Error Loading Credits',
+        );
+        return;
+      }
 
-    ref
-        .read(resumeOptimizationNotifierProvider.notifier)
-        .optimizeResume(resumeText);
+      final credits = creditsAsync.value ?? 0;
+      if (credits <= 0) {
+        CreditsPaywall.show(context, ref);
+        return;
+      }
+
+      final prompt = _optimizationPrompt.text.trim();
+      ref
+          .read(resumeOptimizationNotifierProvider.notifier)
+          .optimizeResume(resumeText, customPrompt: prompt);
+    } catch (e) {
+      ErrorDialog.show(
+        context,
+        failure: ServerFailure(e.toString()),
+        title: 'Error',
+      );
+    }
   }
 
   void _handleFileUploaded(String extractedText) {
@@ -130,7 +154,7 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
         ),
         const SizedBox(height: 24),
         SizedBox(
-          height: 450,
+          height: 380,
           child: TabBarView(
             controller: _tabController,
             children: [
@@ -150,9 +174,83 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
               ),
               ResumeOptimizerInput(
                 controller: _resumeController,
-                onOptimize: _handleOptimize,
               ),
             ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        _buildOptimizationPromptInput(),
+      ],
+    );
+  }
+
+  Widget _buildOptimizationPromptInput() {
+    const maxLength = 200;
+    final currentLength = _optimizationPrompt.text.length;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'How to Optimize? (Optional)',
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Tell AI how you want your resume optimized (e.g., "Focus on tech skills", "Emphasize leadership")',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textSecondary,
+              ),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _optimizationPrompt,
+          maxLength: maxLength,
+          maxLines: 3,
+          minLines: 2,
+          decoration: InputDecoration(
+            hintText: 'e.g., Enhance technical skills section...',
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: AppColors.primary, width: 2),
+            ),
+            contentPadding: const EdgeInsets.all(12),
+            counterText:
+                '$currentLength/$maxLength', // Show character count
+          ),
+          onChanged: (_) => setState(() {}),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: ElevatedButton(
+            onPressed: _handleOptimize,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text(
+              AppStrings.optimize,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.white,
+              ),
+            ),
           ),
         ),
       ],
@@ -208,7 +306,15 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
 
   Widget _buildErrorState(AsyncValue<String?> state) {
     final error = state.error;
-    final message = error is Exception ? error.toString() : 'An error occurred';
+    late final String message;
+
+    if (error is Failure) {
+      message = error.message;
+    } else if (error is Exception) {
+      message = error.toString();
+    } else {
+      message = 'An error occurred. Please try again.';
+    }
 
     return Column(
       children: [
@@ -251,6 +357,7 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
 
   void _resetForm() {
     _resumeController.clear();
+    _optimizationPrompt.clear();
     _tabController.animateTo(0);
     ref
         .read(resumeOptimizationNotifierProvider.notifier)

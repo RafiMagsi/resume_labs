@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:archive/archive.dart';
 import 'package:xml/xml.dart' as xml;
+import 'package:syncfusion_flutter_pdf/pdf.dart';
 
 class DocumentParserService {
   /// Extract text from DOCX file
@@ -41,23 +42,25 @@ class DocumentParserService {
     }
   }
 
-  /// Extract text from PDF file
-  /// Note: This is a simplified approach using pdfx package
+  /// Extract text from PDF file using Syncfusion PDF text extractor
   static Future<String> extractFromPdf(File file) async {
     try {
-      // For now, return a placeholder message
-      // PDF text extraction requires additional dependencies
-      // User should paste content manually for now
-      return '''PDF text extraction requires additional setup.
-Please copy and paste your resume content from the PDF instead.
+      final bytes = file.readAsBytesSync();
+      final PdfDocument document = PdfDocument(inputBytes: bytes);
+      final buffer = StringBuffer();
 
-To upload a PDF:
-1. Open your PDF in Adobe Reader or similar
-2. Select all text (Ctrl+A or Cmd+A)
-3. Copy it (Ctrl+C or Cmd+C)
-4. Return to this app and paste into the text field above''';
+      // Extract text from all pages using PdfTextExtractor
+      final PdfTextExtractor extractor = PdfTextExtractor(document);
+
+      for (int i = 1; i <= document.pages.count; i++) {
+        final text = extractor.extractText(startPageIndex: i - 1, endPageIndex: i - 1);
+        buffer.writeln(text);
+      }
+
+      document.dispose();
+      return buffer.toString().trim();
     } catch (e) {
-      throw Exception('Failed to parse PDF: $e');
+      throw Exception('Failed to extract text from PDF: $e');
     }
   }
 

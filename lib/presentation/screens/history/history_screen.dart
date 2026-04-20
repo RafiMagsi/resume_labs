@@ -16,15 +16,55 @@ import '../resume_builder/preview_screen.dart';
 import '../resume_optimizer/resume_optimizer_screen.dart';
 import '../../widgets/shared/error_dialog.dart';
 import '../../widgets/shared/user_profile_sheet.dart';
+import '../../widgets/shared/animated_ai_button.dart';
 
-class HistoryScreen extends ConsumerWidget {
+class HistoryScreen extends ConsumerStatefulWidget {
   const HistoryScreen({super.key});
 
   static const String routeName = 'history';
   static const String routePath = '/history';
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HistoryScreen> createState() => _HistoryScreenState();
+}
+
+class _HistoryScreenState extends ConsumerState<HistoryScreen>
+    with TickerProviderStateMixin {
+  late AnimationController _slideController;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _slideController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(-2, 0),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _slideController,
+      curve: Curves.easeOut,
+    ));
+
+    // Start animation immediately
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _slideController.forward();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _slideController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final resumeListState = ref.watch(resumeListProvider);
 
     return Scaffold(
@@ -32,27 +72,6 @@ class HistoryScreen extends ConsumerWidget {
         title: const Text('My Resumes'),
         centerTitle: false,
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: Center(
-              child: ElevatedButton.icon(
-                onPressed: () => context.push(ResumeOptimizerScreen.routePath),
-                icon: const Icon(Icons.auto_awesome_rounded, size: 18),
-                label: const Text(
-                  'AI Resume',
-                  style: TextStyle(fontSize: 13),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ),
-          ),
           IconButton(
             icon: const Icon(Icons.person_rounded),
             onPressed: () => UserProfileSheet.show(context),
@@ -60,27 +79,110 @@ class HistoryScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          ref.invalidate(resumeListProvider);
-          await ref.read(resumeListProvider.future);
-        },
-        child: resumeListState.when(
-          data: (resumes) {
-            if (resumes.isEmpty) {
-              return ListView(
+      body: Stack(
+        children: [
+          RefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(resumeListProvider);
+              await ref.read(resumeListProvider.future);
+            },
+            child: resumeListState.when(
+              data: (resumes) {
+                if (resumes.isEmpty) {
+                  return ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(AppSizes.screenPadding),
+                    children: [
+                      const SizedBox(height: 80),
+                      const Icon(
+                        Icons.description_outlined,
+                        size: 72,
+                        color: AppColors.textTertiary,
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'No resumes yet',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Create your first resume and it will appear here.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      AppButton(
+                        text: 'Create New Resume',
+                        icon: Icons.add_rounded,
+                        onPressed: () {
+                          ref.read(resumeFormProvider.notifier).reset();
+                          context.push(BuilderScreen.routePath);
+                        },
+                      ),
+                    ],
+                  );
+                }
+
+                return _HistoryList(
+                  resumes: resumes,
+                  onTapResume: (resume) {
+                    ref.read(resumeFormProvider.notifier).loadResume(resume);
+                    context.push(PreviewScreen.routePath);
+                  },
+                  onEditResume: (resume) {
+                    ref.read(resumeFormProvider.notifier).loadResume(resume);
+                    context.push(BuilderScreen.routePath);
+                  },
+                  onExportResume: (resume) {
+                    ref.read(resumeFormProvider.notifier).loadResume(resume);
+                    context.push(PreviewScreen.routePath);
+                  },
+                  onDeleteResume: (resume) async {
+                    final confirmed = await _showDeleteConfirmationDialog(
+                      context,
+                      resume: resume,
+                      ref: ref,
+                    );
+                    if (confirmed == true) {
+                      ref.invalidate(resumeListProvider);
+                    }
+                  },
+                  confirmDismiss: (resume) => _showDeleteConfirmationDialog(
+                    context,
+                    resume: resume,
+                    ref: ref,
+                  ),
+                );
+              },
+              loading: () => ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(AppSizes.lg),
+                children: const [
+                  SizedBox(height: 40),
+                  Center(child: CircularProgressIndicator()),
+                ],
+              ),
+              error: (error, _) => ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(AppSizes.screenPadding),
                 children: [
                   const SizedBox(height: 80),
                   const Icon(
-                    Icons.description_outlined,
+                    Icons.error_outline_rounded,
                     size: 72,
-                    color: AppColors.textTertiary,
+                    color: AppColors.error,
                   ),
                   const SizedBox(height: 20),
                   const Text(
-                    'No resumes yet',
+                    'Failed to load resumes',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 24,
@@ -89,108 +191,41 @@ class HistoryScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Create your first resume and it will appear here.',
+                  Text(
+                    error is Failure
+                        ? error.message
+                        : 'Something went wrong. Please try again.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 14,
                       color: AppColors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 24),
                   AppButton(
-                    text: 'Create New Resume',
-                    icon: Icons.add_rounded,
+                    text: 'Retry',
+                    icon: Icons.refresh_rounded,
                     onPressed: () {
-                      ref.read(resumeFormProvider.notifier).reset();
-                      context.push(BuilderScreen.routePath);
+                      ref.invalidate(resumeListProvider);
                     },
                   ),
                 ],
-              );
-            }
-
-            return _HistoryList(
-              resumes: resumes,
-              onTapResume: (resume) {
-                ref.read(resumeFormProvider.notifier).loadResume(resume);
-                context.push(PreviewScreen.routePath);
-              },
-              onEditResume: (resume) {
-                ref.read(resumeFormProvider.notifier).loadResume(resume);
-                context.push(BuilderScreen.routePath);
-              },
-              onExportResume: (resume) {
-                ref.read(resumeFormProvider.notifier).loadResume(resume);
-                context.push(PreviewScreen.routePath);
-              },
-              onDeleteResume: (resume) async {
-                final confirmed = await _showDeleteConfirmationDialog(
-                  context,
-                  resume: resume,
-                  ref: ref,
-                );
-                if (confirmed == true) {
-                  ref.invalidate(resumeListProvider);
-                }
-              },
-              confirmDismiss: (resume) => _showDeleteConfirmationDialog(
-                context,
-                resume: resume,
-                ref: ref,
               ),
-            );
-          },
-          loading: () => ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(AppSizes.lg),
-            children: const [
-              SizedBox(height: 40),
-              Center(child: CircularProgressIndicator()),
-            ],
+            ),
           ),
-          error: (error, _) => ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(AppSizes.screenPadding),
-            children: [
-              const SizedBox(height: 80),
-              const Icon(
-                Icons.error_outline_rounded,
-                size: 72,
-                color: AppColors.error,
+          // Animated AI Resume button (bottom left)
+          Positioned(
+            left: 16,
+            bottom: 48,
+            child: SlideTransition(
+              position: _slideAnimation,
+              child: AnimatedAIButton(
+                onPressed: () =>
+                    context.push(ResumeOptimizerScreen.routePath),
               ),
-              const SizedBox(height: 20),
-              const Text(
-                'Failed to load resumes',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                error is Failure
-                    ? error.message
-                    : 'Something went wrong. Please try again.',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 24),
-              AppButton(
-                text: 'Retry',
-                icon: Icons.refresh_rounded,
-                onPressed: () {
-                  ref.invalidate(resumeListProvider);
-                },
-              ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
@@ -200,6 +235,7 @@ class HistoryScreen extends ConsumerWidget {
         icon: const Icon(Icons.add_rounded),
         label: const Text('New Resume'),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 

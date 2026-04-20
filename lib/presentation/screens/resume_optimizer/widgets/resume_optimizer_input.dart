@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_strings.dart';
 
 class ResumeOptimizerInput extends StatefulWidget {
   final TextEditingController controller;
-  final VoidCallback onOptimize;
 
   const ResumeOptimizerInput({
     super.key,
     required this.controller,
-    required this.onOptimize,
   });
 
   @override
@@ -43,10 +40,11 @@ class _ResumeOptimizerInputState extends State<ResumeOptimizerInput> {
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: AppColors.border),
           ),
+          constraints: const BoxConstraints(maxHeight: 200),
           child: TextField(
             controller: widget.controller,
-            minLines: 10,
-            maxLines: 15,
+            minLines: 6,
+            maxLines: 8,
             decoration: InputDecoration(
               hintText: 'Paste your resume here...',
               hintStyle: TextStyle(
@@ -54,42 +52,18 @@ class _ResumeOptimizerInputState extends State<ResumeOptimizerInput> {
                 fontSize: 14,
               ),
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.all(16),
+              contentPadding: const EdgeInsets.all(12),
             ),
             style: const TextStyle(
-              fontSize: 14,
+              fontSize: 13,
               color: AppColors.textPrimary,
-              height: 1.5,
+              height: 1.4,
             ),
             onChanged: (_) => setState(() {}),
           ),
         ),
         const SizedBox(height: 12),
         _buildCharacterCount(),
-        const SizedBox(height: 24),
-        SizedBox(
-          width: double.infinity,
-          height: 48,
-          child: ElevatedButton(
-            onPressed: widget.controller.text.trim().isEmpty
-                ? null
-                : widget.onOptimize,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text(
-              AppStrings.optimize,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: AppColors.white,
-              ),
-            ),
-          ),
-        ),
       ],
     );
   }
