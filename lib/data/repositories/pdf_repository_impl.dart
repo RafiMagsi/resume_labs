@@ -26,7 +26,15 @@ class PdfRepositoryImpl implements PdfRepository {
         template: template,
       );
 
-      final directory = await getApplicationDocumentsDirectory();
+      Directory directory;
+      try {
+        directory = await getApplicationDocumentsDirectory();
+      } catch (_) {
+        // If `path_provider` fails on iOS simulator (Objective-C FFI), fall back
+        // to a temp directory so export still works.
+        directory =
+            await Directory.systemTemp.createTemp('resume_labs_exports_');
+      }
       final safeTitle = _sanitizeFileName(
         resume.title.isEmpty ? 'resume' : resume.title,
       );

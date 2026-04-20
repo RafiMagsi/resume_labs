@@ -8,11 +8,26 @@ import 'app/app.dart';
 import 'firebase_options.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'data/datasources/local/hive_adapters.dart';
+import 'dart:io';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Hive.initFlutter();
+  // `Hive.initFlutter()` uses `path_provider` on iOS. Newer `path_provider`
+  // versions use Objective-C FFI which can fail on some simulator runtimes.
+  // Fall back to a temp directory instead of crashing on startup.
+  try {
+    await Hive.initFlutter();
+  } catch (e, st) {
+    final fallbackDir =
+        await Directory.systemTemp.createTemp('resume_labs_hive_');
+    Hive.init(fallbackDir.path);
+    if (kDebugMode) {
+      debugPrint('Hive.initFlutter failed, using temp dir instead.');
+      debugPrint('Error: $e');
+      debugPrint('$st');
+    }
+  }
   registerHiveAdapters();
 
   await dotenv.load(fileName: '.env');
