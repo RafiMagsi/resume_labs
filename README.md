@@ -41,7 +41,7 @@ Flutter (iOS + Android) app for building resumes, saving to Firebase, and export
 ### Android (release)
 1. Create a keystore (keep it private) and configure signing in `android/app/build.gradle`.
 2. Ensure Firebase config matches your Android application id:
-   - Current `applicationId`: `com.nextfiction.resumeLabs` (see `android/app/build.gradle.kts`)
+   - Current `applicationId`: `com.nextfiction.resume-labs` (see `android/app/build.gradle.kts`)
    - If you change it, regenerate `android/app/google-services.json` from Firebase Console.
 3. Build:
    - `flutter build apk --release`

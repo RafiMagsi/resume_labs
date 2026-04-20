@@ -70,6 +70,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: '346453081708',
     projectId: 'resume-labs-cdc63',
     storageBucket: 'resume-labs-cdc63.firebasestorage.app',
-    iosBundleId: 'com.nextfiction.resumeLabs',
+    iosBundleId: 'com.nextfiction.resume-labs',
   );
 }

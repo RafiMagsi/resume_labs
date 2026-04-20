@@ -17,10 +17,10 @@ class ModernCleanTemplate extends BaseResumeTemplate {
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.symmetric(horizontal: 30, vertical: 32),
+        margin: const pw.EdgeInsets.symmetric(horizontal: 34, vertical: 34),
         build: (context) => [
           _header(resume, boldFont),
-          pw.SizedBox(height: 18),
+          pw.SizedBox(height: 14),
           _section(
             title: 'Summary',
             content: [
@@ -86,32 +86,24 @@ class ModernCleanTemplate extends BaseResumeTemplate {
   pw.Widget _header(Resume resume, pw.Font boldFont) {
     return pw.Container(
       width: double.infinity,
-      padding: const pw.EdgeInsets.all(18),
-      decoration: pw.BoxDecoration(
-        color: const PdfColor.fromInt(0xFFF5F3FF),
-        borderRadius: pw.BorderRadius.circular(14),
-        border: pw.Border.all(color: const PdfColor.fromInt(0xFFE5E7EB)),
+      padding: const pw.EdgeInsets.only(bottom: 12),
+      decoration: const pw.BoxDecoration(
+        border: pw.Border(
+          bottom: pw.BorderSide(
+            color: PdfColor.fromInt(0xFFE5E7EB),
+            width: 1,
+          ),
+        ),
       ),
-      child: pw.Row(
+      child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          pw.Container(
-            width: 6,
-            height: 56,
-            decoration: pw.BoxDecoration(
-              color: const PdfColor.fromInt(0xFF6C5CE7),
-              borderRadius: pw.BorderRadius.circular(99),
-            ),
-          ),
-          pw.SizedBox(width: 14),
-          pw.Expanded(
-            child: pw.Text(
-              resume.title.isEmpty ? 'Untitled Resume' : resume.title,
-              style: pw.TextStyle(
-                font: boldFont,
-                fontSize: 22,
-                color: PdfColors.grey900,
-              ),
+          pw.Text(
+            resume.title.isEmpty ? 'Untitled Resume' : resume.title,
+            style: pw.TextStyle(
+              font: boldFont,
+              fontSize: 24,
+              color: PdfColors.grey900,
             ),
           ),
         ],
@@ -126,24 +118,25 @@ class ModernCleanTemplate extends BaseResumeTemplate {
   }) {
     return pw.Container(
       width: double.infinity,
-      padding: const pw.EdgeInsets.all(16),
+      padding: const pw.EdgeInsets.fromLTRB(16, 14, 16, 14),
       decoration: pw.BoxDecoration(
-        color: const PdfColor.fromInt(0xFFF8FAFC),
-        borderRadius: pw.BorderRadius.circular(12),
-        border: pw.Border.all(color: const PdfColor.fromInt(0xFFE2E8F0)),
+        color: PdfColors.white,
+        borderRadius: pw.BorderRadius.circular(10),
+        border: pw.Border.all(color: const PdfColor.fromInt(0xFFE5E7EB)),
       ),
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
           pw.Text(
-            title,
+            title.toUpperCase(),
             style: pw.TextStyle(
               font: titleFont,
-              fontSize: 13,
-              color: const PdfColor.fromInt(0xFF6D5EF8),
+              fontSize: 11,
+              color: const PdfColor.fromInt(0xFF6B7280),
+              letterSpacing: 1.1,
             ),
           ),
-          pw.SizedBox(height: 10),
+          pw.SizedBox(height: 8),
           ...content,
         ],
       ),
