@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -67,6 +68,14 @@ class _InMemoryResumeRepository implements ResumeRepository {
 }
 
 class _FakePdfRepository implements PdfRepository {
+  @override
+  Future<Either<Failure, Uint8List>> generateResumePdfBytes({
+    required Resume resume,
+    required ResumeTemplate template,
+  }) async {
+    return Right(Uint8List.fromList([0x25, 0x50, 0x44, 0x46])); // "%PDF"
+  }
+
   @override
   Future<Either<Failure, String>> exportResumePdf({
     required Resume resume,

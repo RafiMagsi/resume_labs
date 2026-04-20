@@ -75,7 +75,7 @@ void main() {
     verify(() => useCase('user-1')).called(1);
   });
 
-  test('returns empty list when use case fails', () async {
+  test('throws when use case fails', () async {
     final user = UserProfile(
       uid: 'user-1',
       email: 'test@example.com',
@@ -95,8 +95,10 @@ void main() {
 
     await container.read(authProvider.future);
 
-    final resumes = await container.read(resumeListProvider.future);
-    expect(resumes, isEmpty);
+    await expectLater(
+      container.read(resumeListProvider.future),
+      throwsA(isA<NetworkFailure>()),
+    );
     verify(() => useCase('user-1')).called(1);
   });
 }

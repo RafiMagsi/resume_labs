@@ -142,6 +142,8 @@ class ErrorDialog extends StatelessWidget {
         return AppStrings.fieldRequired;
       case PdfFailure():
         return AppStrings.unexpectedError;
+      case DocxFailure():
+        return AppStrings.unexpectedError;
       case UnknownFailure():
         return AppStrings.unexpectedError;
     }

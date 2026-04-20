@@ -1395,6 +1395,8 @@ PODS:
   - printing (1.0.0):
     - Flutter
   - RecaptchaInterop (101.0.0)
+  - share_plus (0.0.1):
+    - Flutter
 
 DEPENDENCIES:
   - cloud_firestore (from `.symlinks/plugins/cloud_firestore/ios`)
@@ -1405,6 +1407,7 @@ DEPENDENCIES:
   - Flutter (from `Flutter`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
   - printing (from `.symlinks/plugins/printing/ios`)
+  - share_plus (from `.symlinks/plugins/share_plus/ios`)
 
 SPEC REPOS:
   trunk:
@@ -1446,6 +1449,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/integration_test/ios"
   printing:
     :path: ".symlinks/plugins/printing/ios"
+  share_plus:
+    :path: ".symlinks/plugins/share_plus/ios"
 
 SPEC CHECKSUMS:
   abseil: a05cc83bf02079535e17169a73c5be5ba47f714b
@@ -1476,6 +1481,7 @@ SPEC CHECKSUMS:
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   printing: 54ff03f28fe9ba3aa93358afb80a8595a071dd07
   RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
+  share_plus: 50da8cb520a8f0f65671c6c6a99b3617ed10a58a
 
 PODFILE CHECKSUM: 3c63482e143d1b91d2d2560aee9fb04ecc74ac7e
 

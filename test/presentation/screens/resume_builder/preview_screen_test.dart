@@ -10,11 +10,15 @@ void main() {
         child: MaterialApp(home: PreviewScreen()),
       ),
     );
-    await tester.pumpAndSettle();
+    // `PdfPreview` keeps internal animations/timers; avoid `pumpAndSettle`.
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
 
     expect(find.byType(PreviewScreen), findsOneWidget);
     expect(find.text('Preview Controls'), findsOneWidget);
     expect(find.text('Export PDF'), findsOneWidget);
+    expect(find.text('Export DOCX'), findsOneWidget);
     expect(find.text('Back to Edit'), findsOneWidget);
   });
 }

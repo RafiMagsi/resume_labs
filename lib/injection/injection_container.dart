@@ -3,9 +3,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 import 'package:resume_labs/data/repositories/pdf_repository_impl.dart';
+import 'package:resume_labs/data/repositories/docx_repository_impl.dart';
+import 'package:resume_labs/data/services/docx_service.dart';
 import 'package:resume_labs/data/services/pdf_service.dart';
+import 'package:resume_labs/domain/repositories/docx_repository.dart';
 import 'package:resume_labs/domain/repositories/pdf_repository.dart';
+import 'package:resume_labs/domain/usecases/docx/export_docx_usecase.dart';
 import 'package:resume_labs/domain/usecases/pdf/export_pdf_usecase.dart';
+import 'package:resume_labs/domain/usecases/pdf/generate_pdf_bytes_usecase.dart';
 
 import '../data/datasources/local/resume_local_datasource.dart';
 import '../data/datasources/local/resume_local_datasource_impl.dart';
@@ -172,4 +177,24 @@ final pdfRepositoryProvider = Provider<PdfRepository>((ref) {
 final exportPdfUseCaseProvider = Provider<ExportPdfUseCase>((ref) {
   final repository = ref.watch(pdfRepositoryProvider);
   return ExportPdfUseCase(repository);
+});
+
+final generatePdfBytesUseCaseProvider =
+    Provider<GeneratePdfBytesUseCase>((ref) {
+  final repository = ref.watch(pdfRepositoryProvider);
+  return GeneratePdfBytesUseCase(repository);
+});
+
+final docxServiceProvider = Provider<DocxService>((ref) {
+  return const DocxService();
+});
+
+final docxRepositoryProvider = Provider<DocxRepository>((ref) {
+  final docxService = ref.watch(docxServiceProvider);
+  return DocxRepositoryImpl(docxService);
+});
+
+final exportDocxUseCaseProvider = Provider<ExportDocxUseCase>((ref) {
+  final repository = ref.watch(docxRepositoryProvider);
+  return ExportDocxUseCase(repository);
 });

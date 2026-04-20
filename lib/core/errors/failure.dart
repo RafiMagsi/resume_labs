@@ -30,3 +30,7 @@ final class UnknownFailure extends Failure {
 final class PdfFailure extends Failure {
   const PdfFailure(super.message);
 }
+
+final class DocxFailure extends Failure {
+  const DocxFailure(super.message);
+}
