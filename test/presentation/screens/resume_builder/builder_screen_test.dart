@@ -68,7 +68,7 @@ ProviderScope _buildApp({
 }
 
 void main() {
-  Finder _appBarTitle(String text) => find.descendant(
+  Finder appBarTitle(String text) => find.descendant(
         of: find.byType(AppBar),
         matching: find.text(text),
       );
@@ -81,7 +81,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(BuilderScreen), findsOneWidget);
-    expect(_appBarTitle('Personal Info'), findsOneWidget);
+    expect(appBarTitle('Personal Info'), findsOneWidget);
     expect(find.text('Next'), findsOneWidget);
 
     await tester.ensureVisible(find.text('Next'));
@@ -104,25 +104,25 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(_appBarTitle('Personal Info'), findsOneWidget);
+    expect(appBarTitle('Personal Info'), findsOneWidget);
     expect(find.text('Resume Title'), findsOneWidget);
     expect(find.text('Personal Summary'), findsOneWidget);
 
     await tester.ensureVisible(find.text('Next'));
     await tester.tap(find.text('Next'));
     await tester.pumpAndSettle();
-    expect(_appBarTitle('Work Experience'), findsOneWidget);
+    expect(appBarTitle('Work Experience'), findsOneWidget);
     expect(find.text('Add'), findsWidgets);
 
     await tester.ensureVisible(find.text('Next'));
     await tester.tap(find.text('Next'));
     await tester.pumpAndSettle();
-    expect(_appBarTitle('Education'), findsOneWidget);
+    expect(appBarTitle('Education'), findsOneWidget);
 
     await tester.ensureVisible(find.text('Next'));
     await tester.tap(find.text('Next'));
     await tester.pumpAndSettle();
-    expect(_appBarTitle('Skills'), findsOneWidget);
+    expect(appBarTitle('Skills'), findsOneWidget);
     expect(find.text('Save Resume'), findsOneWidget);
   });
 }

@@ -40,6 +40,20 @@ abstract final class AppColors {
   static const Color white = Color(0xFFFFFFFF);
   static const Color transparent = Colors.transparent;
 
+  // Template accents (resume templates)
+  static const Color templateClassic = textSecondary; // 0xFF6B7280
+  static const Color templateModern = Color(0xFF6D5EF8);
+  static const Color templateModernClean = Color(0xFF8B5CF6);
+  static const Color templateModernSidebar = Color(0xFF7C3AED);
+  static const Color templateMinimal = Color(0xFF059669);
+  static const Color templateExecutive = Color(0xFF1F2937);
+
+  // Password strength (Material defaults)
+  static const Color passwordWeak = Colors.red;
+  static const Color passwordFair = Colors.orange;
+  static const Color passwordGood = Colors.amber;
+  static const Color passwordStrong = Colors.green;
+
   // Backwards-compatible aliases (prefer the new names in new code).
   static const Color background = appBackground;
   static const Color surface = screenSurface;

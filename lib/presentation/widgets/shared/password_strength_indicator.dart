@@ -55,7 +55,9 @@ class PasswordStrengthIndicator extends StatelessWidget {
                   Icon(
                     req.met ? Icons.check_circle : Icons.radio_button_unchecked,
                     size: 16,
-                    color: req.met ? Colors.green : AppColors.textTertiary,
+                    color: req.met
+                        ? AppColors.passwordStrong
+                        : AppColors.textTertiary,
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -91,13 +93,13 @@ class PasswordStrengthIndicator extends StatelessWidget {
     if (password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) score++;
 
     if (score <= 2) {
-      return _Strength(0.25, 'Weak', Colors.red);
+      return _Strength(0.25, 'Weak', AppColors.passwordWeak);
     } else if (score <= 4) {
-      return _Strength(0.5, 'Fair', Colors.orange);
+      return _Strength(0.5, 'Fair', AppColors.passwordFair);
     } else if (score <= 5) {
-      return _Strength(0.75, 'Good', Colors.amber);
+      return _Strength(0.75, 'Good', AppColors.passwordGood);
     } else {
-      return _Strength(1.0, 'Strong', Colors.green);
+      return _Strength(1.0, 'Strong', AppColors.passwordStrong);
     }
   }
 

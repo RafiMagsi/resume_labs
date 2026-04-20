@@ -56,8 +56,7 @@ class ModernCleanTemplate extends BaseResumeTemplate {
             content: resume.educations.isEmpty
                 ? [bodyText('No education added.', regularFont)]
                 : resume.educations
-                    .map((item) =>
-                        educationItem(item, regularFont, mediumFont))
+                    .map((item) => educationItem(item, regularFont, mediumFont))
                     .toList(),
             titleFont: semiBoldFont,
           ),

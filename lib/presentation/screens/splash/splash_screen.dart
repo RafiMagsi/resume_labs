@@ -111,7 +111,7 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Text(
           'R',
           style: TextStyle(
-            color: Colors.white,
+            color: AppColors.white,
             fontSize: 56,
             fontWeight: FontWeight.w800,
           ),

@@ -236,7 +236,7 @@ class _AddExperienceSheetState extends State<AddExperienceSheet> {
                             borderRadius: BorderRadius.circular(8),
                             color: _isCurrentRole
                                 ? AppColors.secondarySurface
-                                : Colors.transparent,
+                                : AppColors.transparent,
                           ),
                           child: Text(
                             _isCurrentRole
@@ -281,7 +281,8 @@ class _AddExperienceSheetState extends State<AddExperienceSheet> {
               AppTextField(
                 controller: _descriptionController,
                 labelText: 'Responsibilities',
-                hintText: 'One per line\nLeading cross-functional teams\nImproved app performance',
+                hintText:
+                    'One per line\nLeading cross-functional teams\nImproved app performance',
                 maxLines: 4,
                 textInputAction: TextInputAction.done,
               )
@@ -336,35 +337,35 @@ class _AddExperienceSheetState extends State<AddExperienceSheet> {
                   variant: AppButtonVariant.secondary,
                   icon: Icons.auto_awesome_rounded,
                   isLoading: _isImprovingBullet,
-                  onPressed: (widget.onImproveBullet == null ||
-                          _isImprovingBullet)
-                      ? null
-                      : () async {
-                          final text = _bulletController.text.trim();
-                          if (text.isEmpty) return;
+                  onPressed:
+                      (widget.onImproveBullet == null || _isImprovingBullet)
+                          ? null
+                          : () async {
+                              final text = _bulletController.text.trim();
+                              if (text.isEmpty) return;
 
-                          setState(() => _isImprovingBullet = true);
-                          try {
-                            final improved =
-                                await widget.onImproveBullet!(text);
-                            if (improved == null ||
-                                improved.trim().isEmpty ||
-                                !context.mounted) {
-                              return;
-                            }
+                              setState(() => _isImprovingBullet = true);
+                              try {
+                                final improved =
+                                    await widget.onImproveBullet!(text);
+                                if (improved == null ||
+                                    improved.trim().isEmpty ||
+                                    !context.mounted) {
+                                  return;
+                                }
 
-                            _bulletController.text = improved;
-                            _bulletController.selection =
-                                TextSelection.fromPosition(
-                              TextPosition(
-                                  offset: _bulletController.text.length),
-                            );
-                          } finally {
-                            if (context.mounted) {
-                              setState(() => _isImprovingBullet = false);
-                            }
-                          }
-                        },
+                                _bulletController.text = improved;
+                                _bulletController.selection =
+                                    TextSelection.fromPosition(
+                                  TextPosition(
+                                      offset: _bulletController.text.length),
+                                );
+                              } finally {
+                                if (context.mounted) {
+                                  setState(() => _isImprovingBullet = false);
+                                }
+                              }
+                            },
                 ),
                 const SizedBox(height: 8),
                 AppButton(

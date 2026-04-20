@@ -242,8 +242,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
               final preview = isWide
                   ? previewWidget
                   : SizedBox(
-                      height:
-                          (constraints.maxWidth * 1.25).clamp(420.0, 760.0),
+                      height: (constraints.maxWidth * 1.25).clamp(420.0, 760.0),
                       child: previewWidget,
                     );
 

@@ -43,7 +43,9 @@ class ResumeCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          resume.title.isEmpty ? 'Untitled Resume' : resume.title,
+                          resume.title.isEmpty
+                              ? 'Untitled Resume'
+                              : resume.title,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
@@ -105,14 +107,22 @@ class ResumeCard extends StatelessWidget {
                         value: 'delete',
                         child: Row(
                           children: [
-                            Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                            Icon(
+                              Icons.delete_outline,
+                              size: 18,
+                              color: AppColors.error,
+                            ),
                             SizedBox(width: 8),
-                            Text('Delete', style: TextStyle(color: Colors.red)),
+                            Text(
+                              'Delete',
+                              style: TextStyle(color: AppColors.error),
+                            ),
                           ],
                         ),
                       ),
                     ],
-                    child: const Icon(Icons.more_vert, color: AppColors.textSecondary),
+                    child: const Icon(Icons.more_vert,
+                        color: AppColors.textSecondary),
                   ),
                 ],
               ),
@@ -233,17 +243,17 @@ class _TemplateTag extends StatelessWidget {
   Color _getTemplateColor() {
     switch (template) {
       case ResumeTemplate.classic:
-        return const Color(0xFF6B7280);
+        return AppColors.templateClassic;
       case ResumeTemplate.modern:
-        return const Color(0xFF6D5EF8);
+        return AppColors.templateModern;
       case ResumeTemplate.modernClean:
-        return const Color(0xFF8B5CF6);
+        return AppColors.templateModernClean;
       case ResumeTemplate.modernSidebar:
-        return const Color(0xFF7C3AED);
+        return AppColors.templateModernSidebar;
       case ResumeTemplate.minimal:
-        return const Color(0xFF059669);
+        return AppColors.templateMinimal;
       case ResumeTemplate.executive:
-        return const Color(0xFF1F2937);
+        return AppColors.templateExecutive;
     }
   }
 }

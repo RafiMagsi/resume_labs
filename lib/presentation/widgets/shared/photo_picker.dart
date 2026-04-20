@@ -133,7 +133,7 @@ class _PhotoPickerState extends State<PhotoPicker> {
                   shape: BoxShape.circle,
                   color: AppColors.primary,
                   border: Border.all(
-                    color: Colors.white,
+                    color: AppColors.white,
                     width: 2,
                   ),
                   boxShadow: [
@@ -149,14 +149,14 @@ class _PhotoPickerState extends State<PhotoPicker> {
                         height: 20,
                         child: CircularProgressIndicator(
                           valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white,
+                            AppColors.white,
                           ),
                           strokeWidth: 2,
                         ),
                       )
                     : const Icon(
                         Icons.camera_alt_rounded,
-                        color: Colors.white,
+                        color: AppColors.white,
                         size: 18,
                       ),
               ),
@@ -173,11 +173,11 @@ class _PhotoPickerState extends State<PhotoPicker> {
                   height: 32,
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.red,
+                    color: AppColors.error,
                   ),
                   child: const Icon(
                     Icons.close,
-                    color: Colors.white,
+                    color: AppColors.white,
                     size: 16,
                   ),
                 ),
