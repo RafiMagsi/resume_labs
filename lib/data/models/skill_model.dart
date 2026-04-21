@@ -7,7 +7,7 @@ part 'skill_model.g.dart';
 class SkillModel with _$SkillModel {
   const factory SkillModel({
     required String name,
-    required String category,
+    @Default('') String category,
   }) = _SkillModel;
 
   factory SkillModel.fromJson(Map<String, dynamic> json) =>

@@ -26,6 +26,7 @@ export interface Education {
 
 export interface Skill {
   name: string;
+  category?: string;
 }
 
 export type TemplateGenerator = (resumeData: ResumeData) => Promise<Buffer>;

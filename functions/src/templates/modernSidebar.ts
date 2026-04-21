@@ -1,8 +1,45 @@
 import PDFDocument from "pdfkit";
+import https from "https";
+import http from "http";
 import { ResumeData, formatDate, createPdfBuffer } from "../types";
 
+async function downloadImage(url: string): Promise<Buffer | null> {
+  return new Promise((resolve) => {
+    if (!url) {
+      resolve(null);
+      return;
+    }
+
+    try {
+      const protocol = url.startsWith("https") ? https : http;
+      const timeout = setTimeout(() => {
+        resolve(null);
+      }, 8000);
+
+      protocol
+        .get(url, { timeout: 8000 }, (response) => {
+          clearTimeout(timeout);
+          if (response.statusCode !== 200) {
+            resolve(null);
+            return;
+          }
+
+          const chunks: Buffer[] = [];
+          response.on("data", (chunk) => chunks.push(chunk));
+          response.on("end", () => {
+            resolve(Buffer.concat(chunks));
+          });
+          response.on("error", () => resolve(null));
+        })
+        .on("error", () => resolve(null));
+    } catch (error) {
+      resolve(null);
+    }
+  });
+}
+
 export async function generateModernSidebarTemplate(resumeData: ResumeData): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     try {
       const doc = new PDFDocument({ size: "A4", margin: 0 });
       const sidebarColor = "#2c3e50";
@@ -11,9 +48,42 @@ export async function generateModernSidebarTemplate(resumeData: ResumeData): Pro
       // Sidebar (left 150px)
       doc.rect(0, 0, 150, 842).fill(sidebarColor);
 
+      // Download image if URL provided
+      let imageBuffer: Buffer | null = null;
+      if (resumeData.photoUrl) {
+        imageBuffer = await downloadImage(resumeData.photoUrl);
+      }
+
+      // Photo in sidebar (circular)
+      if (imageBuffer) {
+        try {
+          const photoRadius = 40;
+          const photoDiameter = photoRadius * 2;
+          const photoX = 35 - photoRadius;
+          const photoY = 40;
+
+          doc.save();
+          doc.circle(photoX + photoRadius, photoY + photoRadius, photoRadius);
+          doc.clip();
+          doc.image(imageBuffer, photoX, photoY, {
+            width: photoDiameter,
+            height: photoDiameter,
+            fit: [photoDiameter, photoDiameter],
+          });
+          doc.restore();
+          doc.circle(photoX + photoRadius, photoY + photoRadius, photoRadius).stroke("#ffffff");
+        } catch (error) {
+          const photoRadius = 40;
+          doc.circle(35 + photoRadius, 40 + photoRadius, photoRadius).stroke("#ffffff");
+        }
+      } else if (resumeData.photoUrl) {
+        const photoRadius = 40;
+        doc.circle(35 + photoRadius, 40 + photoRadius, photoRadius).stroke("#ffffff");
+      }
+
       // Header in sidebar area
       doc.fontSize(20).font("Helvetica-Bold").fillColor("#ffffff");
-      doc.text(resumeData.title || "RESUME", 15, 40, { width: 120, align: "left" });
+      doc.text(resumeData.title || "RESUME", 15, 130, { width: 120, align: "left" });
 
       // Skills in sidebar
       if (resumeData.skills && resumeData.skills.length > 0) {

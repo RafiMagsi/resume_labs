@@ -1,10 +1,80 @@
 import PDFDocument from "pdfkit";
+import https from "https";
+import http from "http";
 import { ResumeData, formatDate, createPdfBuffer } from "../types";
 
+async function downloadImage(url: string): Promise<Buffer | null> {
+  return new Promise((resolve) => {
+    if (!url) {
+      resolve(null);
+      return;
+    }
+
+    try {
+      const protocol = url.startsWith("https") ? https : http;
+      const timeout = setTimeout(() => {
+        resolve(null);
+      }, 8000);
+
+      protocol
+        .get(url, { timeout: 8000 }, (response) => {
+          clearTimeout(timeout);
+          if (response.statusCode !== 200) {
+            resolve(null);
+            return;
+          }
+
+          const chunks: Buffer[] = [];
+          response.on("data", (chunk) => chunks.push(chunk));
+          response.on("end", () => {
+            resolve(Buffer.concat(chunks));
+          });
+          response.on("error", () => resolve(null));
+        })
+        .on("error", () => resolve(null));
+    } catch (error) {
+      resolve(null);
+    }
+  });
+}
+
 export async function generateMinimalTemplate(resumeData: ResumeData): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     try {
       const doc = new PDFDocument({ size: "A4", margin: 40 });
+
+      // Download image if URL provided
+      let imageBuffer: Buffer | null = null;
+      if (resumeData.photoUrl) {
+        imageBuffer = await downloadImage(resumeData.photoUrl);
+      }
+
+      // Photo (top right, circular)
+      if (imageBuffer) {
+        try {
+          const photoRadius = 27;
+          const photoDiameter = photoRadius * 2;
+          const photoX = 520;
+          const photoY = 40 + photoRadius;
+
+          doc.save();
+          doc.circle(photoX + photoRadius, photoY + photoRadius, photoRadius);
+          doc.clip();
+          doc.image(imageBuffer, photoX, photoY, {
+            width: photoDiameter,
+            height: photoDiameter,
+            fit: [photoDiameter, photoDiameter],
+          });
+          doc.restore();
+          doc.circle(photoX + photoRadius, photoY + photoRadius, photoRadius).stroke("#cccccc");
+        } catch (error) {
+          const photoRadius = 27;
+          doc.circle(520 + photoRadius, 40 + photoRadius, photoRadius).stroke("#cccccc");
+        }
+      } else if (resumeData.photoUrl) {
+        const photoRadius = 27;
+        doc.circle(520 + photoRadius, 40 + photoRadius, photoRadius).stroke("#cccccc");
+      }
 
       // Header - minimal styling
       doc.fontSize(24).font("Helvetica-Bold").fillColor("#000000");

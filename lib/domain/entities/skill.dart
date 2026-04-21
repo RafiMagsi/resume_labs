@@ -4,7 +4,7 @@ class Skill {
 
   const Skill({
     required this.name,
-    required this.category,
+    this.category = '',
   });
 
   Skill copyWith({
