@@ -122,9 +122,10 @@ function buildHeader(
   resumeData: ResumeData,
   imageBuffer: Buffer | null,
 ): void {
-  const titleWidth = resumeData.photoUrl ? CONTENT_WIDTH - 90 : CONTENT_WIDTH;
   const photoRadius = 35;
   const photoDiameter = photoRadius * 2;
+  const imageGap = 10; // Gap between text and image
+  const textColumnWidth = resumeData.photoUrl ? CONTENT_WIDTH - photoDiameter - imageGap : CONTENT_WIDTH;
   const photoX = PAGE_MARGIN + CONTENT_WIDTH - photoDiameter;
   const headerStartY = doc.y;
 
@@ -140,11 +141,10 @@ function buildHeader(
       doc.circle(photoX + photoRadius, photoY + photoRadius, photoRadius);
       doc.clip();
 
-      // Draw image inside circular path
+      // Draw image inside circular path - fill entire circle
       doc.image(imageBuffer, photoX, photoY, {
         width: photoDiameter,
         height: photoDiameter,
-        fit: [photoDiameter, photoDiameter],
       });
 
       // Restore state
@@ -163,12 +163,13 @@ function buildHeader(
     drawPhotoPlaceholder(doc, photoX, headerStartY + photoRadius, photoDiameter);
   }
 
+  // Draw title and subtitle in left column only
   doc
     .font("Helvetica-Bold")
     .fontSize(26)
     .fillColor("#111111")
     .text(resumeData.title?.trim() || "Untitled Resume", PAGE_MARGIN, headerStartY, {
-      width: titleWidth,
+      width: textColumnWidth,
       align: "left",
     });
 
@@ -179,9 +180,14 @@ function buildHeader(
     .fontSize(10.5)
     .fillColor("#6B7280")
     .text("Professional Resume", PAGE_MARGIN, doc.y, {
-      width: titleWidth,
+      width: textColumnWidth,
       align: "left",
     });
+
+  // Ensure space below photo circle before next section
+  let nextY = doc.y + 14;
+  const photoBottomY = resumeData.photoUrl ? headerStartY + photoDiameter + 14 : headerStartY;
+  nextY = Math.max(nextY, photoBottomY);
 
   doc.moveDown(0.55);
   const dividerY = doc.y;
@@ -192,7 +198,7 @@ function buildHeader(
     .lineTo(PAGE_MARGIN + CONTENT_WIDTH, dividerY)
     .stroke();
 
-  doc.y = dividerY + 14;
+  doc.y = nextY;
 }
 
 function drawPhotoPlaceholder(

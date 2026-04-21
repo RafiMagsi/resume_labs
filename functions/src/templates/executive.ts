@@ -65,7 +65,6 @@ export async function generateExecutiveTemplate(resumeData: ResumeData): Promise
           doc.image(imageBuffer, photoX, photoY, {
             width: photoDiameter,
             height: photoDiameter,
-            fit: [photoDiameter, photoDiameter],
           });
           doc.restore();
           doc.circle(photoX + photoRadius, photoY + photoRadius, photoRadius).stroke(primaryColor).lineWidth(2);
@@ -78,20 +77,37 @@ export async function generateExecutiveTemplate(resumeData: ResumeData): Promise
         doc.circle(495 + photoRadius, 50 + photoRadius, photoRadius).stroke(primaryColor).lineWidth(2);
       }
 
+      // Calculate layout with image column
+      const photoRadius = 35;
+      const photoDiameter = photoRadius * 2;
+      const imageGap = 10;
+      const textColumnWidth = resumeData.photoUrl ? 495 - photoDiameter - imageGap : 495;
+      const headerStartY = doc.y;
+
       // Header with top border
       doc.rect(50, 50, 495, 3).fill(primaryColor);
       doc.moveDown(0.3);
 
       doc.fontSize(32).font("Helvetica-Bold").fillColor(accentColor);
-      doc.text(resumeData.title || "RESUME", { align: "center" });
+      doc.text(resumeData.title || "RESUME", 50, doc.y, {
+        align: "left",
+        width: textColumnWidth,
+      });
 
       if (resumeData.personalSummary) {
         doc.moveDown(0.3);
         doc.fontSize(11).fillColor("#374151").font("Helvetica");
-        doc.text(resumeData.personalSummary, { align: "center", width: 495 });
+        doc.text(resumeData.personalSummary, 50, doc.y, {
+          width: textColumnWidth,
+        });
       }
 
-      doc.moveDown(0.6);
+      // Ensure space below photo
+      let nextY = doc.y + 24;
+      const photoBottomY = resumeData.photoUrl ? headerStartY + photoDiameter + 20 : headerStartY;
+      nextY = Math.max(nextY, photoBottomY);
+      doc.y = nextY;
+
       doc.rect(50, doc.y, 495, 2).fill(primaryColor);
       doc.moveDown(0.4);
 

@@ -68,7 +68,6 @@ export async function generateModernSidebarTemplate(resumeData: ResumeData): Pro
           doc.image(imageBuffer, photoX, photoY, {
             width: photoDiameter,
             height: photoDiameter,
-            fit: [photoDiameter, photoDiameter],
           });
           doc.restore();
           doc.circle(photoX + photoRadius, photoY + photoRadius, photoRadius).stroke("#ffffff");
@@ -101,13 +100,19 @@ export async function generateModernSidebarTemplate(resumeData: ResumeData): Pro
       }
 
       // Main content area (right side)
+      // Ensure content starts below photo height (photo radius 40, diameter 80, positioned at Y=40-120)
+      const photoHeight = 80;
+      const photoEndY = 40 + photoHeight + 20; // 20pt margin
+      let contentY = Math.max(50, photoEndY);
+
       // Personal Summary
       if (resumeData.personalSummary) {
         doc.fontSize(10).fillColor(textColor).font("Helvetica");
-        doc.text(resumeData.personalSummary, 165, 50, { width: 380 });
+        doc.text(resumeData.personalSummary, 165, contentY, { width: 380 });
+        contentY = doc.y + 20;
+      } else {
+        contentY = photoEndY;
       }
-
-      let contentY = resumeData.personalSummary ? 110 : 50;
 
       // Work Experience
       if (resumeData.workExperiences && resumeData.workExperiences.length > 0) {

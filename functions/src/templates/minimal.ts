@@ -63,7 +63,6 @@ export async function generateMinimalTemplate(resumeData: ResumeData): Promise<B
           doc.image(imageBuffer, photoX, photoY, {
             width: photoDiameter,
             height: photoDiameter,
-            fit: [photoDiameter, photoDiameter],
           });
           doc.restore();
           doc.circle(photoX + photoRadius, photoY + photoRadius, photoRadius).stroke("#cccccc");
@@ -76,17 +75,36 @@ export async function generateMinimalTemplate(resumeData: ResumeData): Promise<B
         doc.circle(520 + photoRadius, 40 + photoRadius, photoRadius).stroke("#cccccc");
       }
 
+      // Calculate layout with image column
+      const photoRadius = 27;
+      const photoDiameter = photoRadius * 2;
+      const imageGap = 10;
+      const textColumnWidth = resumeData.photoUrl ? 515 - photoDiameter - imageGap : 515;
+      const headerStartY = doc.y;
+
       // Header - minimal styling
       doc.fontSize(24).font("Helvetica-Bold").fillColor("#000000");
-      doc.text(resumeData.title || "Resume", { align: "left" });
+      doc.text(resumeData.title || "Resume", 40, headerStartY, {
+        align: "left",
+        width: textColumnWidth,
+      });
 
       if (resumeData.personalSummary) {
         doc.moveDown(0.2);
         doc.fontSize(10).fillColor("#666666").font("Helvetica");
-        doc.text(resumeData.personalSummary, { align: "left", width: 515 });
+        doc.text(resumeData.personalSummary, 40, doc.y, {
+          align: "left",
+          width: textColumnWidth,
+        });
       }
 
-      doc.moveDown(0.4);
+      // Ensure space below photo
+      let nextY = doc.y + 14;
+      const photoBottomY = resumeData.photoUrl ? headerStartY + photoDiameter + 14 : headerStartY;
+      nextY = Math.max(nextY, photoBottomY);
+      doc.y = nextY;
+
+      doc.moveDown(0.2);
 
       // Work Experience
       if (resumeData.workExperiences && resumeData.workExperiences.length > 0) {

@@ -64,7 +64,6 @@ export async function generateModernCleanTemplate(resumeData: ResumeData): Promi
           doc.image(imageBuffer, photoX, photoY, {
             width: photoDiameter,
             height: photoDiameter,
-            fit: [photoDiameter, photoDiameter],
           });
           doc.restore();
           doc.circle(photoX + photoRadius, photoY + photoRadius, photoRadius).stroke(accentColor);
@@ -77,17 +76,35 @@ export async function generateModernCleanTemplate(resumeData: ResumeData): Promi
         doc.circle(550 - photoRadius, 50 + photoRadius, photoRadius).stroke(accentColor);
       }
 
+      // Calculate layout with image column
+      const photoRadius = 32;
+      const photoDiameter = photoRadius * 2;
+      const imageGap = 10;
+      const textColumnWidth = resumeData.photoUrl ? 500 - photoDiameter - imageGap : 500;
+      const headerStartY = doc.y;
+
       // Header
       doc.fontSize(26).font("Helvetica-Bold").fillColor(accentColor);
-      doc.text(resumeData.title || "Resume", { align: "left" });
+      doc.text(resumeData.title || "Resume", 45, headerStartY, {
+        align: "left",
+        width: textColumnWidth,
+      });
 
       if (resumeData.personalSummary) {
         doc.moveDown(0.2);
         doc.fontSize(10).fillColor("#555555").font("Helvetica");
-        doc.text(resumeData.personalSummary, { width: 500 });
+        doc.text(resumeData.personalSummary, 45, doc.y, {
+          width: textColumnWidth,
+        });
       }
 
-      doc.moveDown(0.4);
+      // Ensure space below photo
+      let nextY = doc.y + 14;
+      const photoBottomY = resumeData.photoUrl ? headerStartY + photoDiameter + 14 : headerStartY;
+      nextY = Math.max(nextY, photoBottomY);
+      doc.y = nextY;
+
+      doc.moveDown(0.2);
 
       // Work Experience
       if (resumeData.workExperiences && resumeData.workExperiences.length > 0) {
