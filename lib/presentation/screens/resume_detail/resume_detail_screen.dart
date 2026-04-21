@@ -270,12 +270,40 @@ class _ResumeDetailScreenState extends ConsumerState<ResumeDetailScreen> {
         educations: formState.educations,
         skills: formState.skills,
         buildPdfBytes: (resume, template) async {
-          final useCase = ref.read(generatePdfBytesUseCaseProvider);
-          final result = await useCase(resume: resume, template: template);
-          return result.match(
-            (failure) => throw Exception(failure.message),
-            (bytes) => bytes,
+          final firebasePdfService = ref.read(firebasePdfServiceProvider);
+          final resumeData = {
+            'title': resume.title,
+            'personalSummary': resume.personalSummary,
+            'photoUrl': resume.photoUrl,
+            'workExperiences': resume.workExperiences
+                .map((e) => {
+                  'role': e.role,
+                  'company': e.company,
+                  'location': e.location,
+                  'startDate': e.startDate.toString(),
+                  'endDate': e.endDate?.toString(),
+                  'bulletPoints': e.bulletPoints,
+                })
+                .toList(),
+            'educations': resume.educations
+                .map((e) => {
+                  'degree': e.degree,
+                  'field': e.field,
+                  'school': e.school,
+                  'graduationDate': e.graduationDate.toString(),
+                  'gpa': e.gpa,
+                })
+                .toList(),
+            'skills': resume.skills
+                .map((s) => {'name': s.name})
+                .toList(),
+          };
+
+          final pdfBytes = await firebasePdfService.generateResumePdf(
+            resumeData: resumeData,
+            template: template.name,
           );
+          return Uint8List.fromList(pdfBytes);
         },
       ),
     );
