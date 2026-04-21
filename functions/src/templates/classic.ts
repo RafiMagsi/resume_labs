@@ -1,4 +1,3 @@
-
 import PDFDocument from "pdfkit";
 import https from "https";
 import http from "http";
@@ -6,6 +5,10 @@ import { ResumeData, formatDate, createPdfBuffer } from "../types";
 
 const PAGE_MARGIN = 36;
 const CONTENT_WIDTH = 595.28 - PAGE_MARGIN * 2;
+const PHOTO_DIAMETER = 68;
+const PHOTO_RADIUS = PHOTO_DIAMETER / 2;
+const PHOTO_GAP = 16;
+const HEADER_BOTTOM_GAP = 18;
 
 async function downloadImage(url: string): Promise<Buffer | null> {
   return new Promise((resolve) => {
@@ -122,75 +125,62 @@ function buildHeader(
   resumeData: ResumeData,
   imageBuffer: Buffer | null,
 ): void {
-  const photoRadius = 35;
-  const photoDiameter = photoRadius * 2;
-  const imageGap = 10; // Gap between text and image
-  const textColumnWidth = resumeData.photoUrl ? CONTENT_WIDTH - photoDiameter - imageGap : CONTENT_WIDTH;
-  const photoX = PAGE_MARGIN + CONTENT_WIDTH - photoDiameter;
+  const hasPhotoSlot = Boolean(resumeData.photoUrl);
   const headerStartY = doc.y;
+  const photoX = PAGE_MARGIN + CONTENT_WIDTH - PHOTO_DIAMETER;
+  const photoY = headerStartY;
+  const textColumnWidth = hasPhotoSlot
+    ? CONTENT_WIDTH - PHOTO_DIAMETER - PHOTO_GAP
+    : CONTENT_WIDTH;
 
-  // Add photo if image was successfully downloaded (circular)
-  if (imageBuffer) {
-    try {
-      const photoY = headerStartY + photoRadius; // Align top of circle with top of title
+  if (hasPhotoSlot) {
+    if (imageBuffer) {
+      try {
+        doc.save();
+        doc.circle(photoX + PHOTO_RADIUS, photoY + PHOTO_RADIUS, PHOTO_RADIUS);
+        doc.clip();
+        doc.image(imageBuffer, photoX, photoY, {
+          width: PHOTO_DIAMETER,
+          height: PHOTO_DIAMETER,
+        });
+        doc.restore();
 
-      // Save state for clipping
-      doc.save();
-
-      // Create circular clipping path
-      doc.circle(photoX + photoRadius, photoY + photoRadius, photoRadius);
-      doc.clip();
-
-      // Draw image inside circular path - fill entire circle
-      doc.image(imageBuffer, photoX, photoY, {
-        width: photoDiameter,
-        height: photoDiameter,
-      });
-
-      // Restore state
-      doc.restore();
-
-      // Draw circle border
-      doc
-        .circle(photoX + photoRadius, photoY + photoRadius, photoRadius)
-        .stroke("#CBD5E1");
-    } catch (error) {
-      // Fallback to placeholder if image fails to render
-      drawPhotoPlaceholder(doc, photoX, headerStartY + photoRadius, photoDiameter);
+        doc
+          .circle(photoX + PHOTO_RADIUS, photoY + PHOTO_RADIUS, PHOTO_RADIUS)
+          .lineWidth(1)
+          .stroke("#CBD5E1");
+      } catch (error) {
+        drawPhotoPlaceholder(doc, photoX, photoY, PHOTO_DIAMETER);
+      }
+    } else {
+      drawPhotoPlaceholder(doc, photoX, photoY, PHOTO_DIAMETER);
     }
-  } else if (resumeData.photoUrl) {
-    // Show placeholder if URL provided but image failed to download
-    drawPhotoPlaceholder(doc, photoX, headerStartY + photoRadius, photoDiameter);
   }
 
-  // Draw title and subtitle in left column only
   doc
     .font("Helvetica-Bold")
-    .fontSize(26)
+    .fontSize(25)
     .fillColor("#111111")
     .text(resumeData.title?.trim() || "Untitled Resume", PAGE_MARGIN, headerStartY, {
       width: textColumnWidth,
       align: "left",
     });
 
-  doc.moveDown(0.2);
+  const titleBottomY = doc.y;
 
   doc
     .font("Helvetica")
     .fontSize(10.5)
     .fillColor("#6B7280")
-    .text("Professional Resume", PAGE_MARGIN, doc.y, {
+    .text("Professional Resume", PAGE_MARGIN, titleBottomY + 4, {
       width: textColumnWidth,
       align: "left",
     });
 
-  // Ensure space below photo circle before next section
-  let nextY = doc.y + 14;
-  const photoBottomY = resumeData.photoUrl ? headerStartY + photoDiameter + 14 : headerStartY;
-  nextY = Math.max(nextY, photoBottomY);
+  const textBottomY = doc.y;
+  const photoBottomY = hasPhotoSlot ? photoY + PHOTO_DIAMETER : headerStartY;
+  const dividerY = Math.max(textBottomY, photoBottomY) + HEADER_BOTTOM_GAP;
 
-  doc.moveDown(0.55);
-  const dividerY = doc.y;
   doc
     .strokeColor("#CBD5E1")
     .lineWidth(1)
@@ -198,7 +188,7 @@ function buildHeader(
     .lineTo(PAGE_MARGIN + CONTENT_WIDTH, dividerY)
     .stroke();
 
-  doc.y = nextY;
+  doc.y = dividerY + 16;
 }
 
 function drawPhotoPlaceholder(
@@ -208,15 +198,18 @@ function drawPhotoPlaceholder(
   size: number,
 ): void {
   const radius = size / 2;
+
   doc
+    .save()
     .circle(x + radius, y + radius, radius)
-    .stroke("#CBD5E1");
+    .fillAndStroke("#F8FAFC", "#CBD5E1")
+    .restore();
 
   doc
     .font("Helvetica")
     .fontSize(9)
-    .fillColor("#9CA3AF")
-    .text("Photo", x, y + radius - 8, {
+    .fillColor("#94A3B8")
+    .text("Photo", x, y + radius - 5, {
       width: size,
       align: "center",
     });
@@ -246,9 +239,9 @@ function addSection(
     .lineTo(PAGE_MARGIN + CONTENT_WIDTH, dividerY)
     .stroke();
 
-  doc.y = dividerY + 10;
+  doc.y = dividerY + 12;
   renderContent();
-  doc.moveDown(1.0);
+  doc.moveDown(1.1);
 }
 
 function writeWorkExperience(
@@ -272,7 +265,7 @@ function writeWorkExperience(
   if (companyLocation) {
     doc.moveDown(0.12);
     doc
-      .font("Helvetica-Bold")
+      .font("Helvetica")
       .fontSize(10.5)
       .fillColor("#4B5563")
       .text(companyLocation, PAGE_MARGIN, doc.y, {
@@ -381,11 +374,11 @@ function writeEducation(
 function writeBodyText(doc: PDFKit.PDFDocument, text: string): void {
   doc
     .font("Helvetica")
-    .fontSize(10.8)
+    .fontSize(10.6)
     .fillColor("#334155")
     .text(text, PAGE_MARGIN, doc.y, {
       width: CONTENT_WIDTH,
       align: "left",
-      lineGap: 3,
+      lineGap: 4,
     });
 }
