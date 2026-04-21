@@ -13,6 +13,7 @@ import '../../widgets/shared/app_button.dart';
 import '../../widgets/resume/resume_card.dart';
 import '../resume_builder/builder_screen.dart';
 import '../resume_builder/preview_screen.dart';
+import '../resume_detail/resume_detail_screen.dart';
 import '../resume_optimizer/resume_optimizer_screen.dart';
 import '../../widgets/shared/error_dialog.dart';
 import '../../widgets/shared/user_profile_sheet.dart';
@@ -135,7 +136,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
                   resumes: resumes,
                   onTapResume: (resume) {
                     ref.read(resumeFormProvider.notifier).loadResume(resume);
-                    context.push(PreviewScreen.routePath);
+                    context.push(ResumeDetailScreen.routePath);
                   },
                   onEditResume: (resume) {
                     ref.read(resumeFormProvider.notifier).loadResume(resume);
@@ -375,7 +376,7 @@ class _HistoryListState extends State<_HistoryList> {
           ),
           child: ResumeCard(
             resume: resume,
-            onEdit: () => widget.onEditResume(resume),
+            onEdit: () => widget.onTapResume(resume),
             onExport: () => widget.onExportResume(resume),
             onDelete: () => widget.onDeleteResume(resume),
           ),

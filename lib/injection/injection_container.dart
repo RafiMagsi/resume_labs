@@ -11,6 +11,7 @@ import 'package:resume_labs/domain/repositories/pdf_repository.dart';
 import 'package:resume_labs/domain/usecases/docx/export_docx_usecase.dart';
 import 'package:resume_labs/domain/usecases/pdf/export_pdf_usecase.dart';
 import 'package:resume_labs/domain/usecases/pdf/generate_pdf_bytes_usecase.dart';
+import 'package:resume_labs/presentation/services/firebase_pdf_service.dart';
 
 import '../data/datasources/local/resume_local_datasource.dart';
 import '../data/datasources/local/resume_local_datasource_impl.dart';
@@ -34,6 +35,7 @@ import '../domain/usecases/resume/get_resume_usecase.dart';
 import '../domain/usecases/resume/update_resume_usecase.dart';
 
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import '../data/datasources/remote/openai_datasource.dart';
 import '../data/datasources/remote/openai_datasource_impl.dart';
@@ -182,6 +184,11 @@ final suggestSkillsUseCaseProvider = Provider<SuggestSkillsUseCase>((ref) {
 
 final pdfServiceProvider = Provider<PdfService>((ref) {
   return PdfService();
+});
+
+final firebasePdfServiceProvider = Provider<FirebasePdfService>((ref) {
+  final url = dotenv.env['FIREBASE_PDF_FUNCTION_URL'];
+  return FirebasePdfService(cloudFunctionUrl: url);
 });
 
 final pdfRepositoryProvider = Provider<PdfRepository>((ref) {

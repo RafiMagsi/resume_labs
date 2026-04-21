@@ -1,12 +1,22 @@
+import 'dart:convert';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/errors/failure.dart';
+import '../../../domain/entities/education.dart';
+import '../../../domain/entities/skill.dart';
+import '../../../domain/entities/work_experience.dart';
+import '../../providers/auth/auth_provider.dart';
+import '../../providers/resume/resume_form_provider.dart';
 import '../../providers/resume/resume_optimization_provider.dart';
 import '../../widgets/shared/credits_paywall.dart';
 import '../../widgets/shared/error_dialog.dart';
+import '../resume_builder/preview_screen.dart';
 import 'widgets/resume_optimizer_input.dart';
 import 'widgets/resume_optimization_result.dart';
 import 'widgets/resume_file_upload.dart';
@@ -119,9 +129,7 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
                   originalResume: _resumeController.text,
                   optimizedResume: resumeState.value!,
                   onOptimizeAnother: _resetForm,
-                  onImportToResume: () {
-                    Navigator.of(context).pop(resumeState.value);
-                  },
+                  onImportToResume: () => _handleImportToResume(resumeState.value!),
                 )
               else
                 _buildInputTabs(),
@@ -353,6 +361,504 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
         ),
       ],
     );
+  }
+
+  Future<void> _handleImportToResume(String optimizedText) async {
+    debugPrint('[ResumeOptimizer] Starting import to resume...');
+    debugPrint('[ResumeOptimizer] Optimized text length: ${optimizedText.length}');
+
+    try {
+      if (!context.mounted) {
+        debugPrint('[ResumeOptimizer] ✗ Context not mounted, aborting');
+        return;
+      }
+
+      // Get the authenticated user's ID
+      final authState = ref.read(authProvider);
+      final userId = authState.whenData((profile) => profile?.uid).value;
+
+      if (userId == null || userId.isEmpty) {
+        debugPrint('[ResumeOptimizer] ✗ User not authenticated');
+        if (context.mounted) {
+          ErrorDialog.show(
+            context,
+            failure: const AuthFailure('User not authenticated. Please sign in again.'),
+            title: 'Auth Error',
+          );
+        }
+        return;
+      }
+      debugPrint('[ResumeOptimizer] User ID: $userId');
+
+      final notifier = ref.read(resumeFormProvider.notifier);
+      final currentState = ref.read(resumeFormProvider);
+
+      // Reset to create mode if no existing resume is loaded
+      // This ensures we create a NEW resume, not update an existing one
+      if (!currentState.isEditing) {
+        debugPrint('[ResumeOptimizer] Creating NEW resume record');
+        notifier.reset(userId: userId);
+      } else {
+        debugPrint('[ResumeOptimizer] Updating existing resume: ${currentState.resumeId}');
+      }
+
+      // Parse JSON and update each section directly
+      _parseJsonAndUpdateSections(optimizedText, notifier);
+      debugPrint('[ResumeOptimizer] ✓ All sections parsed and updated from JSON');
+
+      // Save to Firestore (will create new or update based on isEditing flag)
+      debugPrint('[ResumeOptimizer] Saving resume to Firestore...');
+      final saveSuccess = await notifier.save();
+
+      if (!context.mounted) {
+        debugPrint('[ResumeOptimizer] ✗ Context not mounted after save');
+        return;
+      }
+
+      if (saveSuccess) {
+        debugPrint('[ResumeOptimizer] ✓ Resume saved to Firestore');
+
+        // Navigate to preview/export screen
+        context.pushReplacement(PreviewScreen.routePath);
+        debugPrint('[ResumeOptimizer] ✓ Navigated to preview screen');
+
+        // Show success message
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Resume optimized and saved! 🎉'),
+                duration: Duration(seconds: 3),
+              ),
+            );
+            debugPrint('[ResumeOptimizer] ✓ Import completed successfully');
+          }
+        });
+      } else {
+        debugPrint('[ResumeOptimizer] ✗ Failed to save resume');
+        if (context.mounted) {
+          final formState = ref.read(resumeFormProvider);
+          ErrorDialog.show(
+            context,
+            failure: ServerFailure(
+              formState.errorMessage ?? 'Failed to save resume. Please check all fields are filled.',
+            ),
+            title: 'Save Failed',
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('[ResumeOptimizer] ✗ Error: $e');
+      if (context.mounted) {
+        ErrorDialog.show(
+          context,
+          failure: ServerFailure('Failed to import resume: $e'),
+          title: 'Import Error',
+        );
+      }
+    }
+  }
+
+  void _parseAndUpdateSections(String optimizedText, ResumeFormNotifier notifier) {
+    debugPrint('[ResumeOptimizer] Parsing optimized text...');
+
+    // Split text into sections
+    final sections = _splitIntoSections(optimizedText);
+    debugPrint('[ResumeOptimizer] Found sections: ${sections.keys.toList()}');
+
+    // Set title if not already set
+    final currentState = ref.read(resumeFormProvider);
+    if (currentState.title.isEmpty) {
+      final title = _extractOrGenerateTitle(sections, optimizedText);
+      notifier.updateTitle(title);
+      debugPrint('[ResumeOptimizer] ✓ Set Title: $title');
+    }
+
+    // Update summary - REQUIRED
+    if (sections.containsKey('summary') && sections['summary']!.isNotEmpty) {
+      final summary = sections['summary']!.trim();
+      notifier.updatePersonalSummary(summary);
+      debugPrint('[ResumeOptimizer] ✓ Updated Summary (${summary.length} chars)');
+    } else {
+      // Use entire text as summary if no summary section found
+      final summary = optimizedText.trim();
+      notifier.updatePersonalSummary(summary);
+      debugPrint('[ResumeOptimizer] ⚠ No summary section found, using entire text (${summary.length} chars)');
+    }
+
+    // Update work experience - REQUIRED (create defaults if missing)
+    if (sections.containsKey('experience') && sections['experience']!.isNotEmpty) {
+      _createOrUpdateExperience(notifier, sections['experience']!);
+    } else {
+      _createDefaultWorkExperience(notifier);
+      debugPrint('[ResumeOptimizer] ⚠ No work experience found, created default entry');
+    }
+
+    // Update education - REQUIRED (create defaults if missing)
+    if (sections.containsKey('education') && sections['education']!.isNotEmpty) {
+      _createOrUpdateEducation(notifier, sections['education']!);
+    } else {
+      _createDefaultEducation(notifier);
+      debugPrint('[ResumeOptimizer] ⚠ No education found, created default entry');
+    }
+
+    // Update skills - REQUIRED (create defaults if missing)
+    if (sections.containsKey('skills') && sections['skills']!.isNotEmpty) {
+      _createOrUpdateSkills(notifier, sections['skills']!);
+    } else {
+      _createDefaultSkills(notifier);
+      debugPrint('[ResumeOptimizer] ⚠ No skills found, created default entry');
+    }
+  }
+
+  void _createDefaultWorkExperience(ResumeFormNotifier notifier) {
+    final currentState = ref.read(resumeFormProvider);
+    if (currentState.workExperiences.isEmpty) {
+      final experience = WorkExperience(
+        company: 'Company Name',
+        role: 'Job Title',
+        location: 'Location',
+        startDate: DateTime.now(),
+        endDate: null,
+        bulletPoints: ['Achievement or responsibility'],
+        isCurrentRole: true,
+      );
+      notifier.addWorkExperience(experience);
+    }
+  }
+
+  void _createDefaultEducation(ResumeFormNotifier notifier) {
+    final currentState = ref.read(resumeFormProvider);
+    if (currentState.educations.isEmpty) {
+      final education = Education(
+        school: 'University Name',
+        degree: 'Bachelor',
+        field: 'Field of Study',
+        graduationDate: DateTime.now(),
+        gpa: null,
+      );
+      notifier.addEducation(education);
+    }
+  }
+
+  void _createDefaultSkills(ResumeFormNotifier notifier) {
+    final currentState = ref.read(resumeFormProvider);
+    if (currentState.skills.isEmpty) {
+      final skills = [
+        Skill(name: 'Skill 1', category: 'Technical'),
+        Skill(name: 'Skill 2', category: 'Technical'),
+      ];
+      for (final skill in skills) {
+        notifier.addSkill(skill);
+      }
+    }
+  }
+
+  String _extractOrGenerateTitle(Map<String, String> sections, String optimizedText) {
+    // Try to extract title from first line
+    final firstLine = optimizedText.split('\n').first.trim();
+    if (firstLine.isNotEmpty && firstLine.length > 5 && firstLine.length < 100) {
+      return firstLine;
+    }
+    // Generate default title
+    return 'Optimized Resume - ${DateTime.now().toString().split(' ')[0]}';
+  }
+
+  Map<String, String> _splitIntoSections(String text) {
+    final sections = <String, String>{};
+    final lines = text.split('\n');
+
+    String? currentSection;
+    final buffer = StringBuffer();
+
+    for (final line in lines) {
+      final lower = line.toLowerCase().trim();
+      final isEmpty = lower.isEmpty;
+
+      // Detect section headers (look for header patterns)
+      final isSummaryHeader = lower.startsWith('summary') ||
+          lower.startsWith('professional') ||
+          lower.startsWith('objective') ||
+          lower == 'summary:' ||
+          lower == 'professional summary:';
+
+      final isExperienceHeader = lower.startsWith('experience') ||
+          lower.startsWith('work') ||
+          lower.startsWith('employment') ||
+          lower == 'work experience:' ||
+          lower == 'professional experience:';
+
+      final isEducationHeader = lower.startsWith('education') ||
+          lower == 'education:';
+
+      final isSkillsHeader = lower.startsWith('skill') ||
+          lower.startsWith('competenc') ||
+          lower == 'skills:' ||
+          lower == 'technical skills:';
+
+      if (isSummaryHeader) {
+        if (currentSection != null && buffer.isNotEmpty) {
+          sections[currentSection] = buffer.toString().trim();
+          buffer.clear();
+        }
+        currentSection = 'summary';
+      } else if (isExperienceHeader) {
+        if (currentSection != null && buffer.isNotEmpty) {
+          sections[currentSection] = buffer.toString().trim();
+          buffer.clear();
+        }
+        currentSection = 'experience';
+      } else if (isEducationHeader) {
+        if (currentSection != null && buffer.isNotEmpty) {
+          sections[currentSection] = buffer.toString().trim();
+          buffer.clear();
+        }
+        currentSection = 'education';
+      } else if (isSkillsHeader) {
+        if (currentSection != null && buffer.isNotEmpty) {
+          sections[currentSection] = buffer.toString().trim();
+          buffer.clear();
+        }
+        currentSection = 'skills';
+      } else if (currentSection != null && !isEmpty) {
+        buffer.writeln(line.trim());
+      }
+    }
+
+    // Store last section
+    if (currentSection != null && buffer.isNotEmpty) {
+      sections[currentSection] = buffer.toString().trim();
+    }
+
+    return sections;
+  }
+
+  void _createOrUpdateExperience(ResumeFormNotifier notifier, String experienceText) {
+    final currentExperiences = ref.read(resumeFormProvider).workExperiences;
+
+    // Split experience text by job entries (separated by blank lines)
+    final entries = experienceText
+        .split(RegExp(r'\n\n+'))
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+
+    if (entries.isEmpty) {
+      debugPrint('[ResumeOptimizer] No work experience entries found');
+      return;
+    }
+
+    // Update existing experiences or create new ones
+    for (int i = 0; i < entries.length; i++) {
+      // Parse bullet points from entry
+      final bullets = entries[i]
+          .split('\n')
+          .map((line) => line.replaceAll(RegExp(r'^[-•*]\s*'), '').trim())
+          .where((line) => line.isNotEmpty && line.length > 5)
+          .toList();
+
+      if (bullets.isEmpty) continue;
+
+      if (i < currentExperiences.length) {
+        // Update existing
+        final updated = currentExperiences[i].copyWith(bulletPoints: bullets);
+        notifier.updateWorkExperience(i, updated);
+        debugPrint('[ResumeOptimizer] ✓ Updated Work Experience #${i + 1} (${bullets.length} bullets)');
+      } else {
+        // Create new - use first bullet as role, others as description
+        final role = bullets.isNotEmpty ? bullets[0].substring(0, math.min(50, bullets[0].length)) : 'Position';
+        final experience = WorkExperience(
+          company: 'Company',
+          role: role,
+          location: 'Location',
+          startDate: DateTime.now(),
+          endDate: null,
+          bulletPoints: bullets,
+          isCurrentRole: true,
+        );
+        notifier.addWorkExperience(experience);
+        debugPrint('[ResumeOptimizer] ✓ Created Work Experience #${i + 1} (${bullets.length} bullets)');
+      }
+    }
+  }
+
+  void _createOrUpdateEducation(ResumeFormNotifier notifier, String educationText) {
+    final currentEducations = ref.read(resumeFormProvider).educations;
+
+    final entries = educationText
+        .split(RegExp(r'\n\n+'))
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+
+    if (entries.isEmpty) {
+      debugPrint('[ResumeOptimizer] No education entries found');
+      return;
+    }
+
+    for (int i = 0; i < entries.length; i++) {
+      final entry = entries[i];
+
+      // Extract degree and field
+      final degreeRegex = RegExp(
+        r'(?:Bachelor|Master|Associate|PhD|BS|MS|BA|MA)(?:s)?(?:\s+(?:of|in)\s+)?([^,\n]*)',
+      );
+      final degreeMatch = degreeRegex.firstMatch(entry);
+      final degree = degreeMatch?.group(0) ?? 'Degree';
+      final field = (degreeMatch?.group(1) ?? 'Field').trim();
+
+      if (i < currentEducations.length) {
+        // Update existing
+        final updated = currentEducations[i].copyWith(
+          degree: degree,
+          field: field,
+        );
+        notifier.updateEducation(i, updated);
+        debugPrint('[ResumeOptimizer] ✓ Updated Education #${i + 1}');
+      } else {
+        // Create new
+        final education = Education(
+          school: 'University',
+          degree: degree,
+          field: field,
+          graduationDate: DateTime.now(),
+          gpa: null,
+        );
+        notifier.addEducation(education);
+        debugPrint('[ResumeOptimizer] ✓ Created Education #${i + 1}');
+      }
+    }
+  }
+
+  void _createOrUpdateSkills(ResumeFormNotifier notifier, String skillsText) {
+    final currentSkills = ref.read(resumeFormProvider).skills;
+
+    // Parse skills (split by comma, bullet, dash, or newline)
+    final skillNames = skillsText
+        .split(RegExp(r'[,•\-\n]'))
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty && s.length > 1)
+        .toList();
+
+    if (skillNames.isEmpty) {
+      debugPrint('[ResumeOptimizer] No skills found');
+      return;
+    }
+
+    // Update existing skills or create new ones
+    for (int i = 0; i < skillNames.length; i++) {
+      if (i < currentSkills.length) {
+        // Update existing
+        final updated = currentSkills[i].copyWith(name: skillNames[i]);
+        notifier.updateSkill(i, updated);
+      } else {
+        // Create new
+        final skill = Skill(
+          name: skillNames[i],
+          category: 'Technical',
+        );
+        notifier.addSkill(skill);
+        debugPrint('[ResumeOptimizer] ✓ Created Skill: ${skillNames[i]}');
+      }
+    }
+
+    debugPrint('[ResumeOptimizer] ✓ Processed ${skillNames.length} skills');
+  }
+
+  void _parseJsonAndUpdateSections(String jsonString, ResumeFormNotifier notifier) {
+    debugPrint('[ResumeOptimizer] Parsing JSON response...');
+
+    try {
+      final Map<String, dynamic> data = jsonDecode(jsonString);
+
+      // Extract title
+      final title = data['title'] as String? ?? 'Optimized Resume';
+      notifier.updateTitle(title);
+      debugPrint('[ResumeOptimizer] ✓ Title: $title');
+
+      // Extract personal summary
+      final summary = data['personalSummary'] as String? ?? '';
+      if (summary.isNotEmpty) {
+        notifier.updatePersonalSummary(summary);
+        debugPrint('[ResumeOptimizer] ✓ Summary: ${summary.length} chars');
+      }
+
+      // Extract work experiences
+      final experienceList = data['workExperiences'] as List? ?? [];
+      if (experienceList.isNotEmpty) {
+        for (final exp in experienceList) {
+          final experience = WorkExperience(
+            company: exp['company'] as String? ?? 'Company',
+            role: exp['role'] as String? ?? 'Job Title',
+            location: exp['location'] as String? ?? 'Location',
+            startDate: _parseDate(exp['startDate']) ?? DateTime.now(),
+            endDate: _parseDate(exp['endDate']),
+            bulletPoints: List<String>.from(exp['bulletPoints'] as List? ?? []),
+            isCurrentRole: exp['isCurrentRole'] as bool? ?? false,
+          );
+          notifier.addWorkExperience(experience);
+        }
+        debugPrint('[ResumeOptimizer] ✓ Added ${experienceList.length} work experiences');
+      }
+
+      // Extract educations
+      final educationList = data['educations'] as List? ?? [];
+      if (educationList.isNotEmpty) {
+        for (final edu in educationList) {
+          final gpaValue = edu['gpa'];
+          double? gpa;
+          if (gpaValue is String) {
+            try {
+              gpa = double.parse(gpaValue);
+            } catch (_) {
+              gpa = null;
+            }
+          } else if (gpaValue is num) {
+            gpa = gpaValue.toDouble();
+          }
+
+          final education = Education(
+            school: edu['school'] as String? ?? 'School',
+            degree: edu['degree'] as String? ?? 'Degree',
+            field: edu['field'] as String? ?? 'Field',
+            graduationDate: _parseDate(edu['graduationDate']) ?? DateTime.now(),
+            gpa: gpa,
+          );
+          notifier.addEducation(education);
+        }
+        debugPrint('[ResumeOptimizer] ✓ Added ${educationList.length} educations');
+      }
+
+      // Extract skills
+      final skillList = data['skills'] as List? ?? [];
+      if (skillList.isNotEmpty) {
+        for (final skillData in skillList) {
+          final skill = Skill(
+            name: skillData['name'] as String? ?? 'Skill',
+            category: skillData['category'] as String? ?? 'Technical',
+          );
+          notifier.addSkill(skill);
+        }
+        debugPrint('[ResumeOptimizer] ✓ Added ${skillList.length} skills');
+      }
+
+      debugPrint('[ResumeOptimizer] ✓ JSON parsing completed successfully');
+    } catch (e) {
+      debugPrint('[ResumeOptimizer] ✗ Error parsing JSON: $e');
+      rethrow;
+    }
+  }
+
+  DateTime? _parseDate(dynamic dateValue) {
+    if (dateValue == null) return null;
+    if (dateValue is String) {
+      try {
+        return DateTime.parse(dateValue);
+      } catch (_) {
+        return null;
+      }
+    }
+    return null;
   }
 
   void _resetForm() {

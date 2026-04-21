@@ -22,53 +22,64 @@ class PdfService {
     required Resume resume,
     required ResumeTemplate template,
   }) async {
-    final regularFont = await _loadFontWithFallback(
-      primary: 'assets/fonts/Inter-Regular.ttf',
-      fallback: pw.Font.helvetica(),
-    );
-    final mediumFont = await _loadFontWithFallback(
-      primary: 'assets/fonts/Inter-Medium.ttf',
-      fallback: pw.Font.helvetica(),
-    );
-    final semiBoldFont = await _loadFontWithFallback(
-      primary: 'assets/fonts/Inter-SemiBold.ttf',
-      fallback: pw.Font.helveticaBold(),
-    );
-    final boldFont = await _loadFontWithFallback(
-      primary: 'assets/fonts/Inter-Bold.ttf',
-      fallback: pw.Font.helveticaBold(),
-    );
+    try {
+      debugPrint('[PdfService] Starting PDF generation for resume: ${resume.title}');
+      debugPrint('[PdfService] Template: ${template.name}');
+      debugPrint('[PdfService] Resume data: title=${resume.title}, workExps=${resume.workExperiences.length}, educations=${resume.educations.length}, skills=${resume.skills.length}');
 
-    pw.ImageProvider? photoImage;
-    if (resume.photoUrl != null && resume.photoUrl!.isNotEmpty) {
-      photoImage = await _loadPhotoImage(resume.photoUrl!);
+      final regularFont = await _loadFontWithFallback(
+        primary: 'assets/fonts/Inter-Regular.ttf',
+        fallback: pw.Font.helvetica(),
+      );
+      final mediumFont = await _loadFontWithFallback(
+        primary: 'assets/fonts/Inter-Medium.ttf',
+        fallback: pw.Font.helvetica(),
+      );
+      final semiBoldFont = await _loadFontWithFallback(
+        primary: 'assets/fonts/Inter-SemiBold.ttf',
+        fallback: pw.Font.helveticaBold(),
+      );
+      final boldFont = await _loadFontWithFallback(
+        primary: 'assets/fonts/Inter-Bold.ttf',
+        fallback: pw.Font.helveticaBold(),
+      );
+
+      pw.ImageProvider? photoImage;
+      if (resume.photoUrl != null && resume.photoUrl!.isNotEmpty) {
+        photoImage = await _loadPhotoImage(resume.photoUrl!);
+      }
+
+      final theme = pw.ThemeData.withFont(
+        base: regularFont,
+        bold: boldFont,
+        italic: regularFont,
+        boldItalic: boldFont,
+      );
+
+      final pdf = pw.Document(
+        title: resume.title,
+        author: 'Resume Labs AI',
+        theme: theme,
+      );
+
+      _buildTemplate(
+        pdf,
+        resume,
+        template,
+        photoImage: photoImage,
+        regularFont: regularFont,
+        mediumFont: mediumFont,
+        semiBoldFont: semiBoldFont,
+        boldFont: boldFont,
+      );
+
+      final bytes = await pdf.save();
+      debugPrint('[PdfService] PDF generated successfully, size: ${bytes.length} bytes');
+      return bytes;
+    } catch (e) {
+      debugPrint('[PdfService] Error during PDF generation: $e');
+      rethrow;
     }
-
-    final theme = pw.ThemeData.withFont(
-      base: regularFont,
-      bold: boldFont,
-      italic: regularFont,
-      boldItalic: boldFont,
-    );
-
-    final pdf = pw.Document(
-      title: resume.title,
-      author: 'Resume Labs AI',
-      theme: theme,
-    );
-
-    _buildTemplate(
-      pdf,
-      resume,
-      template,
-      photoImage: photoImage,
-      regularFont: regularFont,
-      mediumFont: mediumFont,
-      semiBoldFont: semiBoldFont,
-      boldFont: boldFont,
-    );
-
-    return pdf.save();
   }
 
   /// Loads a TrueType font from assets, with fallback support.

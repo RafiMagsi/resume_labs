@@ -12,4 +12,6 @@ abstract interface class ResumeLocalDataSource {
   Future<void> clearCachedResumes({
     String? userId,
   });
+
+  Future<void> deleteResume(String resumeId);
 }

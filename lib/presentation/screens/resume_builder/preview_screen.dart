@@ -138,25 +138,50 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
   Future<void> _handleExport() async {
     final formState = ref.read(resumeFormProvider);
     final template = ref.read(selectedResumeTemplateProvider);
+    final firebasePdfService = ref.read(firebasePdfServiceProvider);
 
-    final resume = Resume(
-      id: formState.resumeId ??
-          DateTime.now().microsecondsSinceEpoch.toString(),
-      userId: formState.userId ?? '',
-      title: formState.title.trim(),
-      personalSummary: formState.personalSummary.trim(),
-      photoUrl: formState.photoUrl,
-      workExperiences: formState.workExperiences,
-      educations: formState.educations,
-      skills: formState.skills,
-      createdAt: formState.createdAt ?? DateTime.now(),
-      updatedAt: DateTime.now(),
-    );
+    final resumeData = {
+      'title': formState.title,
+      'personalSummary': formState.personalSummary,
+      'photoUrl': formState.photoUrl,
+      'workExperiences': formState.workExperiences
+          .map((e) => {
+            'role': e.role,
+            'company': e.company,
+            'location': e.location,
+            'startDate': e.startDate.toString(),
+            'endDate': e.endDate?.toString(),
+            'bulletPoints': e.bulletPoints,
+          })
+          .toList(),
+      'educations': formState.educations
+          .map((e) => {
+            'degree': e.degree,
+            'field': e.field,
+            'school': e.school,
+            'graduationDate': e.graduationDate.toString(),
+            'gpa': e.gpa,
+          })
+          .toList(),
+      'skills': formState.skills
+          .map((s) => {'name': s.name})
+          .toList(),
+    };
 
-    await ref.read(pdfExportProvider.notifier).exportPdf(
-          resume: resume,
-          template: template,
-        );
+    try {
+      final pdfBytes = await firebasePdfService.generateResumePdf(
+        resumeData: resumeData,
+        template: template.name,
+      );
+
+      await Printing.sharePdf(
+        bytes: Uint8List.fromList(pdfBytes),
+        filename: '${formState.title.trim()}.pdf',
+      );
+    } catch (e) {
+      debugPrint('PDF export error: $e');
+      rethrow;
+    }
   }
 
   Future<void> _handleExportDocx() async {
@@ -236,7 +261,10 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
                     template: template,
                   );
                   return result.match(
-                    (failure) => throw failure,
+                    (failure) {
+                      debugPrint('[PreviewScreen] PDF Generation Error: ${failure.message}');
+                      throw Exception('PDF Generation Failed: ${failure.message}');
+                    },
                     (bytes) => bytes,
                   );
                 },
@@ -468,6 +496,12 @@ class _ResumePdfPreviewState extends ConsumerState<_ResumePdfPreview> {
 
     try {
       return await widget.buildPdfBytes(resume, widget.template);
+    } on Exception catch (e) {
+      debugPrint('[PreviewScreen._buildPdf] Exception: $e');
+      rethrow;
+    } catch (e) {
+      debugPrint('[PreviewScreen._buildPdf] Unexpected error: $e');
+      throw Exception('Failed to generate PDF: ${e.toString()}');
     } finally {
       if (mounted && token == _generationToken) {
         setState(() => _isGenerating = false);

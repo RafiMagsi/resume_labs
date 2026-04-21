@@ -119,8 +119,6 @@ class ResumeCard extends StatelessWidget {
                   PopupMenuButton<String>(
                     onSelected: (value) {
                       switch (value) {
-                        case 'edit':
-                          onEdit();
                         case 'export':
                           onExport();
                         case 'delete':
@@ -128,16 +126,6 @@ class ResumeCard extends StatelessWidget {
                       }
                     },
                     itemBuilder: (BuildContext context) => [
-                      const PopupMenuItem(
-                        value: 'edit',
-                        child: Row(
-                          children: [
-                            Icon(Icons.edit_outlined, size: 18),
-                            SizedBox(width: 8),
-                            Text('Edit'),
-                          ],
-                        ),
-                      ),
                       const PopupMenuItem(
                         value: 'export',
                         child: Row(

@@ -20,6 +20,7 @@ class ResumeModel with _$ResumeModel {
     @Default(<SkillModel>[]) List<SkillModel> skills,
     required DateTime createdAt,
     required DateTime updatedAt,
+    @Default(false) bool isDeleted,
   }) = _ResumeModel;
 
   factory ResumeModel.fromJson(Map<String, dynamic> json) =>

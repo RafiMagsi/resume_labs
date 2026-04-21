@@ -12,6 +12,7 @@ import '../../presentation/screens/resume_optimizer/resume_optimizer_screen.dart
 import '../../presentation/screens/history/history_screen.dart';
 import '../../presentation/screens/resume_builder/builder_screen.dart';
 import '../../presentation/screens/resume_builder/preview_screen.dart';
+import '../../presentation/screens/resume_detail/resume_detail_screen.dart';
 import '../../presentation/screens/splash/splash_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -113,6 +114,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
           state: state,
           child: const ResumeOptimizerScreen(),
+        ),
+      ),
+      GoRoute(
+        path: ResumeDetailScreen.routePath,
+        name: ResumeDetailScreen.routeName,
+        pageBuilder: (context, state) => buildPageWithDefaultTransition<void>(
+          state: state,
+          child: const ResumeDetailScreen(),
         ),
       ),
     ],

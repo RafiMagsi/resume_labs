@@ -96,6 +96,7 @@ class ResumeRepositoryImpl implements ResumeRepository {
   Future<Either<Failure, void>> deleteResume(String resumeId) async {
     try {
       await remoteDataSource.deleteResume(resumeId);
+      await localDataSource.deleteResume(resumeId);
       return const Right(null);
     } on AppException catch (e) {
       return Left(_mapExceptionToFailure(e));

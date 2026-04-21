@@ -12,7 +12,7 @@ class WorkExperience {
     required this.role,
     required this.location,
     required this.startDate,
-    required this.endDate,
+    this.endDate,
     required this.bulletPoints,
     required this.isCurrentRole,
   });

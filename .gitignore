@@ -43,6 +43,16 @@ DESIGN_AUDIT.md
 android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
 
+# Firebase local state / emulators
+.firebase/
+
+# Cloud Functions (Node)
+functions/node_modules/
+functions/lib/
+functions/.env
+functions/.env.*
+functions/.runtimeconfig.json
+
 # Android signing
 android/key.properties
 *.jks

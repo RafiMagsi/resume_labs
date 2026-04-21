@@ -102,4 +102,20 @@ class ResumeLocalDataSourceImpl implements ResumeLocalDataSource {
       );
     }
   }
+
+  @override
+  Future<void> deleteResume(String resumeId) async {
+    try {
+      final box = await _openBox();
+      await box.delete(resumeId);
+      if (kDebugMode) {
+        debugPrint('Hive: deleted resume from $_boxName (id=$resumeId)');
+      }
+    } catch (_) {
+      throw const CacheException(
+        'Failed to delete cached resume.',
+        code: 'delete-cached-resume-failed',
+      );
+    }
+  }
 }

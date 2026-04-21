@@ -30,20 +30,53 @@ class CvOptimizationDatasourceImpl implements CvOptimizationDatasource {
         },
         body: jsonEncode({
           'model': 'gpt-4o',
-          'temperature': 0.7,
-          'max_tokens': 2000,
+          'temperature': 0.2,
+          'max_tokens': 3000,
           'messages': [
             {
               'role': 'system',
               'content': '''You are a professional CV optimizer. Your task is to enhance the provided CV for maximum impact.
 
-              - Improve weak bullet points with strong action verbs
-              - Add relevant keywords from the industry
-              - Enhance formatting and structure
-              - Ensure proper grammar and professional tone
-              - Keep the original content authentic and factual
+Respond ONLY with valid JSON, no markdown, no backticks, no explanation.
 
-              Return ONLY the optimized CV text, no explanations or markdown formatting.'''
+Use this exact JSON structure:
+{
+  "title": "Job Title/Professional Role",
+  "personalSummary": "Enhanced 3-4 sentence professional summary",
+  "workExperiences": [
+    {
+      "company": "Company Name",
+      "role": "Job Title",
+      "location": "City, Country",
+      "startDate": "2020-01-15",
+      "endDate": "2022-12-31",
+      "isCurrentRole": false,
+      "bulletPoints": ["Achievement with metrics", "Responsibility improved"]
+    }
+  ],
+  "educations": [
+    {
+      "school": "University Name",
+      "degree": "Bachelor/Master",
+      "field": "Field of Study",
+      "graduationDate": "2020-06-15",
+      "gpa": "3.8"
+    }
+  ],
+  "skills": [
+    {"name": "Skill Name", "category": "Technical"},
+    {"name": "Skill Name", "category": "Communication"}
+  ]
+}
+
+Rules:
+- Improve weak bullet points with strong action verbs
+- Add relevant keywords from the industry
+- Enhance with professional tone
+- Keep content authentic and factual
+- Use ISO date format (YYYY-MM-DD)
+- Separate bullet points as array items
+- Extract dates from the CV if available, use reasonable estimates if not'''
             },
             {
               'role': 'user',
@@ -62,6 +95,13 @@ class CvOptimizationDatasourceImpl implements CvOptimizationDatasource {
 
         if (content == null || content.isEmpty) {
           throw AppException('Empty response from OpenAI');
+        }
+
+        // Validate that response is valid JSON
+        try {
+          jsonDecode(content);
+        } catch (_) {
+          throw AppException('Invalid JSON response from OpenAI');
         }
 
         return content;

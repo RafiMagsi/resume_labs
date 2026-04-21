@@ -33,6 +33,7 @@ Future<void> main() async {
   await dotenv.load(fileName: '.env');
   final openAiApiKey = dotenv.env['OPENAI_API_KEY'];
   final firebaseProjectId = dotenv.env['FIREBASE_PROJECT_ID'];
+  final firebasePdfFunctionUrl = dotenv.env['FIREBASE_PDF_FUNCTION_URL'];
 
   assert(
     openAiApiKey != null && openAiApiKey.isNotEmpty,
@@ -51,6 +52,7 @@ Future<void> main() async {
   if (kDebugMode) {
     debugPrint('OPENAI_API_KEY loaded: ${openAiApiKey != null}');
     debugPrint('FIREBASE_PROJECT_ID loaded: $firebaseProjectId');
+    debugPrint('FIREBASE_PDF_FUNCTION_URL loaded: ${firebasePdfFunctionUrl != null}');
     debugPrint('Firebase initialized successfully');
   }
 

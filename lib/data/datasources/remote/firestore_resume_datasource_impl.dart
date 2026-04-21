@@ -90,9 +90,12 @@ class FirestoreResumeDataSourceImpl implements FirestoreResumeDataSource {
   @override
   Future<void> deleteResume(String resumeId) async {
     try {
-      await _resumesCollection.doc(resumeId).delete();
+      await _resumesCollection.doc(resumeId).update({
+        'isDeleted': true,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
       if (kDebugMode) {
-        debugPrint('Firestore: deleted resume at $_collectionName/$resumeId');
+        debugPrint('Firestore: soft-deleted resume at $_collectionName/$resumeId');
       }
     } on FirebaseException catch (e) {
       throw _mapFirebaseException(e);
@@ -111,8 +114,10 @@ class FirestoreResumeDataSourceImpl implements FirestoreResumeDataSource {
     required String userId,
   }) async {
     try {
-      final snapshot =
-          await _resumesCollection.where('userId', isEqualTo: userId).get();
+      final snapshot = await _resumesCollection
+          .where('userId', isEqualTo: userId)
+          .where('isDeleted', isNotEqualTo: true)
+          .get();
 
       final results = <ResumeModel>[];
       var parseFailures = 0;
@@ -159,6 +164,7 @@ class FirestoreResumeDataSourceImpl implements FirestoreResumeDataSource {
     try {
       return _resumesCollection
           .where('userId', isEqualTo: userId)
+          .where('isDeleted', isNotEqualTo: true)
           .snapshots()
           .map(
         (snapshot) {
