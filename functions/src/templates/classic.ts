@@ -8,7 +8,7 @@ const CONTENT_WIDTH = 595.28 - PAGE_MARGIN * 2;
 const PHOTO_DIAMETER = 68;
 const PHOTO_RADIUS = PHOTO_DIAMETER / 2;
 const PHOTO_GAP = 16;
-const HEADER_BOTTOM_GAP = 18;
+const HEADER_BOTTOM_GAP = 8;
 
 async function downloadImage(url: string): Promise<Buffer | null> {
   return new Promise((resolve) => {
@@ -76,7 +76,7 @@ export async function generateClassicTemplate(
         resumeData.workExperiences.forEach((exp, index) => {
           writeWorkExperience(doc, exp);
           if (index < resumeData.workExperiences.length - 1) {
-            doc.moveDown(0.9);
+            doc.moveDown(0.5);
           }
         });
       });
@@ -90,7 +90,7 @@ export async function generateClassicTemplate(
         resumeData.educations.forEach((edu, index) => {
           writeEducation(doc, edu);
           if (index < resumeData.educations.length - 1) {
-            doc.moveDown(0.8);
+            doc.moveDown(0.4);
           }
         });
       });
@@ -170,7 +170,7 @@ function buildHeader(
 
   doc
     .font("Helvetica")
-    .fontSize(10.5)
+    .fontSize(10.4)
     .fillColor("#6B7280")
     .text("Professional Resume", PAGE_MARGIN, titleBottomY + 4, {
       width: textColumnWidth,
@@ -188,7 +188,7 @@ function buildHeader(
     .lineTo(PAGE_MARGIN + CONTENT_WIDTH, dividerY)
     .stroke();
 
-  doc.y = dividerY + 16;
+  doc.y = dividerY + 10;
 }
 
 function drawPhotoPlaceholder(
@@ -239,9 +239,9 @@ function addSection(
     .lineTo(PAGE_MARGIN + CONTENT_WIDTH, dividerY)
     .stroke();
 
-  doc.y = dividerY + 12;
+  doc.y = dividerY + 8;
   renderContent();
-  doc.moveDown(1.1);
+    doc.moveDown(0.2);
 }
 
 function writeWorkExperience(
@@ -266,7 +266,7 @@ function writeWorkExperience(
     doc.moveDown(0.12);
     doc
       .font("Helvetica")
-      .fontSize(10.5)
+      .fontSize(10.4)
       .fillColor("#4B5563")
       .text(companyLocation, PAGE_MARGIN, doc.y, {
         width: CONTENT_WIDTH,
@@ -289,7 +289,7 @@ function writeWorkExperience(
     });
 
   if (exp.bulletPoints && exp.bulletPoints.length > 0) {
-    doc.moveDown(0.3);
+    doc.moveDown(0.2);
     exp.bulletPoints.forEach((bullet) => {
       const text = bullet?.trim();
       if (!text) return;
@@ -300,7 +300,7 @@ function writeWorkExperience(
 
       doc
         .font("Helvetica")
-        .fontSize(10.5)
+        .fontSize(10.4)
         .fillColor("#111111")
         .text("•", bulletX, currentY, {
           width: 8,
@@ -309,12 +309,12 @@ function writeWorkExperience(
 
       doc
         .font("Helvetica")
-        .fontSize(10.5)
+        .fontSize(10.4)
         .fillColor("#334155")
         .text(text, textX, currentY, {
           width: CONTENT_WIDTH - 12,
           align: "left",
-          lineGap: 2,
+                      lineGap: 3,
         });
     });
   }
@@ -342,7 +342,7 @@ function writeEducation(
     doc.moveDown(0.12);
     doc
       .font("Helvetica")
-      .fontSize(10.5)
+      .fontSize(10.4)
       .fillColor("#4B5563")
       .text(schoolLine, PAGE_MARGIN, doc.y, {
         width: CONTENT_WIDTH,
@@ -379,6 +379,6 @@ function writeBodyText(doc: PDFKit.PDFDocument, text: string): void {
     .text(text, PAGE_MARGIN, doc.y, {
       width: CONTENT_WIDTH,
       align: "left",
-      lineGap: 4,
+                  lineGap: 3,
     });
 }

@@ -41,12 +41,22 @@ abstract final class AppColors {
   static const Color transparent = Colors.transparent;
 
   // Template accents (resume templates)
-  static const Color templateClassic = textSecondary; // 0xFF6B7280
-  static const Color templateModern = Color(0xFF6D5EF8);
-  static const Color templateModernClean = Color(0xFF8B5CF6);
-  static const Color templateModernSidebar = Color(0xFF7C3AED);
-  static const Color templateMinimal = Color(0xFF059669);
-  static const Color templateExecutive = Color(0xFF1F2937);
+  static const Color templateClassic = Color(0xFF0066CC);
+  static const Color templateModern = Color(0xFF2563EB);
+  static const Color templateModernClean = Color(0xFF1a1a1a);
+  static const Color templateModernSidebar = Color(0xFF2c3e50);
+  static const Color templateMinimal = Color(0xFF6B7280);
+  static const Color templateExecutive = Color(0xFF1E3A8A);
+
+  // New template colors
+  static const Color templateDatascience = Color(0xFF0EA5E9);
+  static const Color templateSales = Color(0xFFDC2626);
+  static const Color templateMarketing = Color(0xFF7C3AED);
+  static const Color templateFinance = Color(0xFFB8860B);
+  static const Color templateCreative = Color(0xFFD946EF);
+  static const Color templateAcademic = Color(0xFF0369A1);
+  static const Color templateHealthcare = Color(0xFF059669);
+  static const Color templateStartup = Color(0xFFF97316);
 
   // Password strength (Material defaults)
   static const Color passwordWeak = Colors.red;

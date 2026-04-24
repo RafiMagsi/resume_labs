@@ -609,19 +609,4 @@ class _ResumePdfPreviewState extends ConsumerState<_ResumePdfPreview> {
   }
 }
 
-String _templateLabel(ResumeTemplate template) {
-  switch (template) {
-    case ResumeTemplate.classic:
-      return 'Classic';
-    case ResumeTemplate.modern:
-      return 'Modern';
-    case ResumeTemplate.modernClean:
-      return 'Modern Clean';
-    case ResumeTemplate.modernSidebar:
-      return 'Modern Sidebar';
-    case ResumeTemplate.minimal:
-      return 'Minimal';
-    case ResumeTemplate.executive:
-      return 'Executive';
-  }
-}
+String _templateLabel(ResumeTemplate template) => template.label;

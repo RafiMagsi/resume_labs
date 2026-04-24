@@ -210,6 +210,24 @@ class PdfService {
           semiBoldFont: semiBoldFont,
           boldFont: boldFont,
         );
+      // New templates use Firebase Cloud Functions, fallback to classic for local generation
+      case ResumeTemplate.datascience:
+      case ResumeTemplate.sales:
+      case ResumeTemplate.marketing:
+      case ResumeTemplate.finance:
+      case ResumeTemplate.creative:
+      case ResumeTemplate.academic:
+      case ResumeTemplate.healthcare:
+      case ResumeTemplate.startup:
+        ClassicTemplate().build(
+          pdf,
+          resume,
+          photoImage: photoImage,
+          regularFont: regularFont,
+          mediumFont: mediumFont,
+          semiBoldFont: semiBoldFont,
+          boldFont: boldFont,
+        );
     }
   }
 }

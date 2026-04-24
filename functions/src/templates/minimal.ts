@@ -8,7 +8,7 @@ const CONTENT_WIDTH = 595.28 - PAGE_MARGIN * 2;
 const PHOTO_DIAMETER = 60;
 const PHOTO_RADIUS = PHOTO_DIAMETER / 2;
 const PHOTO_GAP = 16;
-const HEADER_BOTTOM_GAP = 18;
+const HEADER_BOTTOM_GAP = 8;
 
 async function downloadImage(url: string): Promise<Buffer | null> {
   return new Promise((resolve) => {
@@ -83,7 +83,7 @@ export async function generateMinimalTemplate(resumeData: ResumeData): Promise<B
             textColor,
           });
           if (index < resumeData.workExperiences.length - 1) {
-            doc.moveDown(0.9);
+              doc.moveDown(0.5);
           }
         });
       });
@@ -100,7 +100,7 @@ export async function generateMinimalTemplate(resumeData: ResumeData): Promise<B
             mutedColor,
           });
           if (index < resumeData.educations.length - 1) {
-            doc.moveDown(0.75);
+              doc.moveDown(0.4);
           }
         });
       });
@@ -202,7 +202,7 @@ function buildHeader(
     .lineTo(PAGE_MARGIN + CONTENT_WIDTH, dividerY)
     .stroke();
 
-  doc.y = dividerY + 16;
+    doc.y = dividerY + 10;
 }
 
 function drawPhotoPlaceholder(
@@ -255,9 +255,9 @@ function addSection(
     .lineTo(PAGE_MARGIN + CONTENT_WIDTH, dividerY)
     .stroke();
 
-  doc.y = dividerY + 12;
+    doc.y = dividerY + 8;
   renderContent();
-  doc.moveDown(1.05);
+        doc.moveDown(0.2);
 }
 
 function writeWorkExperience(
@@ -405,6 +405,6 @@ function writeBodyText(doc: PDFKit.PDFDocument, text: string, textColor: string)
     .text(text, PAGE_MARGIN, doc.y, {
       width: CONTENT_WIDTH,
       align: "left",
-      lineGap: 4,
+                        lineGap: 3,
     });
 }

@@ -194,64 +194,141 @@ class _ResumeDetailScreenState extends ConsumerState<ResumeDetailScreen> {
 
   Widget _buildTemplateSelector(ResumeTemplate selectedTemplate) {
     return SizedBox(
-      height: 100,
+      height: 200,
       child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
+        scrollDirection: Axis.vertical,
         padding: const EdgeInsets.symmetric(
           horizontal: AppSizes.screenPadding,
-          vertical: AppSizes.md,
+          vertical: AppSizes.sm,
         ),
-        child: Row(
-          children: ResumeTemplate.values.map((template) {
-            final isSelected = selectedTemplate == template;
-            return GestureDetector(
-              onTap: () => ref
-                  .read(selectedResumeTemplateProvider.notifier)
-                  .state = template,
-              child: Container(
-                margin: const EdgeInsets.only(right: AppSizes.md),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSizes.md,
-                  vertical: AppSizes.sm,
-                ),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? AppColors.primaryLight
-                      : AppColors.secondarySurface,
-                  border: Border.all(
-                    color: isSelected ? AppColors.primary : AppColors.border,
-                    width: isSelected ? 2 : 1,
-                  ),
-                  borderRadius: BorderRadius.circular(AppSizes.radiusMd),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      _getTemplateName(template),
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: isSelected
-                                ? AppColors.primary
-                                : AppColors.textSecondary,
-                          ),
-                    ),
-                    const SizedBox(height: 4),
-                    Container(
-                      width: 30,
-                      height: 3,
-                      decoration: BoxDecoration(
-                        color: _getTemplateColor(template),
-                        borderRadius: BorderRadius.circular(1.5),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }).toList(),
+        child: Column(
+          children: [
+            // Section: Tech & IT
+            _buildTemplateSection(
+              title: 'Tech & IT',
+              templates: [
+                ResumeTemplate.modernClean,
+                ResumeTemplate.modern,
+                ResumeTemplate.minimal,
+              ],
+              selectedTemplate: selectedTemplate,
+            ),
+            const SizedBox(height: AppSizes.md),
+            // Section: Business & Management
+            _buildTemplateSection(
+              title: 'Business & Management',
+              templates: [
+                ResumeTemplate.executive,
+                ResumeTemplate.modernSidebar,
+                ResumeTemplate.classic,
+              ],
+              selectedTemplate: selectedTemplate,
+            ),
+            const SizedBox(height: AppSizes.md),
+            // Section: Sales & Marketing
+            _buildTemplateSection(
+              title: 'Sales & Marketing',
+              templates: [
+                ResumeTemplate.sales,
+                ResumeTemplate.marketing,
+              ],
+              selectedTemplate: selectedTemplate,
+            ),
+            const SizedBox(height: AppSizes.md),
+            // Section: Specialized
+            _buildTemplateSection(
+              title: 'Specialized',
+              templates: [
+                ResumeTemplate.datascience,
+                ResumeTemplate.finance,
+                ResumeTemplate.creative,
+                ResumeTemplate.academic,
+                ResumeTemplate.healthcare,
+                ResumeTemplate.startup,
+              ],
+              selectedTemplate: selectedTemplate,
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTemplateSection({
+    required String title,
+    required List<ResumeTemplate> templates,
+    required ResumeTemplate selectedTemplate,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: AppSizes.sm, bottom: AppSizes.sm),
+          child: Text(
+            title,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+        ),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: templates.map((template) {
+              final isSelected = selectedTemplate == template;
+              return GestureDetector(
+                onTap: () => ref
+                    .read(selectedResumeTemplateProvider.notifier)
+                    .state = template,
+                child: Container(
+                  margin: const EdgeInsets.only(right: AppSizes.md),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSizes.md,
+                    vertical: AppSizes.sm,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? _getTemplateColor(template).withAlpha(25)
+                        : AppColors.secondarySurface,
+                    border: Border.all(
+                      color: isSelected
+                          ? _getTemplateColor(template)
+                          : AppColors.border,
+                      width: isSelected ? 2 : 1,
+                    ),
+                    borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _getTemplateName(template),
+                        style:
+                            Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: isSelected
+                                      ? _getTemplateColor(template)
+                                      : AppColors.textSecondary,
+                                ),
+                      ),
+                      const SizedBox(height: 4),
+                      Container(
+                        width: 30,
+                        height: 3,
+                        decoration: BoxDecoration(
+                          color: _getTemplateColor(template),
+                          borderRadius: BorderRadius.circular(1.5),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
     );
   }
 
@@ -366,38 +443,44 @@ class _ResumeDetailScreenState extends ConsumerState<ResumeDetailScreen> {
     );
   }
 
-  String _getTemplateName(ResumeTemplate template) {
-    switch (template) {
-      case ResumeTemplate.classic:
-        return 'Classic';
-      case ResumeTemplate.modern:
-        return 'Modern';
-      case ResumeTemplate.modernClean:
-        return 'Clean';
-      case ResumeTemplate.modernSidebar:
-        return 'Sidebar';
-      case ResumeTemplate.minimal:
-        return 'Minimal';
-      case ResumeTemplate.executive:
-        return 'Executive';
-    }
-  }
+  String _getTemplateName(ResumeTemplate template) => template.displayName;
 
   Color _getTemplateColor(ResumeTemplate template) {
-    switch (template) {
-      case ResumeTemplate.classic:
-        return AppColors.primary;
-      case ResumeTemplate.modern:
-        return AppColors.templateModern;
-      case ResumeTemplate.modernClean:
-        return AppColors.templateModernClean;
-      case ResumeTemplate.modernSidebar:
-        return AppColors.templateModernSidebar;
-      case ResumeTemplate.minimal:
-        return AppColors.templateMinimal;
-      case ResumeTemplate.executive:
-        return AppColors.templateExecutive;
-    }
+    return switch (template) {
+      // Tech & IT
+      ResumeTemplate.classic => const Color(0xFF0066CC),
+      ResumeTemplate.modern => const Color(0xFF2563EB),
+      ResumeTemplate.modernClean => const Color(0xFF1a1a1a),
+      ResumeTemplate.minimal => const Color(0xFF6B7280),
+
+      // Business & Management
+      ResumeTemplate.executive => const Color(0xFF1E3A8A),
+      ResumeTemplate.modernSidebar => const Color(0xFF2c3e50),
+
+      // AI & Data Science
+      ResumeTemplate.datascience => const Color(0xFF0EA5E9),
+
+      // Sales & Business Development
+      ResumeTemplate.sales => const Color(0xFFDC2626),
+
+      // Marketing & Communications
+      ResumeTemplate.marketing => const Color(0xFF7C3AED),
+
+      // Finance & Accounting
+      ResumeTemplate.finance => const Color(0xFFB8860B),
+
+      // Creative & Design
+      ResumeTemplate.creative => const Color(0xFFD946EF),
+
+      // Academic & Research
+      ResumeTemplate.academic => const Color(0xFF0369A1),
+
+      // Healthcare & Medical
+      ResumeTemplate.healthcare => const Color(0xFF059669),
+
+      // Startup & Entrepreneurship
+      ResumeTemplate.startup => const Color(0xFFF97316),
+    };
   }
 }
 

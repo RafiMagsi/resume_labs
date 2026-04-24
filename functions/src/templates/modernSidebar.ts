@@ -11,7 +11,7 @@ const CONTENT_X = SIDEBAR_WIDTH + 20;
 const CONTENT_WIDTH = PAGE_WIDTH - CONTENT_X - PAGE_MARGIN;
 const PHOTO_DIAMETER = 76;
 const PHOTO_RADIUS = PHOTO_DIAMETER / 2;
-const HEADER_BOTTOM_GAP = 18;
+const HEADER_BOTTOM_GAP = 8;
 
 async function downloadImage(url: string): Promise<Buffer | null> {
   return new Promise((resolve) => {
@@ -104,7 +104,7 @@ export async function generateModernSidebarTemplate(resumeData: ResumeData): Pro
             primaryColor,
           });
           if (index < resumeData.workExperiences.length - 1) {
-            currentY += 14;
+            currentY += 8;
           }
         });
         return currentY;
@@ -123,7 +123,7 @@ export async function generateModernSidebarTemplate(resumeData: ResumeData): Pro
             mutedColor,
           });
           if (index < resumeData.educations.length - 1) {
-            currentY += 12;
+            currentY += 6;
           }
         });
         return currentY;
@@ -300,7 +300,7 @@ function buildMainHeader(
     .lineTo(CONTENT_X + CONTENT_WIDTH, dividerY)
     .stroke();
 
-  return dividerY + 16;
+  return dividerY + 6;
 }
 
 function addSection(
@@ -331,9 +331,9 @@ function addSection(
     .lineTo(CONTENT_X + CONTENT_WIDTH, dividerY)
     .stroke();
 
-  doc.y = dividerY + 12;
+  doc.y = dividerY + 8;
   const contentEndY = renderContent();
-  return contentEndY + 18;
+  return contentEndY + 2;
 }
 
 function writeWorkExperience(
@@ -358,7 +358,7 @@ function writeWorkExperience(
       align: "left",
     });
 
-  let currentY = doc.y + 2;
+  let currentY = doc.y + 1;
 
   const companyLocation = [exp.company?.trim(), exp.location?.trim()]
     .filter(Boolean)
@@ -374,7 +374,7 @@ function writeWorkExperience(
         align: "left",
       });
 
-    currentY = doc.y + 2;
+    currentY = doc.y + 1;
   }
 
   const start = formatDate(exp.startDate);
@@ -390,7 +390,7 @@ function writeWorkExperience(
       align: "left",
     });
 
-  currentY = doc.y + 6;
+  currentY = doc.y + 3;
 
   if (exp.bulletPoints && exp.bulletPoints.length > 0) {
     exp.bulletPoints.forEach((bullet) => {
@@ -416,7 +416,7 @@ function writeWorkExperience(
           lineGap: 3,
         });
 
-      currentY = doc.y + 4;
+      currentY = doc.y + 2;
     });
   }
 
@@ -445,7 +445,7 @@ function writeEducation(
       align: "left",
     });
 
-  let currentY = doc.y + 2;
+  let currentY = doc.y + 1;
 
   const schoolLine = edu.school?.trim() || "";
   if (schoolLine) {
@@ -458,7 +458,7 @@ function writeEducation(
         align: "left",
       });
 
-    currentY = doc.y + 2;
+    currentY = doc.y + 1;
   }
 
   const grad = edu.graduationDate ? formatDate(edu.graduationDate) : "";

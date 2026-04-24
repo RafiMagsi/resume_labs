@@ -345,19 +345,21 @@ class _TemplateTag extends StatelessWidget {
   }
 
   Color _getTemplateColor() {
-    switch (template) {
-      case ResumeTemplate.classic:
-        return AppColors.templateClassic;
-      case ResumeTemplate.modern:
-        return AppColors.templateModern;
-      case ResumeTemplate.modernClean:
-        return AppColors.templateModernClean;
-      case ResumeTemplate.modernSidebar:
-        return AppColors.templateModernSidebar;
-      case ResumeTemplate.minimal:
-        return AppColors.templateMinimal;
-      case ResumeTemplate.executive:
-        return AppColors.templateExecutive;
-    }
+    return switch (template) {
+      ResumeTemplate.classic => AppColors.templateClassic,
+      ResumeTemplate.modern => AppColors.templateModern,
+      ResumeTemplate.modernClean => AppColors.templateModernClean,
+      ResumeTemplate.modernSidebar => AppColors.templateModernSidebar,
+      ResumeTemplate.minimal => AppColors.templateMinimal,
+      ResumeTemplate.executive => AppColors.templateExecutive,
+      ResumeTemplate.datascience => AppColors.templateDatascience,
+      ResumeTemplate.sales => AppColors.templateSales,
+      ResumeTemplate.marketing => AppColors.templateMarketing,
+      ResumeTemplate.finance => AppColors.templateFinance,
+      ResumeTemplate.creative => AppColors.templateCreative,
+      ResumeTemplate.academic => AppColors.templateAcademic,
+      ResumeTemplate.healthcare => AppColors.templateHealthcare,
+      ResumeTemplate.startup => AppColors.templateStartup,
+    };
   }
 }
