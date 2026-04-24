@@ -11,7 +11,7 @@ const CONTENT_X = SIDEBAR_WIDTH + 20;
 const CONTENT_WIDTH = PAGE_WIDTH - CONTENT_X - PAGE_MARGIN;
 const PHOTO_DIAMETER = 76;
 const PHOTO_RADIUS = PHOTO_DIAMETER / 2;
-const HEADER_BOTTOM_GAP = 8;
+const HEADER_BOTTOM_GAP = 18;
 
 async function downloadImage(url: string): Promise<Buffer | null> {
   return new Promise((resolve) => {

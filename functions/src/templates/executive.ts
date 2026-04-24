@@ -8,7 +8,7 @@ const CONTENT_WIDTH = 595.28 - PAGE_MARGIN * 2;
 const PHOTO_DIAMETER = 68;
 const PHOTO_RADIUS = PHOTO_DIAMETER / 2;
 const PHOTO_GAP = 16;
-const HEADER_BOTTOM_GAP = 8;
+const HEADER_BOTTOM_GAP = 18;
 
 async function downloadImage(url: string): Promise<Buffer | null> {
   return new Promise((resolve) => {
@@ -16,32 +16,18 @@ async function downloadImage(url: string): Promise<Buffer | null> {
       resolve(null);
       return;
     }
-
     try {
       const protocol = url.startsWith("https") ? https : http;
-      const timeout = setTimeout(() => {
-        resolve(null);
-      }, 8000);
-
-      protocol
-        .get(url, { timeout: 8000 }, (response) => {
-          clearTimeout(timeout);
-          if (response.statusCode !== 200) {
-            resolve(null);
-            return;
-          }
-
-          const chunks: Buffer[] = [];
-          response.on("data", (chunk) => chunks.push(chunk));
-          response.on("end", () => {
-            resolve(Buffer.concat(chunks));
-          });
-          response.on("error", () => resolve(null));
-        })
-        .on("error", () => resolve(null));
-    } catch (error) {
-      resolve(null);
-    }
+      const timeout = setTimeout(() => resolve(null), 8000);
+      protocol.get(url, { timeout: 8000 }, (response) => {
+        clearTimeout(timeout);
+        if (response.statusCode !== 200) { resolve(null); return; }
+        const chunks: Buffer[] = [];
+        response.on("data", (chunk) => chunks.push(chunk));
+        response.on("end", () => resolve(Buffer.concat(chunks)));
+        response.on("error", () => resolve(null));
+      }).on("error", () => resolve(null));
+    } catch (error) { resolve(null); }
   });
 }
 
@@ -49,375 +35,147 @@ export async function generateExecutiveTemplate(resumeData: ResumeData): Promise
   return new Promise(async (resolve, reject) => {
     try {
       const doc = new PDFDocument({ size: "A4", margin: PAGE_MARGIN });
-      const primaryColor = "#1E3A8A";
-      const accentColor = "#111111";
+      const accentColor = "#1E3A8A";
       const textColor = "#334155";
       const mutedColor = "#6B7280";
-      const dividerColor = "#CBD5E1";
-      const softDividerColor = "#E2E8F0";
+      const dividerColor = "#E2E8F0";
 
       let imageBuffer: Buffer | null = null;
-      if (resumeData.photoUrl) {
-        imageBuffer = await downloadImage(resumeData.photoUrl);
-      }
+      if (resumeData.photoUrl) imageBuffer = await downloadImage(resumeData.photoUrl);
 
-      buildHeader(doc, resumeData, imageBuffer, {
-        primaryColor,
-        accentColor,
-        mutedColor,
-        dividerColor,
+      buildHeader(doc, resumeData, imageBuffer, { accentColor, mutedColor, dividerColor });
+
+      addSection(doc, "Executive Summary", "#1E3A8A", dividerColor, () => {
+        writeBodyText(doc, resumeData.personalSummary?.trim() || "No personal summary provided.", textColor);
       });
 
-      addSection(doc, "Executive Summary", primaryColor, softDividerColor, () => {
-        const summary = resumeData.personalSummary?.trim() || "No personal summary provided.";
-        writeBodyText(doc, summary, textColor);
-      });
-
-      addSection(doc, "Professional Experience", primaryColor, softDividerColor, () => {
-        if (!resumeData.workExperiences || resumeData.workExperiences.length === 0) {
-          writeBodyText(doc, "No work experience added.", textColor);
-          return;
-        }
-
+      addSection(doc, "Professional Experience", "#1E3A8A", dividerColor, () => {
+        if (!resumeData.workExperiences?.length) return writeBodyText(doc, "No work experience added.", textColor);
         resumeData.workExperiences.forEach((exp, index) => {
-          writeWorkExperience(doc, exp, {
-            accentColor,
-            mutedColor,
-            textColor,
-            primaryColor,
-          });
-          if (index < resumeData.workExperiences.length - 1) {
-              doc.moveDown(0.5);
-          }
+          writeWorkExperience(doc, exp, { accentColor, mutedColor, textColor });
+          if (index < resumeData.workExperiences.length - 1) doc.moveDown(0.9);
         });
       });
 
-      addSection(doc, "Education", primaryColor, softDividerColor, () => {
-        if (!resumeData.educations || resumeData.educations.length === 0) {
-          writeBodyText(doc, "No education added.", textColor);
-          return;
-        }
-
+      addSection(doc, "Education", "#1E3A8A", dividerColor, () => {
+        if (!resumeData.educations?.length) return writeBodyText(doc, "No education added.", textColor);
         resumeData.educations.forEach((edu, index) => {
-          writeEducation(doc, edu, {
-            accentColor,
-            mutedColor,
-          });
-          if (index < resumeData.educations.length - 1) {
-              doc.moveDown(0.4);
-          }
+          writeEducation(doc, edu, { accentColor, mutedColor });
+          if (index < resumeData.educations.length - 1) doc.moveDown(0.8);
         });
       });
 
-      addSection(doc, "Core Competencies", primaryColor, softDividerColor, () => {
-        if (!resumeData.skills || resumeData.skills.length === 0) {
-          writeBodyText(doc, "No skills added.", textColor);
-          return;
-        }
+      addSection(doc, "Leadership Highlights", "#1E3A8A", dividerColor, () => {
+        const extraData = resumeData as any;
+        const projectItems = Array.isArray(extraData.projects) ? extraData.projects : [];
+        const achievementItems = Array.isArray(extraData.achievements) ? extraData.achievements : Array.isArray(extraData.awards) ? extraData.awards : [];
+        const publicationItems = Array.isArray(extraData.publications) ? extraData.publications : [];
+        if (!projectItems.length && !achievementItems.length && !publicationItems.length) return writeBodyText(doc, "No additional highlights added.", textColor);
+        if (projectItems.length) writeMiniListBlock(doc, "Projects", projectItems, { textColor, mutedColor });
+        if (achievementItems.length) writeMiniListBlock(doc, "Achievements", achievementItems, { textColor, mutedColor });
+        if (publicationItems.length) writeMiniListBlock(doc, "Publications", publicationItems, { textColor, mutedColor });
+      });
 
-        const skillsLine = resumeData.skills
-          .map((skill) => {
-            const category = skill.category?.trim();
-            return category ? `${skill.name} - ${category}` : skill.name;
-          })
-          .join(" • ");
-
+      addSection(doc, "Core Competencies", "#1E3A8A", dividerColor, () => {
+        if (!resumeData.skills?.length) return writeBodyText(doc, "No skills added.", textColor);
+        const skillsLine = resumeData.skills.map((skill) => skill.category?.trim() ? `${skill.name} - ${skill.category}` : skill.name).join(" • ");
         writeBodyText(doc, skillsLine, textColor);
       });
 
       doc.end();
       createPdfBuffer(doc).then(resolve).catch(reject);
-    } catch (error) {
-      reject(error);
-    }
+    } catch (error) { reject(error); }
   });
 }
 
-function buildHeader(
-  doc: PDFKit.PDFDocument,
-  resumeData: ResumeData,
-  imageBuffer: Buffer | null,
-  colors: {
-    primaryColor: string;
-    accentColor: string;
-    mutedColor: string;
-    dividerColor: string;
-  },
-): void {
+function buildHeader(doc: PDFKit.PDFDocument, resumeData: ResumeData, imageBuffer: Buffer | null, colors: { accentColor: string; mutedColor: string; dividerColor: string; }): void {
   const hasPhotoSlot = Boolean(resumeData.photoUrl);
   const headerStartY = doc.y;
   const photoX = PAGE_MARGIN + CONTENT_WIDTH - PHOTO_DIAMETER;
   const photoY = headerStartY;
-  const textColumnWidth = hasPhotoSlot
-    ? CONTENT_WIDTH - PHOTO_DIAMETER - PHOTO_GAP
-    : CONTENT_WIDTH;
+  const textColumnWidth = hasPhotoSlot ? CONTENT_WIDTH - PHOTO_DIAMETER - PHOTO_GAP : CONTENT_WIDTH;
 
-  doc
-    .rect(PAGE_MARGIN, headerStartY, CONTENT_WIDTH, 4)
-    .fill(colors.primaryColor);
+  doc.rect(PAGE_MARGIN, headerStartY, CONTENT_WIDTH, 4).fill(colors.accentColor);
 
   const titleY = headerStartY + 14;
-
   if (hasPhotoSlot) {
     if (imageBuffer) {
       try {
         doc.save();
-        doc.circle(photoX + PHOTO_RADIUS, photoY + PHOTO_RADIUS + 6, PHOTO_RADIUS);
+        doc.circle(photoX + PHOTO_RADIUS, photoY + PHOTO_RADIUS, PHOTO_RADIUS);
         doc.clip();
-        doc.image(imageBuffer, photoX, photoY + 6, {
-          width: PHOTO_DIAMETER,
-          height: PHOTO_DIAMETER,
-        });
+        doc.image(imageBuffer, photoX, photoY, { width: PHOTO_DIAMETER, height: PHOTO_DIAMETER });
         doc.restore();
-
-        doc
-          .circle(photoX + PHOTO_RADIUS, photoY + PHOTO_RADIUS + 6, PHOTO_RADIUS)
-          .lineWidth(1)
-          .stroke(colors.dividerColor);
+        doc.circle(photoX + PHOTO_RADIUS, photoY + PHOTO_RADIUS, PHOTO_RADIUS).lineWidth(1).stroke(colors.dividerColor);
       } catch (error) {
-        drawPhotoPlaceholder(doc, photoX, photoY + 6, PHOTO_DIAMETER, colors.dividerColor);
+        drawPhotoPlaceholder(doc, photoX, photoY, PHOTO_DIAMETER, colors.dividerColor, colors.mutedColor);
       }
     } else {
-      drawPhotoPlaceholder(doc, photoX, photoY + 6, PHOTO_DIAMETER, colors.dividerColor);
+      drawPhotoPlaceholder(doc, photoX, photoY, PHOTO_DIAMETER, colors.dividerColor, colors.mutedColor);
     }
   }
 
-  doc
-    .font("Helvetica-Bold")
-    .fontSize(25)
-    .fillColor(colors.accentColor)
-    .text(resumeData.title?.trim() || "Untitled Resume", PAGE_MARGIN, titleY, {
-      width: textColumnWidth,
-      align: "left",
-    });
-
+  doc.font("Helvetica-Bold").fontSize(25).fillColor(colors.accentColor).text(resumeData.title?.trim() || "Untitled Resume", PAGE_MARGIN, titleY, { width: textColumnWidth, align: "left" });
   const titleBottomY = doc.y;
-
-  doc
-    .font("Helvetica")
-    .fontSize(10.4)
-    .fillColor(colors.mutedColor)
-    .text("Executive Resume", PAGE_MARGIN, titleBottomY + 4, {
-      width: textColumnWidth,
-      align: "left",
-    });
-
-  const textBottomY = doc.y;
-  const photoBottomY = hasPhotoSlot ? photoY + 6 + PHOTO_DIAMETER : titleY;
-  const dividerY = Math.max(textBottomY, photoBottomY) + HEADER_BOTTOM_GAP;
-
-  doc
-    .strokeColor(colors.dividerColor)
-    .lineWidth(1)
-    .moveTo(PAGE_MARGIN, dividerY)
-    .lineTo(PAGE_MARGIN + CONTENT_WIDTH, dividerY)
-    .stroke();
-
-    doc.y = dividerY + 10;
+  doc.font("Helvetica").fontSize(10.5).fillColor(colors.mutedColor).text("Executive Resume", PAGE_MARGIN, titleBottomY + 4, { width: textColumnWidth, align: "left" });
+  const dividerY = Math.max(doc.y, hasPhotoSlot ? photoY + PHOTO_DIAMETER : titleY) + HEADER_BOTTOM_GAP;
+  doc.strokeColor(colors.dividerColor).lineWidth(1).moveTo(PAGE_MARGIN, dividerY).lineTo(PAGE_MARGIN + CONTENT_WIDTH, dividerY).stroke();
+  doc.y = dividerY + 16;
 }
 
-function drawPhotoPlaceholder(
-  doc: PDFKit.PDFDocument,
-  x: number,
-  y: number,
-  size: number,
-  borderColor: string,
-): void {
+function drawPhotoPlaceholder(doc: PDFKit.PDFDocument, x: number, y: number, size: number, borderColor: string, mutedColor: string): void {
   const radius = size / 2;
-
-  doc
-    .save()
-    .circle(x + radius, y + radius, radius)
-    .fillAndStroke("#F8FAFC", borderColor)
-    .restore();
-
-  doc
-    .font("Helvetica")
-    .fontSize(9)
-    .fillColor("#94A3B8")
-    .text("Photo", x, y + radius - 5, {
-      width: size,
-      align: "center",
-    });
+  doc.save().circle(x + radius, y + radius, radius).fillAndStroke("#F8FAFC", borderColor).restore();
+  doc.font("Helvetica").fontSize(9).fillColor(mutedColor).text("Photo", x, y + radius - 5, { width: size, align: "center" });
 }
 
-function addSection(
-  doc: PDFKit.PDFDocument,
-  title: string,
-  titleColor: string,
-  dividerColor: string,
-  renderContent: () => void,
-): void {
-  doc
-    .font("Helvetica-Bold")
-    .fontSize(11)
-    .fillColor(titleColor)
-    .text(title.toUpperCase(), PAGE_MARGIN, doc.y, {
-      width: CONTENT_WIDTH,
-      align: "left",
-      characterSpacing: 1.1,
-    });
-
+function addSection(doc: PDFKit.PDFDocument, title: string, titleColor: string, dividerColor: string, renderContent: () => void): void {
+  doc.font("Helvetica-Bold").fontSize(11).fillColor(titleColor).text(title.toUpperCase(), PAGE_MARGIN, doc.y, { width: CONTENT_WIDTH, characterSpacing: 1.1 });
   doc.moveDown(0.18);
   const dividerY = doc.y;
-  doc
-    .strokeColor(dividerColor)
-    .lineWidth(1)
-    .moveTo(PAGE_MARGIN, dividerY)
-    .lineTo(PAGE_MARGIN + CONTENT_WIDTH, dividerY)
-    .stroke();
-
-    doc.y = dividerY + 8;
+  doc.strokeColor(dividerColor).lineWidth(1).moveTo(PAGE_MARGIN, dividerY).lineTo(PAGE_MARGIN + CONTENT_WIDTH, dividerY).stroke();
+  doc.y = dividerY + 12;
   renderContent();
-        doc.moveDown(0.2);
+  doc.moveDown(1.05);
 }
 
-function writeWorkExperience(
-  doc: PDFKit.PDFDocument,
-  exp: ResumeData["workExperiences"][number],
-  colors: {
-    accentColor: string;
-    mutedColor: string;
-    textColor: string;
-    primaryColor: string;
-  },
-): void {
-  const roleLine = exp.role?.trim() || "Untitled Role";
-
-  doc
-    .font("Helvetica-Bold")
-    .fontSize(12.5)
-    .fillColor(colors.accentColor)
-    .text(roleLine, PAGE_MARGIN, doc.y, {
-      width: CONTENT_WIDTH,
-      align: "left",
-    });
-
-  const companyLocation = [exp.company?.trim(), exp.location?.trim()]
-    .filter(Boolean)
-    .join(" - ");
-
-  if (companyLocation) {
-    doc.moveDown(0.12);
-    doc
-      .font("Helvetica")
-      .fontSize(10.4)
-      .fillColor("#4B5563")
-      .text(companyLocation, PAGE_MARGIN, doc.y, {
-        width: CONTENT_WIDTH,
-        align: "left",
-      });
-  }
-
-  const start = formatDate(exp.startDate);
-  const end = exp.endDate ? formatDate(exp.endDate) : "Present";
-  const dateRange = `${start} - ${end}`;
-
-  doc.moveDown(0.1);
-  doc
-    .font("Helvetica")
-    .fontSize(10)
-    .fillColor(colors.mutedColor)
-    .text(dateRange, PAGE_MARGIN, doc.y, {
-      width: CONTENT_WIDTH,
-      align: "left",
-    });
-
-  if (exp.bulletPoints && exp.bulletPoints.length > 0) {
-      doc.moveDown(0.2);
+function writeWorkExperience(doc: PDFKit.PDFDocument, exp: ResumeData["workExperiences"][number], colors: { accentColor: string; mutedColor: string; textColor: string; }): void {
+  doc.font("Helvetica-Bold").fontSize(12.2).fillColor(colors.accentColor).text(exp.role?.trim() || "Untitled Role", PAGE_MARGIN, doc.y, { width: CONTENT_WIDTH });
+  const companyLocation = [exp.company?.trim(), exp.location?.trim()].filter(Boolean).join(" - ");
+  if (companyLocation) { doc.moveDown(0.12); doc.font("Helvetica").fontSize(10.3).fillColor("#4B5563").text(companyLocation, PAGE_MARGIN, doc.y, { width: CONTENT_WIDTH }); }
+  const start = formatDate(exp.startDate); const end = exp.endDate ? formatDate(exp.endDate) : "Present";
+  doc.moveDown(0.1); doc.font("Helvetica").fontSize(9.8).fillColor(colors.mutedColor).text(`${start} - ${end}`, PAGE_MARGIN, doc.y, { width: CONTENT_WIDTH });
+  if (exp.bulletPoints?.length) {
+    doc.moveDown(0.3);
     exp.bulletPoints.forEach((bullet) => {
-      const text = bullet?.trim();
-      if (!text) return;
-
-      const bulletX = PAGE_MARGIN;
-      const textX = PAGE_MARGIN + 12;
+      const text = bullet?.trim(); if (!text) return;
       const currentY = doc.y;
-
-      doc
-        .font("Helvetica")
-        .fontSize(10.4)
-        .fillColor(colors.primaryColor)
-        .text("•", bulletX, currentY, {
-          width: 8,
-          align: "left",
-        });
-
-      doc
-        .font("Helvetica")
-        .fontSize(10.4)
-        .fillColor(colors.textColor)
-        .text(text, textX, currentY, {
-          width: CONTENT_WIDTH - 12,
-          align: "left",
-                      lineGap: 3,
-        });
+      doc.font("Helvetica").fontSize(10.2).fillColor("#1E3A8A").text("•", PAGE_MARGIN, currentY, { width: 8 });
+      doc.font("Helvetica").fontSize(10.2).fillColor(colors.textColor).text(text, PAGE_MARGIN + 12, currentY, { width: CONTENT_WIDTH - 12, lineGap: 3 });
     });
   }
 }
 
-function writeEducation(
-  doc: PDFKit.PDFDocument,
-  edu: ResumeData["educations"][number],
-  colors: {
-    accentColor: string;
-    mutedColor: string;
-  },
-): void {
-  const degreeLine = [edu.degree?.trim(), edu.field?.trim()]
-    .filter(Boolean)
-    .join(" in ") || "Education";
-
-  doc
-    .font("Helvetica-Bold")
-    .fontSize(12)
-    .fillColor(colors.accentColor)
-    .text(degreeLine, PAGE_MARGIN, doc.y, {
-      width: CONTENT_WIDTH,
-      align: "left",
-    });
-
+function writeEducation(doc: PDFKit.PDFDocument, edu: ResumeData["educations"][number], colors: { accentColor: string; mutedColor: string; }): void {
+  const degreeLine = [edu.degree?.trim(), edu.field?.trim()].filter(Boolean).join(" in ") || "Education";
+  doc.font("Helvetica-Bold").fontSize(11.8).fillColor(colors.accentColor).text(degreeLine, PAGE_MARGIN, doc.y, { width: CONTENT_WIDTH });
   const schoolLine = edu.school?.trim() || "";
-  if (schoolLine) {
-    doc.moveDown(0.12);
-    doc
-      .font("Helvetica")
-      .fontSize(10.4)
-      .fillColor("#4B5563")
-      .text(schoolLine, PAGE_MARGIN, doc.y, {
-        width: CONTENT_WIDTH,
-        align: "left",
-      });
-  }
-
+  if (schoolLine) { doc.moveDown(0.12); doc.font("Helvetica").fontSize(10.3).fillColor("#4B5563").text(schoolLine, PAGE_MARGIN, doc.y, { width: CONTENT_WIDTH }); }
   const grad = edu.graduationDate ? formatDate(edu.graduationDate) : "";
-  const meta = [
-    grad ? `Graduation: ${grad}` : null,
-    edu.gpa ? `GPA: ${edu.gpa}` : null,
-  ]
-    .filter(Boolean)
-    .join(" - ");
+  const meta = [grad ? `Graduation: ${grad}` : null, edu.gpa ? `GPA: ${edu.gpa}` : null].filter(Boolean).join(" - ");
+  if (meta) { doc.moveDown(0.1); doc.font("Helvetica").fontSize(9.8).fillColor(colors.mutedColor).text(meta, PAGE_MARGIN, doc.y, { width: CONTENT_WIDTH }); }
+}
 
-  if (meta) {
-    doc.moveDown(0.1);
-    doc
-      .font("Helvetica")
-      .fontSize(10)
-      .fillColor(colors.mutedColor)
-      .text(meta, PAGE_MARGIN, doc.y, {
-        width: CONTENT_WIDTH,
-        align: "left",
-      });
-  }
+function writeMiniListBlock(doc: PDFKit.PDFDocument, label: string, items: any[], colors: { textColor: string; mutedColor: string }): void {
+  doc.font("Helvetica-Bold").fontSize(9.8).fillColor(colors.mutedColor).text(label.toUpperCase(), PAGE_MARGIN, doc.y, { width: CONTENT_WIDTH });
+  doc.moveDown(0.15);
+  items.slice(0, 3).forEach((item) => {
+    const text = typeof item === "string" ? item : item?.name || item?.title || item?.label || JSON.stringify(item);
+    doc.font("Helvetica").fontSize(9.8).fillColor(colors.textColor).text(`• ${text}`, PAGE_MARGIN + 8, doc.y, { width: CONTENT_WIDTH - 8, lineGap: 2 });
+  });
+  doc.moveDown(0.25);
 }
 
 function writeBodyText(doc: PDFKit.PDFDocument, text: string, textColor: string): void {
-  doc
-    .font("Helvetica")
-    .fontSize(10.6)
-    .fillColor(textColor)
-    .text(text, PAGE_MARGIN, doc.y, {
-      width: CONTENT_WIDTH,
-      align: "left",
-                        lineGap: 3,
-    });
+  doc.font("Helvetica").fontSize(10.6).fillColor(textColor).text(text, PAGE_MARGIN, doc.y, { width: CONTENT_WIDTH, lineGap: 4 });
 }

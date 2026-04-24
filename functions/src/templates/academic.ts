@@ -8,7 +8,7 @@ const CONTENT_WIDTH = 595.28 - PAGE_MARGIN * 2;
 const PHOTO_DIAMETER = 64;
 const PHOTO_RADIUS = PHOTO_DIAMETER / 2;
 const PHOTO_GAP = 16;
-const HEADER_BOTTOM_GAP = 8;
+const HEADER_BOTTOM_GAP = 18;
 
 async function downloadImage(url: string): Promise<Buffer | null> {
   return new Promise((resolve) => {
