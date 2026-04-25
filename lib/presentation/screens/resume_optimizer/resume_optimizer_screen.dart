@@ -876,6 +876,29 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
     try {
       final Map<String, dynamic> data = jsonDecode(jsonString);
 
+      // In edit mode, clear existing sections to avoid duplication
+      if (_isEditMode) {
+        debugPrint('[ResumeOptimizer] Clearing existing sections for update...');
+        final currentState = ref.read(resumeFormProvider);
+
+        // Remove all work experiences
+        for (int i = currentState.workExperiences.length - 1; i >= 0; i--) {
+          notifier.removeWorkExperience(i);
+        }
+
+        // Remove all educations
+        for (int i = currentState.educations.length - 1; i >= 0; i--) {
+          notifier.removeEducation(i);
+        }
+
+        // Remove all skills
+        for (int i = currentState.skills.length - 1; i >= 0; i--) {
+          notifier.removeSkill(i);
+        }
+
+        debugPrint('[ResumeOptimizer] ✓ Cleared existing sections');
+      }
+
       // Extract title
       final title = data['title'] as String? ?? 'Optimized Resume';
       notifier.updateTitle(title);
@@ -936,17 +959,24 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
             '[ResumeOptimizer] ✓ Added ${educationList.length} educations');
       }
 
-      // Extract skills
+      // Extract and match skills with related skills
       final skillList = data['skills'] as List? ?? [];
       if (skillList.isNotEmpty) {
         for (final skillData in skillList) {
-          final skill = Skill(
-            name: skillData['name'] as String? ?? 'Skill',
-            category: skillData['category'] as String? ?? 'Technical',
-          );
+          final skillName = skillData['name'] as String? ?? 'Skill';
+          final category = skillData['category'] as String? ?? 'Technical';
+
+          // Add primary skill
+          final skill = Skill(name: skillName, category: category);
           notifier.addSkill(skill);
+
+          // Find and add related skills
+          final relatedSkills = _findRelatedSkills(skillName, category);
+          for (final relatedSkill in relatedSkills) {
+            notifier.addSkill(relatedSkill);
+          }
         }
-        debugPrint('[ResumeOptimizer] ✓ Added ${skillList.length} skills');
+        debugPrint('[ResumeOptimizer] ✓ Added ${skillList.length} skills with related matches');
       }
 
       debugPrint('[ResumeOptimizer] ✓ JSON parsing completed successfully');
@@ -954,6 +984,46 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
       debugPrint('[ResumeOptimizer] ✗ Error parsing JSON: $e');
       rethrow;
     }
+  }
+
+  List<Skill> _findRelatedSkills(String skillName, String category) {
+    final relatedSkills = <Skill>[];
+    final skillLower = skillName.toLowerCase();
+
+    // Define related skills mapping
+    final skillMap = {
+      'flutter': ['dart', 'mobile development', 'cross-platform', 'ui/ux'],
+      'dart': ['flutter', 'programming', 'backend'],
+      'react': ['javascript', 'typescript', 'web development', 'jsx'],
+      'typescript': ['javascript', 'react', 'node.js', 'web development'],
+      'javascript': ['typescript', 'react', 'nodejs', 'web development'],
+      'python': ['django', 'flask', 'data science', 'machine learning'],
+      'java': ['spring', 'android', 'backend', 'oop'],
+      'kotlin': ['android', 'java', 'mobile development'],
+      'swift': ['ios', 'objective-c', 'mobile development'],
+      'aws': ['cloud', 'devops', 'infrastructure'],
+      'docker': ['kubernetes', 'devops', 'cloud'],
+      'sql': ['database', 'postgresql', 'mysql', 'data analysis'],
+      'firebase': ['google cloud', 'backend', 'real-time database'],
+      'git': ['version control', 'github', 'gitlab'],
+      'node.js': ['javascript', 'typescript', 'backend', 'express'],
+      'express': ['node.js', 'javascript', 'backend', 'api'],
+      'mongodb': ['database', 'nosql', 'backend'],
+      'postgresql': ['sql', 'database', 'backend'],
+      'kubernetes': ['docker', 'devops', 'container'],
+      'linux': ['devops', 'command line', 'server'],
+      'css': ['html', 'web development', 'frontend'],
+      'html': ['css', 'web development', 'frontend'],
+      'figma': ['ui/ux', 'design', 'prototyping'],
+    };
+
+    // Find related skills
+    final related = skillMap[skillLower] ?? [];
+    for (final relatedName in related) {
+      relatedSkills.add(Skill(name: relatedName, category: category));
+    }
+
+    return relatedSkills;
   }
 
   DateTime? _parseDate(dynamic dateValue) {
