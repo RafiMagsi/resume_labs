@@ -45,13 +45,24 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
     _optimizationPrompt = TextEditingController();
     _tabController = TabController(length: 2, vsync: this);
 
-    // Detect if we're optimizing an existing resume
+    // Always start with a clean optimization state (new upload/new prompt).
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.invalidate(resumeOptimizationNotifierProvider);
+
       final formState = ref.read(resumeFormProvider);
-      if (formState.resumeId != null && formState.resumeId!.isNotEmpty) {
-        _isEditMode = true;
+      final isEditingExisting =
+          formState.resumeId != null && formState.resumeId!.isNotEmpty;
+
+      if (isEditingExisting) {
+        setState(() => _isEditMode = true);
         _populateFromExistingResume(formState);
+        return;
       }
+
+      setState(() => _isEditMode = false);
+      _resumeController.clear();
+      _optimizationPrompt.clear();
+      _tabController.animateTo(0);
     });
   }
 
@@ -447,7 +458,8 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
     debugPrint('[ResumeOptimizer] Starting import to resume...');
     debugPrint(
         '[ResumeOptimizer] Optimized text length: ${optimizedText.length}');
-    debugPrint('[ResumeOptimizer] Mode: ${_isEditMode ? "EDIT existing" : "CREATE new"}');
+    debugPrint(
+        '[ResumeOptimizer] Mode: ${_isEditMode ? "EDIT existing" : "CREATE new"}');
 
     try {
       if (!context.mounted) {
@@ -480,7 +492,8 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
         debugPrint('[ResumeOptimizer] ✓ Updating existing resume');
       } else {
         // CREATE MODE: Create a brand new resume record
-        debugPrint('[ResumeOptimizer] Creating NEW resume record (AI Optimize)');
+        debugPrint(
+            '[ResumeOptimizer] Creating NEW resume record (AI Optimize)');
         notifier.reset(userId: userId);
       }
 
@@ -491,7 +504,8 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
 
       // Save to Firestore
       debugPrint('[ResumeOptimizer] Saving resume to Firestore...');
-      final saveSuccess = _isEditMode ? await notifier.save() : await notifier.saveAsNew();
+      final saveSuccess =
+          _isEditMode ? await notifier.save() : await notifier.saveAsNew();
 
       if (!mounted) {
         debugPrint('[ResumeOptimizer] ✗ Context not mounted after save');
@@ -503,7 +517,8 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
 
         // Navigate back to resume details screen
         context.pop();
-        debugPrint('[ResumeOptimizer] ✓ Navigated back to resume details screen');
+        debugPrint(
+            '[ResumeOptimizer] ✓ Navigated back to resume details screen');
 
         // Show success message
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -878,7 +893,8 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
 
       // In edit mode, clear existing sections to avoid duplication
       if (_isEditMode) {
-        debugPrint('[ResumeOptimizer] Clearing existing sections for update...');
+        debugPrint(
+            '[ResumeOptimizer] Clearing existing sections for update...');
         final currentState = ref.read(resumeFormProvider);
 
         // Remove all work experiences
@@ -959,24 +975,18 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
             '[ResumeOptimizer] ✓ Added ${educationList.length} educations');
       }
 
-      // Extract and match skills with related skills
+      // Extract skills (AI now includes related skills in the response)
       final skillList = data['skills'] as List? ?? [];
       if (skillList.isNotEmpty) {
         for (final skillData in skillList) {
-          final skillName = skillData['name'] as String? ?? 'Skill';
-          final category = skillData['category'] as String? ?? 'Technical';
-
-          // Add primary skill
-          final skill = Skill(name: skillName, category: category);
+          final skill = Skill(
+            name: skillData['name'] as String? ?? 'Skill',
+            category: skillData['category'] as String? ?? 'Technical',
+          );
           notifier.addSkill(skill);
-
-          // Find and add related skills
-          final relatedSkills = _findRelatedSkills(skillName, category);
-          for (final relatedSkill in relatedSkills) {
-            notifier.addSkill(relatedSkill);
-          }
         }
-        debugPrint('[ResumeOptimizer] ✓ Added ${skillList.length} skills with related matches');
+        debugPrint(
+            '[ResumeOptimizer] ✓ Added ${skillList.length} skills (including AI-suggested related skills)');
       }
 
       debugPrint('[ResumeOptimizer] ✓ JSON parsing completed successfully');
@@ -984,46 +994,6 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
       debugPrint('[ResumeOptimizer] ✗ Error parsing JSON: $e');
       rethrow;
     }
-  }
-
-  List<Skill> _findRelatedSkills(String skillName, String category) {
-    final relatedSkills = <Skill>[];
-    final skillLower = skillName.toLowerCase();
-
-    // Define related skills mapping
-    final skillMap = {
-      'flutter': ['dart', 'mobile development', 'cross-platform', 'ui/ux'],
-      'dart': ['flutter', 'programming', 'backend'],
-      'react': ['javascript', 'typescript', 'web development', 'jsx'],
-      'typescript': ['javascript', 'react', 'node.js', 'web development'],
-      'javascript': ['typescript', 'react', 'nodejs', 'web development'],
-      'python': ['django', 'flask', 'data science', 'machine learning'],
-      'java': ['spring', 'android', 'backend', 'oop'],
-      'kotlin': ['android', 'java', 'mobile development'],
-      'swift': ['ios', 'objective-c', 'mobile development'],
-      'aws': ['cloud', 'devops', 'infrastructure'],
-      'docker': ['kubernetes', 'devops', 'cloud'],
-      'sql': ['database', 'postgresql', 'mysql', 'data analysis'],
-      'firebase': ['google cloud', 'backend', 'real-time database'],
-      'git': ['version control', 'github', 'gitlab'],
-      'node.js': ['javascript', 'typescript', 'backend', 'express'],
-      'express': ['node.js', 'javascript', 'backend', 'api'],
-      'mongodb': ['database', 'nosql', 'backend'],
-      'postgresql': ['sql', 'database', 'backend'],
-      'kubernetes': ['docker', 'devops', 'container'],
-      'linux': ['devops', 'command line', 'server'],
-      'css': ['html', 'web development', 'frontend'],
-      'html': ['css', 'web development', 'frontend'],
-      'figma': ['ui/ux', 'design', 'prototyping'],
-    };
-
-    // Find related skills
-    final related = skillMap[skillLower] ?? [];
-    for (final relatedName in related) {
-      relatedSkills.add(Skill(name: relatedName, category: category));
-    }
-
-    return relatedSkills;
   }
 
   DateTime? _parseDate(dynamic dateValue) {
@@ -1042,6 +1012,6 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
     _resumeController.clear();
     _optimizationPrompt.clear();
     _tabController.animateTo(0);
-    ref.read(resumeOptimizationNotifierProvider.notifier).optimizeResume('');
+    ref.invalidate(resumeOptimizationNotifierProvider);
   }
 }

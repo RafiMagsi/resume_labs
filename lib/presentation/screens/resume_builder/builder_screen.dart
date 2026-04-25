@@ -163,7 +163,7 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
     });
   }
 
-Future<void> _showErrorDialog({
+  Future<void> _showErrorDialog({
     required String title,
     required String message,
   }) {

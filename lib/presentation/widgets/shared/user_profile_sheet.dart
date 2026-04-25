@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../injection/injection_container.dart';
 import '../../providers/auth/auth_provider.dart';
+import '../../providers/resume/resume_form_provider.dart';
 import '../../providers/resume/resume_optimization_provider.dart';
 import '../../screens/resume_optimizer/resume_optimizer_screen.dart';
 
@@ -44,7 +45,7 @@ class UserProfileSheet extends ConsumerWidget {
             const SizedBox(height: 24),
             _buildCreditsInfo(creditsAsync),
             const SizedBox(height: 24),
-            _buildMenuItems(context),
+            _buildMenuItems(context, ref),
             const SizedBox(height: 24),
             _buildSignOutButton(context, ref),
           ],
@@ -172,7 +173,7 @@ class UserProfileSheet extends ConsumerWidget {
     );
   }
 
-  Widget _buildMenuItems(BuildContext context) {
+  Widget _buildMenuItems(BuildContext context, WidgetRef ref) {
     return Column(
       children: [
         _MenuItem(
@@ -181,6 +182,8 @@ class UserProfileSheet extends ConsumerWidget {
           subtitle: 'Optimize your resume with AI',
           onTap: () {
             Navigator.of(context).pop();
+            ref.read(resumeFormProvider.notifier).reset();
+            ref.invalidate(resumeOptimizationNotifierProvider);
             context.push(ResumeOptimizerScreen.routePath);
           },
         ),

@@ -9,6 +9,7 @@ import '../../../core/errors/failure.dart';
 import '../../../domain/entities/resume.dart';
 import '../../providers/resume/resume_form_provider.dart';
 import '../../providers/resume/resume_list_provider.dart';
+import '../../providers/resume/resume_optimization_provider.dart';
 import '../../widgets/shared/app_button.dart';
 import '../../widgets/resume/resume_card.dart';
 import '../resume_builder/builder_screen.dart';
@@ -221,7 +222,11 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
             child: SlideTransition(
               position: _slideAnimation,
               child: AnimatedAIButton(
-                onPressed: () => context.push(ResumeOptimizerScreen.routePath),
+                onPressed: () {
+                  ref.read(resumeFormProvider.notifier).reset();
+                  ref.invalidate(resumeOptimizationNotifierProvider);
+                  context.push(ResumeOptimizerScreen.routePath);
+                },
               ),
             ),
           ),

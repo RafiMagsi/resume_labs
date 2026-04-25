@@ -22,9 +22,6 @@ import '../../widgets/shared/loading_overlay.dart';
 import '../../../core/errors/failure.dart';
 import '../../widgets/shared/error_dialog.dart';
 
-final selectedResumeTemplateProvider =
-    StateProvider<ResumeTemplate>((ref) => ResumeTemplate.classic);
-
 class PreviewScreen extends ConsumerStatefulWidget {
   const PreviewScreen({super.key});
 
@@ -65,12 +62,6 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
   @override
   void initState() {
     super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final formState = ref.read(resumeFormProvider);
-      ref.read(selectedResumeTemplateProvider.notifier).state =
-          formState.template;
-    });
 
     ref.listenManual(pdfExportProvider, (previous, next) async {
       await next.whenOrNull(
@@ -143,7 +134,6 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
 
   Future<void> _handleExport() async {
     final formState = ref.read(resumeFormProvider);
-    final template = ref.read(selectedResumeTemplateProvider);
     final firebasePdfService = ref.read(firebasePdfServiceProvider);
 
     final resumeData = {
@@ -186,7 +176,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
     try {
       final pdfBytes = await firebasePdfService.generateResumePdf(
         resumeData: resumeData,
-        template: template.name,
+        template: formState.template.name,
       );
 
       await Printing.sharePdf(
@@ -201,7 +191,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
 
   Future<void> _handleExportDocx() async {
     final formState = ref.read(resumeFormProvider);
-    final template = ref.read(selectedResumeTemplateProvider);
+    final template = formState.template;
 
     final resume = Resume(
       id: formState.resumeId ??
@@ -228,7 +218,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
   @override
   Widget build(BuildContext context) {
     final formState = ref.watch(resumeFormProvider);
-    final selectedTemplate = ref.watch(selectedResumeTemplateProvider);
+    final selectedTemplate = formState.template;
     final exportState = ref.watch(pdfExportProvider);
     final docxState = ref.watch(docxExportProvider);
     final isAnyExportLoading = exportState.isLoading || docxState.isLoading;
@@ -253,8 +243,6 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
                 isLoading: isAnyExportLoading,
                 onTemplateChanged: (template) {
                   if (template == null) return;
-                  ref.read(selectedResumeTemplateProvider.notifier).state =
-                      template;
                   ref
                       .read(resumeFormProvider.notifier)
                       .persistTemplateSelection(template);
@@ -357,8 +345,6 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
                 preview: previewWidget,
                 onTemplateChanged: (template) {
                   if (template == null) return;
-                  ref.read(selectedResumeTemplateProvider.notifier).state =
-                      template;
                   ref
                       .read(resumeFormProvider.notifier)
                       .persistTemplateSelection(template);

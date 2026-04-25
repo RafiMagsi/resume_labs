@@ -81,7 +81,16 @@ Rules:
 - Do not invent new companies, roles, degrees, or dates
 - Use ISO date format (YYYY-MM-DD)
 - Separate bullet points as array items
-- Extract dates from the CV if available, use reasonable estimates if not'''
+- Extract dates from the CV if available, use reasonable estimates if not
+
+Skills Optimization:
+- Include ALL existing skills from the CV
+- For each skill, intelligently suggest 2-3 related or complementary skills based on the person's background
+- Related skills should enhance the candidate's profile (e.g., if they know "Flutter", add "Dart", "Mobile Development", "UI/UX")
+- If the CV mentions specific frameworks/libraries, add related tools from the same ecosystem
+- Add industry-relevant skills that are missing (e.g., Git for developers, Figma for designers)
+- Keep skill categories appropriate (Technical, Language, Soft Skills, Tools, etc)
+- Ensure suggested skills are relevant to their role and experience level'''
                 },
                 {
                   'role': 'user',

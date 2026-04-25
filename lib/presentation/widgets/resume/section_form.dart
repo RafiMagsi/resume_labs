@@ -878,4 +878,3 @@ String _formatDateRange(DateTime start, DateTime? end, bool isCurrentRole) {
       isCurrentRole || end == null ? 'Present' : _formatMonthYear(end);
   return '$startText - $endText';
 }
-

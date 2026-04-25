@@ -37,29 +37,12 @@ class ResumeDetailScreen extends ConsumerStatefulWidget {
 
 class _ResumeDetailScreenState extends ConsumerState<ResumeDetailScreen> {
   bool _isExporting = false;
-  var _templateSynced = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_templateSynced) {
-        final formState = ref.read(resumeFormProvider);
-        if (formState.resumeId != null) {
-          ref.read(selectedResumeTemplateProvider.notifier).state =
-              formState.template;
-          _templateSynced = true;
-        }
-      }
-    });
-  }
 
   Future<void> _handleExport() async {
     setState(() => _isExporting = true);
 
     try {
       final formState = ref.read(resumeFormProvider);
-      final template = ref.read(selectedResumeTemplateProvider);
       final firebasePdfService = ref.read(firebasePdfServiceProvider);
 
       final resumeData = {
@@ -101,7 +84,7 @@ class _ResumeDetailScreenState extends ConsumerState<ResumeDetailScreen> {
 
       final pdfBytes = await firebasePdfService.generateResumePdf(
         resumeData: resumeData,
-        template: template.name,
+        template: formState.template.name,
       );
 
       if (!mounted) return;
@@ -181,7 +164,7 @@ class _ResumeDetailScreenState extends ConsumerState<ResumeDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final formState = ref.watch(resumeFormProvider);
-    final selectedTemplate = ref.watch(selectedResumeTemplateProvider);
+    final selectedTemplate = formState.template;
 
     return Scaffold(
       appBar: AppBar(
@@ -318,73 +301,69 @@ class _ResumeDetailScreenState extends ConsumerState<ResumeDetailScreen> {
       isScrollControlled: true,
       backgroundColor: AppColors.screenSurface,
       builder: (context) {
-        return Consumer(
-          builder: (context, ref, _) {
-            final currentTemplate = ref.watch(selectedResumeTemplateProvider);
+        final currentTemplate = ref.watch(resumeFormProvider).template;
 
-            return SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSizes.screenPadding,
-                  AppSizes.sm,
-                  AppSizes.screenPadding,
-                  AppSizes.screenPadding,
-                ),
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      _buildTemplateSection(
-                        title: 'Tech & IT',
-                        templates: [
-                          ResumeTemplate.modernClean,
-                          ResumeTemplate.modern,
-                          ResumeTemplate.minimal,
-                        ],
-                        selectedTemplate: currentTemplate,
-                        onSelected: () => Navigator.of(context).pop(),
-                      ),
-                      const SizedBox(height: AppSizes.md),
-                      _buildTemplateSection(
-                        title: 'Business & Management',
-                        templates: [
-                          ResumeTemplate.executive,
-                          ResumeTemplate.modernSidebar,
-                          ResumeTemplate.classic,
-                        ],
-                        selectedTemplate: currentTemplate,
-                        onSelected: () => Navigator.of(context).pop(),
-                      ),
-                      const SizedBox(height: AppSizes.md),
-                      _buildTemplateSection(
-                        title: 'Sales & Marketing',
-                        templates: [
-                          ResumeTemplate.sales,
-                          ResumeTemplate.marketing,
-                        ],
-                        selectedTemplate: currentTemplate,
-                        onSelected: () => Navigator.of(context).pop(),
-                      ),
-                      const SizedBox(height: AppSizes.md),
-                      _buildTemplateSection(
-                        title: 'Specialized',
-                        templates: [
-                          ResumeTemplate.datascience,
-                          ResumeTemplate.finance,
-                          ResumeTemplate.creative,
-                          ResumeTemplate.academic,
-                          ResumeTemplate.healthcare,
-                          ResumeTemplate.startup,
-                        ],
-                        selectedTemplate: currentTemplate,
-                        onSelected: () => Navigator.of(context).pop(),
-                      ),
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSizes.screenPadding,
+              AppSizes.sm,
+              AppSizes.screenPadding,
+              AppSizes.screenPadding,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  _buildTemplateSection(
+                    title: 'Tech & IT',
+                    templates: [
+                      ResumeTemplate.modernClean,
+                      ResumeTemplate.modern,
+                      ResumeTemplate.minimal,
                     ],
+                    selectedTemplate: currentTemplate,
+                    onSelected: () => Navigator.of(context).pop(),
                   ),
-                ),
+                  const SizedBox(height: AppSizes.md),
+                  _buildTemplateSection(
+                    title: 'Business & Management',
+                    templates: [
+                      ResumeTemplate.executive,
+                      ResumeTemplate.modernSidebar,
+                      ResumeTemplate.classic,
+                    ],
+                    selectedTemplate: currentTemplate,
+                    onSelected: () => Navigator.of(context).pop(),
+                  ),
+                  const SizedBox(height: AppSizes.md),
+                  _buildTemplateSection(
+                    title: 'Sales & Marketing',
+                    templates: [
+                      ResumeTemplate.sales,
+                      ResumeTemplate.marketing,
+                    ],
+                    selectedTemplate: currentTemplate,
+                    onSelected: () => Navigator.of(context).pop(),
+                  ),
+                  const SizedBox(height: AppSizes.md),
+                  _buildTemplateSection(
+                    title: 'Specialized',
+                    templates: [
+                      ResumeTemplate.datascience,
+                      ResumeTemplate.finance,
+                      ResumeTemplate.creative,
+                      ResumeTemplate.academic,
+                      ResumeTemplate.healthcare,
+                      ResumeTemplate.startup,
+                    ],
+                    selectedTemplate: currentTemplate,
+                    onSelected: () => Navigator.of(context).pop(),
+                  ),
+                ],
               ),
-            );
-          },
+            ),
+          ),
         );
       },
     );
@@ -417,8 +396,6 @@ class _ResumeDetailScreenState extends ConsumerState<ResumeDetailScreen> {
               final isSelected = selectedTemplate == template;
               return GestureDetector(
                 onTap: () {
-                  ref.read(selectedResumeTemplateProvider.notifier).state =
-                      template;
                   ref
                       .read(resumeFormProvider.notifier)
                       .persistTemplateSelection(template);
@@ -827,6 +804,3 @@ class _ResumePdfPreviewState extends ConsumerState<_ResumePdfPreview> {
     );
   }
 }
-
-final selectedResumeTemplateProvider =
-    StateProvider<ResumeTemplate>((ref) => ResumeTemplate.classic);
