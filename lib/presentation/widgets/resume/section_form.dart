@@ -93,7 +93,6 @@ class WorkExperienceSectionForm extends StatelessWidget {
   final void Function(int index, WorkExperience item) onUpdate;
   final ValueChanged<int> onRemove;
   final String? errorText;
-  final Future<String?> Function(String bullet)? onImproveBullet;
 
   const WorkExperienceSectionForm({
     super.key,
@@ -102,7 +101,6 @@ class WorkExperienceSectionForm extends StatelessWidget {
     required this.onUpdate,
     required this.onRemove,
     this.errorText,
-    this.onImproveBullet,
   });
 
   @override
@@ -117,7 +115,6 @@ class WorkExperienceSectionForm extends StatelessWidget {
         onPressed: () => AddExperienceSheet.show(
           context,
           onSave: onAdd,
-          onImproveBullet: onImproveBullet,
         ),
       ),
       child: Column(
@@ -139,7 +136,6 @@ class WorkExperienceSectionForm extends StatelessWidget {
                     context,
                     initialExperience: items[index],
                     onSave: (value) => onUpdate(index, value),
-                    onImproveBullet: onImproveBullet,
                   ),
                   onDelete: () => onRemove(index),
                 ),
@@ -239,8 +235,6 @@ class SkillsSectionForm extends StatefulWidget {
   final void Function(int index, Skill item) onUpdate;
   final ValueChanged<int> onRemove;
   final String? errorText;
-  final Future<List<String>?> Function()? onSuggestSkills;
-  final ValueChanged<String>? onAcceptSuggestedSkill;
 
   const SkillsSectionForm({
     super.key,
@@ -249,8 +243,6 @@ class SkillsSectionForm extends StatefulWidget {
     required this.onUpdate,
     required this.onRemove,
     this.errorText,
-    this.onSuggestSkills,
-    this.onAcceptSuggestedSkill,
   });
 
   @override
@@ -258,56 +250,19 @@ class SkillsSectionForm extends StatefulWidget {
 }
 
 class _SkillsSectionFormState extends State<SkillsSectionForm> {
-  bool _isSuggesting = false;
-
   @override
   Widget build(BuildContext context) {
     return SectionForm(
       title: 'Skills',
       subtitle: 'Add important technical or professional skills.',
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AppButton(
-            text: 'Suggest',
-            expand: false,
-            variant: AppButtonVariant.secondary,
-            icon: Icons.auto_awesome_rounded,
-            isLoading: _isSuggesting,
-            onPressed: (widget.onSuggestSkills == null || _isSuggesting)
-                ? null
-                : () async {
-                    setState(() => _isSuggesting = true);
-                    try {
-                      final results = await widget.onSuggestSkills!.call();
-                      if (!context.mounted) return;
-                      if (results == null || results.isEmpty) return;
-
-                      await _showSuggestedSkillsDialog(
-                        context,
-                        suggestions: results,
-                        onAccept: (skillName) {
-                          if (widget.onAcceptSuggestedSkill != null) {
-                            widget.onAcceptSuggestedSkill!(skillName);
-                          }
-                        },
-                      );
-                    } finally {
-                      if (mounted) setState(() => _isSuggesting = false);
-                    }
-                  },
-          ),
-          const SizedBox(width: 8),
-          AppButton(
-            text: 'Add',
-            expand: false,
-            icon: Icons.add,
-            onPressed: () => _showSkillSheet(
-              context,
-              onSave: widget.onAdd,
-            ),
-          ),
-        ],
+      trailing: AppButton(
+        text: 'Add',
+        expand: false,
+        icon: Icons.add,
+        onPressed: () => _showSkillSheet(
+          context,
+          onSave: widget.onAdd,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -569,25 +524,34 @@ class _SkillChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(999),
           border: Border.all(color: AppColors.border),
         ),
+        constraints: const BoxConstraints(maxWidth: 280),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              item.name,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.primaryDark,
+            Flexible(
+              child: Text(
+                item.name,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primaryDark,
+                ),
               ),
             ),
-            const SizedBox(width: 8),
-            Text(
-              item.category,
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppColors.textSecondary,
+            if (item.category.isNotEmpty) ...[
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  item.category,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
               ),
-            ),
+            ],
             const SizedBox(width: 8),
             Semantics(
               button: true,
@@ -915,75 +879,3 @@ String _formatDateRange(DateTime start, DateTime? end, bool isCurrentRole) {
   return '$startText - $endText';
 }
 
-Future<void> _showSuggestedSkillsDialog(
-  BuildContext context, {
-  required List<String> suggestions,
-  required ValueChanged<String> onAccept,
-}) async {
-  await showDialog<void>(
-    context: context,
-    builder: (_) => Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'AI Skill Suggestions',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 16),
-            ...suggestions.map(
-              (skill) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.secondarySurface,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          skill,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      AppButton(
-                        text: 'Accept',
-                        expand: false,
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                          onAccept(skill);
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            AppButton(
-              text: 'Dismiss',
-              variant: AppButtonVariant.secondary,
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
-}

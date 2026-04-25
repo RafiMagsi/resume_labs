@@ -16,7 +16,6 @@ import '../../providers/resume/resume_form_provider.dart';
 import '../../providers/resume/resume_optimization_provider.dart';
 import '../../widgets/shared/credits_paywall.dart';
 import '../../widgets/shared/error_dialog.dart';
-import '../resume_detail/resume_detail_screen.dart';
 import 'widgets/resume_optimizer_input.dart';
 import 'widgets/resume_optimization_result.dart';
 import 'widgets/resume_file_upload.dart';
@@ -37,6 +36,7 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
   late TextEditingController _resumeController;
   late TextEditingController _optimizationPrompt;
   late TabController _tabController;
+  bool _isEditMode = false;
 
   @override
   void initState() {
@@ -44,6 +44,86 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
     _resumeController = TextEditingController();
     _optimizationPrompt = TextEditingController();
     _tabController = TabController(length: 2, vsync: this);
+
+    // Detect if we're optimizing an existing resume
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final formState = ref.read(resumeFormProvider);
+      if (formState.resumeId != null && formState.resumeId!.isNotEmpty) {
+        _isEditMode = true;
+        _populateFromExistingResume(formState);
+      }
+    });
+  }
+
+  void _populateFromExistingResume(ResumeFormState formState) {
+    // Extract text from current resume for optimization
+    final resumeText = _extractResumeText(formState);
+    _resumeController.text = resumeText;
+    _tabController.animateTo(1); // Switch to paste tab
+  }
+
+  String _extractResumeText(ResumeFormState formState) {
+    final buffer = StringBuffer();
+
+    // Title
+    if (formState.title.isNotEmpty) {
+      buffer.writeln(formState.title);
+      buffer.writeln('-' * 40);
+    }
+
+    // Personal Summary
+    if (formState.personalSummary.isNotEmpty) {
+      buffer.writeln('\nPROFESSIONAL SUMMARY');
+      buffer.writeln(formState.personalSummary);
+    }
+
+    // Contact Details
+    buffer.writeln('\nCONTACT');
+    buffer.writeln('Email: ${formState.contactDetails.email}');
+    if ((formState.contactDetails.phone ?? '').isNotEmpty) {
+      buffer.writeln('Phone: ${formState.contactDetails.phone}');
+    }
+    if ((formState.contactDetails.location ?? '').isNotEmpty) {
+      buffer.writeln('Location: ${formState.contactDetails.location}');
+    }
+
+    // Work Experience
+    if (formState.workExperiences.isNotEmpty) {
+      buffer.writeln('\nWORK EXPERIENCE');
+      for (final exp in formState.workExperiences) {
+        buffer.writeln('${exp.role} at ${exp.company}');
+        if (exp.location.isNotEmpty) {
+          buffer.writeln('Location: ${exp.location}');
+        }
+        buffer.writeln(
+            '${exp.startDate.year} - ${exp.endDate?.year ?? "Present"}');
+        for (final bullet in exp.bulletPoints) {
+          buffer.writeln('• $bullet');
+        }
+      }
+    }
+
+    // Education
+    if (formState.educations.isNotEmpty) {
+      buffer.writeln('\nEDUCATION');
+      for (final edu in formState.educations) {
+        buffer.writeln('${edu.degree} in ${edu.field}');
+        buffer.writeln(edu.school);
+        buffer.writeln('Graduated: ${edu.graduationDate.year}');
+        if (edu.gpa != null && edu.gpa! > 0) {
+          buffer.writeln('GPA: ${edu.gpa}');
+        }
+      }
+    }
+
+    // Skills
+    if (formState.skills.isNotEmpty) {
+      buffer.writeln('\nSKILLS');
+      final skillNames = formState.skills.map((s) => s.name).join(', ');
+      buffer.writeln(skillNames);
+    }
+
+    return buffer.toString();
   }
 
   @override
@@ -367,6 +447,7 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
     debugPrint('[ResumeOptimizer] Starting import to resume...');
     debugPrint(
         '[ResumeOptimizer] Optimized text length: ${optimizedText.length}');
+    debugPrint('[ResumeOptimizer] Mode: ${_isEditMode ? "EDIT existing" : "CREATE new"}');
 
     try {
       if (!context.mounted) {
@@ -394,19 +475,23 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
 
       final notifier = ref.read(resumeFormProvider.notifier);
 
-      // AI Optimize import must ALWAYS create a brand new resume record.
-      // No linking to, or updating, any currently-loaded resume.
-      debugPrint('[ResumeOptimizer] Creating NEW resume record (AI Optimize)');
-      notifier.reset(userId: userId);
+      if (_isEditMode) {
+        // EDIT MODE: Update existing resume
+        debugPrint('[ResumeOptimizer] ✓ Updating existing resume');
+      } else {
+        // CREATE MODE: Create a brand new resume record
+        debugPrint('[ResumeOptimizer] Creating NEW resume record (AI Optimize)');
+        notifier.reset(userId: userId);
+      }
 
       // Parse JSON and update each section directly
       _parseJsonAndUpdateSections(optimizedText, notifier);
       debugPrint(
           '[ResumeOptimizer] ✓ All sections parsed and updated from JSON');
 
-      // Save to Firestore (AI Optimize import always creates a new resume)
+      // Save to Firestore
       debugPrint('[ResumeOptimizer] Saving resume to Firestore...');
-      final saveSuccess = await notifier.saveAsNew();
+      final saveSuccess = _isEditMode ? await notifier.save() : await notifier.saveAsNew();
 
       if (!mounted) {
         debugPrint('[ResumeOptimizer] ✗ Context not mounted after save');
@@ -416,17 +501,20 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
       if (saveSuccess) {
         debugPrint('[ResumeOptimizer] ✓ Resume saved to Firestore');
 
-        // Navigate to resume details screen
-        context.pushReplacement(ResumeDetailScreen.routePath);
-        debugPrint('[ResumeOptimizer] ✓ Navigated to resume details screen');
+        // Navigate back to resume details screen
+        context.pop();
+        debugPrint('[ResumeOptimizer] ✓ Navigated back to resume details screen');
 
         // Show success message
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
+            final message = _isEditMode
+                ? 'Resume optimized and updated.'
+                : 'Resume created from AI optimization.';
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Resume created from AI optimization.'),
-                duration: Duration(seconds: 3),
+              SnackBar(
+                content: Text(message),
+                duration: const Duration(seconds: 3),
               ),
             );
             debugPrint('[ResumeOptimizer] ✓ Import completed successfully');

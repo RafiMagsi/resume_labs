@@ -67,6 +67,27 @@ class FirestoreResumeDataSourceImpl implements FirestoreResumeDataSource {
   @override
   Future<ResumeModel> updateResume(ResumeModel resume) async {
     try {
+      if (resume.photoUrl != null && resume.photoUrl!.isNotEmpty) {
+        final currentDoc = await _resumesCollection.doc(resume.id).get();
+        final currentPhotoUrl = currentDoc.data()?['photoUrl'] as String?;
+
+        if (currentPhotoUrl != resume.photoUrl) {
+          final otherResumesWithPhoto = await _resumesCollection
+              .where('userId', isEqualTo: resume.userId)
+              .where('photoUrl', isEqualTo: resume.photoUrl)
+              .where(FieldPath.documentId, isNotEqualTo: resume.id)
+              .limit(1)
+              .get();
+
+          if (otherResumesWithPhoto.docs.isNotEmpty) {
+            throw AppException(
+              'This profile image is already linked to another resume. Please upload a new image.',
+              code: 'image-already-in-use',
+            );
+          }
+        }
+      }
+
       final data = _deepJsonMap(resume.toJson());
       await _resumesCollection.doc(resume.id).update(data);
       if (kDebugMode) {
@@ -77,6 +98,8 @@ class FirestoreResumeDataSourceImpl implements FirestoreResumeDataSource {
       return resume;
     } on FirebaseException catch (e) {
       throw _mapFirebaseException(e);
+    } on AppException {
+      rethrow;
     } catch (e, st) {
       throw _mapUnknownException(
         e,

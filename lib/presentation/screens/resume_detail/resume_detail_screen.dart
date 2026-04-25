@@ -23,6 +23,7 @@ import '../../widgets/shared/error_dialog.dart';
 import '../../widgets/shared/loading_overlay.dart';
 import '../history/history_screen.dart';
 import '../resume_builder/builder_screen.dart';
+import '../resume_optimizer/resume_optimizer_screen.dart';
 
 class ResumeDetailScreen extends ConsumerStatefulWidget {
   static const String routeName = 'resume-detail';
@@ -37,6 +38,21 @@ class ResumeDetailScreen extends ConsumerStatefulWidget {
 class _ResumeDetailScreenState extends ConsumerState<ResumeDetailScreen> {
   bool _isExporting = false;
   var _templateSynced = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_templateSynced) {
+        final formState = ref.read(resumeFormProvider);
+        if (formState.resumeId != null) {
+          ref.read(selectedResumeTemplateProvider.notifier).state =
+              formState.template;
+          _templateSynced = true;
+        }
+      }
+    });
+  }
 
   Future<void> _handleExport() async {
     setState(() => _isExporting = true);
@@ -166,11 +182,6 @@ class _ResumeDetailScreenState extends ConsumerState<ResumeDetailScreen> {
   Widget build(BuildContext context) {
     final formState = ref.watch(resumeFormProvider);
     final selectedTemplate = ref.watch(selectedResumeTemplateProvider);
-    if (!_templateSynced && formState.resumeId != null) {
-      ref.read(selectedResumeTemplateProvider.notifier).state =
-          formState.template;
-      _templateSynced = true;
-    }
 
     return Scaffold(
       appBar: AppBar(
@@ -528,52 +539,113 @@ class _ResumeDetailScreenState extends ConsumerState<ResumeDetailScreen> {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(AppSizes.screenPadding),
-        child: SizedBox(
-          height: 48,
-          width: 400,
+        child: ElevatedButton.icon(
+          onPressed: _showOptionsBottomSheet,
+          icon: const Icon(Icons.more_vert, size: 20),
+          label: const Text('Options'),
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24,
+              vertical: 12,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showOptionsBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSizes.screenPadding),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              spacing: AppSizes.sm,
+              children: [
+                _buildBottomSheetOption(
+                  icon: Icons.edit_outlined,
+                  label: 'Edit Resume',
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push(BuilderScreen.routePath);
+                  },
+                ),
+                _buildBottomSheetOption(
+                  icon: Icons.share_outlined,
+                  label: 'Export as PDF',
+                  onTap: () {
+                    Navigator.pop(context);
+                    _handleExport();
+                  },
+                  disabled: _isExporting,
+                ),
+                _buildBottomSheetOption(
+                  icon: Icons.auto_awesome,
+                  label: 'Optimize with AI',
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push(ResumeOptimizerScreen.routePath);
+                  },
+                ),
+                const Divider(height: AppSizes.md),
+                _buildBottomSheetOption(
+                  icon: Icons.delete_outline,
+                  label: 'Delete Resume',
+                  onTap: () {
+                    Navigator.pop(context);
+                    _handleDelete();
+                  },
+                  isDestructive: true,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomSheetOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    bool isDestructive = false,
+    bool disabled = false,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: disabled ? null : onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSizes.md,
+            vertical: AppSizes.lg,
+          ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            mainAxisSize: MainAxisSize.min,
             children: [
-              Tooltip(
-                message: 'Delete this resume',
-                child: IconButton(
-                  icon: const Icon(Icons.delete_outline),
-                  color: AppColors.error,
-                  onPressed: _handleDelete,
+              Icon(
+                icon,
+                size: 24,
+                color: isDestructive
+                    ? AppColors.error
+                    : (disabled ? AppColors.border : AppColors.primary),
+              ),
+              const SizedBox(width: AppSizes.lg),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: isDestructive
+                      ? AppColors.error
+                      : (disabled ? AppColors.border : AppColors.textPrimary),
                 ),
               ),
-              SizedBox(
-                  height: 48,
-                  width: 300,
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        height: 48,
-                        width: 100,
-                        child: ElevatedButton.icon(
-                          onPressed: () =>
-                              context.push(BuilderScreen.routePath),
-                          icon: const Icon(Icons.edit),
-                          label: const Text('Edit'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryLight,
-                            foregroundColor: AppColors.primary,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: AppSizes.md),
-                      SizedBox(
-                        height: 48,
-                        width: 120,
-                        child: ElevatedButton.icon(
-                          onPressed: _isExporting ? null : _handleExport,
-                          icon: const Icon(Icons.share),
-                          label: const Text('Export'),
-                        ),
-                      ),
-                    ],
-                  )),
             ],
           ),
         ),

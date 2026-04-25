@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:resume_labs/domain/entities/skill.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/input_validators.dart';
-import '../../../core/errors/failure.dart';
 import '../../providers/auth/auth_provider.dart';
 import '../../providers/resume/resume_form_provider.dart';
 import '../../providers/resume/photo_upload_provider.dart';
@@ -16,8 +14,6 @@ import '../../widgets/shared/app_text_field.dart';
 import '../../widgets/shared/loading_overlay.dart';
 import '../../widgets/shared/photo_picker.dart';
 import '../../providers/ai/ai_suggestions_provider.dart';
-import '../../widgets/ai/ai_suggestion_dialog.dart';
-import '../../widgets/shared/error_dialog.dart';
 import '../history/history_screen.dart';
 
 class BuilderScreen extends ConsumerStatefulWidget {
@@ -115,6 +111,11 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
     final uploadedUrl = await ref.read(photoUploadProvider(localPath).future);
     if (uploadedUrl != null) {
       ref.read(resumeFormProvider.notifier).updatePhotoUrl(uploadedUrl);
+
+      final formState = ref.read(resumeFormProvider);
+      if (formState.resumeId != null) {
+        await _handleSave();
+      }
     }
   }
 
@@ -162,135 +163,7 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
     });
   }
 
-  Future<void> _handleGenerateSummary() async {
-    final formState = ref.read(resumeFormProvider);
-
-    final allBullets =
-        formState.workExperiences.expand((e) => e.bulletPoints).toList();
-
-    if (allBullets.isEmpty) {
-      await _showErrorDialog(
-        title: 'Missing Work Experience',
-        message:
-            'Add work experience bullets first so AI can generate a meaningful summary.',
-      );
-      return;
-    }
-
-    await ref.read(aiSuggestionsProvider.notifier).generateSummary(
-          jobTitle: formState.title.trim().isEmpty
-              ? 'Professional Resume'
-              : formState.title.trim(),
-          skills: formState.skills.map((e) => e.name).toList(),
-          workHighlights: allBullets,
-        );
-
-    final aiState = ref.read(aiSuggestionsProvider);
-    final suggestion = aiState.valueOrNull?.generatedSummary;
-
-    if (!mounted) return;
-
-    if (suggestion == null || suggestion.trim().isEmpty) {
-      final failure = aiState.error is Failure
-          ? aiState.error as Failure
-          : const ServerFailure('Unable to generate AI summary.');
-      await ErrorDialog.show(
-        context,
-        failure: failure,
-        onRetry: _handleGenerateSummary,
-        title: 'AI Suggestion Failed',
-      );
-      return;
-    }
-
-    await AiSuggestionDialog.show(
-      context,
-      title: 'Generated Personal Summary',
-      description: 'Review the AI-generated summary before applying it.',
-      suggestion: suggestion,
-      acceptText: 'Use Summary',
-      onAccept: () {
-        ref.read(resumeFormProvider.notifier).updatePersonalSummary(suggestion);
-        _summaryController.text = suggestion;
-        _summaryController.selection = TextSelection.fromPosition(
-          TextPosition(offset: _summaryController.text.length),
-        );
-      },
-    );
-  }
-
-  Future<String?> _handleImproveBullet(String bullet) async {
-    await ref.read(aiSuggestionsProvider.notifier).improveBullet(
-          bullet: bullet,
-          jobTitle: ref.read(resumeFormProvider).title.trim(),
-        );
-
-    final aiState = ref.read(aiSuggestionsProvider);
-    final suggestion = aiState.valueOrNull?.improvedBullet;
-
-    if (!mounted) return null;
-
-    if (suggestion == null || suggestion.trim().isEmpty) {
-      final failure = aiState.error is Failure
-          ? aiState.error as Failure
-          : const ServerFailure('Unable to improve bullet.');
-      await ErrorDialog.show(
-        context,
-        failure: failure,
-        onRetry: () async => _handleImproveBullet(bullet),
-        title: 'AI Suggestion Failed',
-      );
-      return null;
-    }
-
-    String? acceptedValue;
-    await AiSuggestionDialog.show(
-      context,
-      title: 'Improved Bullet Point',
-      description: 'Review the improved bullet before applying it.',
-      suggestion: suggestion,
-      acceptText: 'Use Bullet',
-      onAccept: () {
-        acceptedValue = suggestion;
-      },
-    );
-
-    return acceptedValue;
-  }
-
-  Future<List<String>?> _handleSuggestSkills() async {
-    final formState = ref.read(resumeFormProvider);
-
-    await ref.read(aiSuggestionsProvider.notifier).suggestSkills(
-          jobTitle: formState.title.trim().isEmpty
-              ? 'Professional Resume'
-              : formState.title.trim(),
-          existingSkills: formState.skills.map((e) => e.name).toList(),
-          personalSummary: formState.personalSummary,
-        );
-
-    final aiState = ref.read(aiSuggestionsProvider);
-    final suggestions = aiState.valueOrNull?.suggestedSkills ?? [];
-
-    if (!mounted) return null;
-
-    if (suggestions.isEmpty) {
-      final failure = aiState.error is Failure
-          ? aiState.error as Failure
-          : const ServerFailure('Unable to suggest skills.');
-      await ErrorDialog.show(
-        context,
-        failure: failure,
-        onRetry: _handleSuggestSkills,
-        title: 'AI Suggestion Failed',
-      );
-      return null;
-    }
-
-    return suggestions;
-  }
-
-  Future<void> _showErrorDialog({
+Future<void> _showErrorDialog({
     required String title,
     required String message,
   }) {
@@ -393,9 +266,6 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
                   onNext: _handleNext,
                   onBack: _handleBack,
                   onSave: _handleSave,
-                  onGenerateSummary: _handleGenerateSummary,
-                  onImproveBullet: _handleImproveBullet,
-                  onSuggestSkills: _handleSuggestSkills,
                   onPhotoUpload: _handlePhotoUpload,
                 );
 
@@ -475,9 +345,6 @@ class _BuilderFormContent extends StatelessWidget {
   final Future<void> Function() onNext;
   final VoidCallback onBack;
   final Future<void> Function() onSave;
-  final Future<void> Function() onGenerateSummary;
-  final Future<String?> Function(String bullet) onImproveBullet;
-  final Future<List<String>?> Function() onSuggestSkills;
   final Future<void> Function(String path) onPhotoUpload;
 
   const _BuilderFormContent({
@@ -502,9 +369,6 @@ class _BuilderFormContent extends StatelessWidget {
     required this.onNext,
     required this.onBack,
     required this.onSave,
-    required this.onGenerateSummary,
-    required this.onImproveBullet,
-    required this.onSuggestSkills,
     required this.onPhotoUpload,
   });
 
@@ -533,15 +397,6 @@ class _BuilderFormContent extends StatelessWidget {
         return SectionForm(
           title: 'Personal Information',
           subtitle: 'Add your contact details, resume title, and summary.',
-          trailing: AppButton(
-            text: 'AI Summary',
-            expand: false,
-            variant: AppButtonVariant.secondary,
-            icon: Icons.auto_awesome_rounded,
-            isLoading: isAiLoading,
-            onPressed:
-                (formState.isLoading || isAiLoading) ? null : onGenerateSummary,
-          ),
           child: Column(
             children: [
               PhotoPicker(
@@ -726,7 +581,6 @@ class _BuilderFormContent extends StatelessWidget {
           onAdd: formNotifier.addWorkExperience,
           onUpdate: formNotifier.updateWorkExperience,
           onRemove: formNotifier.removeWorkExperience,
-          onImproveBullet: onImproveBullet,
         );
 
       case 2:
@@ -745,15 +599,6 @@ class _BuilderFormContent extends StatelessWidget {
           onAdd: formNotifier.addSkill,
           onUpdate: formNotifier.updateSkill,
           onRemove: formNotifier.removeSkill,
-          onSuggestSkills: onSuggestSkills,
-          onAcceptSuggestedSkill: (skillName) {
-            formNotifier.addSkill(
-              Skill(
-                name: skillName,
-                category: 'Suggested',
-              ),
-            );
-          },
         );
 
       default:
