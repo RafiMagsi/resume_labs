@@ -1,181 +1,232 @@
 import PDFDocument from "pdfkit";
-import https from "https";
-import http from "http";
-import { ResumeData, formatDate, createPdfBuffer } from "../types";
+import { createPdfBuffer, ResumeData } from "../types";
+import {
+  downloadImage,
+  drawDivider,
+  ensureSpace,
+  readExtraLists,
+  renderPhoto,
+  renderSectionHeading,
+  writeBodyText,
+  writeEducationBlock,
+  writeTwoColumnList,
+  writeWorkExperienceBlock,
+  Frame,
+} from "./_shared";
 
-const PAGE_MARGIN = 40;
-const CONTENT_WIDTH = 595.28 - PAGE_MARGIN * 2;
-const PHOTO_DIAMETER = 64;
-const PHOTO_RADIUS = PHOTO_DIAMETER / 2;
-const PHOTO_GAP = 16;
-const HEADER_BOTTOM_GAP = 18;
+const PAGE_MARGIN = 36;
+const SIDEBAR_WIDTH = 170;
+const COLUMN_GAP = 20;
+const SIDEBAR_PADDING_X = 16;
 
-async function downloadImage(url: string): Promise<Buffer | null> {
-  return new Promise((resolve) => {
-    if (!url) {
-      resolve(null);
-      return;
-    }
-    try {
-      const protocol = url.startsWith("https") ? https : http;
-      const timeout = setTimeout(() => resolve(null), 8000);
-      protocol.get(url, { timeout: 8000 }, (response) => {
-        clearTimeout(timeout);
-        if (response.statusCode !== 200) { resolve(null); return; }
-        const chunks: Buffer[] = [];
-        response.on("data", (chunk) => chunks.push(chunk));
-        response.on("end", () => resolve(Buffer.concat(chunks)));
-        response.on("error", () => resolve(null));
-      }).on("error", () => resolve(null));
-    } catch (error) { resolve(null); }
-  });
-}
+const SIDEBAR_BG = "#064E3B";
+const SIDEBAR_TEXT = "#FFFFFF";
+const SIDEBAR_MUTED = "#D1FAE5";
+const SIDEBAR_DIVIDER = "rgba(255,255,255,0.22)";
+
+const ACCENT = "#0F766E";
+const TEXT = "#334155";
+const MUTED = "#6B7280";
+const DIVIDER = "#E5E7EB";
+
+const PHOTO_SIZE = 72;
 
 export async function generateHealthcareTemplate(resumeData: ResumeData): Promise<Buffer> {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const doc = new PDFDocument({ size: "A4", margin: PAGE_MARGIN });
-      const accentColor = "#0F766E";
-      const textColor = "#374151";
-      const mutedColor = "#6B7280";
-      const dividerColor = "#D1FAE5";
+  const doc = new PDFDocument({ size: "A4", margin: PAGE_MARGIN });
 
-      let imageBuffer: Buffer | null = null;
-      if (resumeData.photoUrl) imageBuffer = await downloadImage(resumeData.photoUrl);
+  const drawSidebarBackground = () => {
+    doc.save();
+    doc.rect(0, 0, SIDEBAR_WIDTH, doc.page.height).fill(SIDEBAR_BG);
+    doc.restore();
+  };
+  drawSidebarBackground();
+  doc.on("pageAdded", drawSidebarBackground);
 
-      buildHeader(doc, resumeData, imageBuffer, { accentColor, mutedColor, dividerColor });
+  const imageBuffer = await downloadImage(resumeData.photoUrl);
 
-      addSection(doc, "Professional Profile", "#0F766E", dividerColor, () => {
-        writeBodyText(doc, resumeData.personalSummary?.trim() || "No personal summary provided.", textColor);
-      });
+  const sidebarFrame: Frame = {
+    x: SIDEBAR_PADDING_X,
+    width: SIDEBAR_WIDTH - SIDEBAR_PADDING_X * 2,
+  };
+  const mainFrame: Frame = {
+    x: SIDEBAR_WIDTH + COLUMN_GAP,
+    width: doc.page.width - (SIDEBAR_WIDTH + COLUMN_GAP) - PAGE_MARGIN,
+  };
 
-      addSection(doc, "Clinical Experience", "#0F766E", dividerColor, () => {
-        if (!resumeData.workExperiences?.length) return writeBodyText(doc, "No work experience added.", textColor);
-        resumeData.workExperiences.forEach((exp, index) => {
-          writeWorkExperience(doc, exp, { accentColor, mutedColor, textColor });
-          if (index < resumeData.workExperiences.length - 1) doc.moveDown(0.9);
-        });
-      });
+  buildSidebar(doc, resumeData, imageBuffer, sidebarFrame);
+  buildMainHeader(doc, "Healthcare Resume", mainFrame);
+  buildMainContent(doc, resumeData, mainFrame);
 
-      addSection(doc, "Education & Training", "#0F766E", dividerColor, () => {
-        if (!resumeData.educations?.length) return writeBodyText(doc, "No education added.", textColor);
-        resumeData.educations.forEach((edu, index) => {
-          writeEducation(doc, edu, { accentColor, mutedColor });
-          if (index < resumeData.educations.length - 1) doc.moveDown(0.8);
-        });
-      });
-
-      addSection(doc, "Certifications & Highlights", "#0F766E", dividerColor, () => {
-        const extraData = resumeData as any;
-        const projectItems = Array.isArray(extraData.projects) ? extraData.projects : [];
-        const achievementItems = Array.isArray(extraData.achievements) ? extraData.achievements : Array.isArray(extraData.awards) ? extraData.awards : [];
-        const publicationItems = Array.isArray(extraData.publications) ? extraData.publications : [];
-        if (!projectItems.length && !achievementItems.length && !publicationItems.length) return writeBodyText(doc, "No additional highlights added.", textColor);
-        if (projectItems.length) writeMiniListBlock(doc, "Projects", projectItems, { textColor, mutedColor });
-        if (achievementItems.length) writeMiniListBlock(doc, "Achievements", achievementItems, { textColor, mutedColor });
-        if (publicationItems.length) writeMiniListBlock(doc, "Publications", publicationItems, { textColor, mutedColor });
-      });
-
-      addSection(doc, "Skills", "#0F766E", dividerColor, () => {
-        if (!resumeData.skills?.length) return writeBodyText(doc, "No skills added.", textColor);
-        const skillsLine = resumeData.skills.map((skill) => skill.category?.trim() ? `${skill.name} - ${skill.category}` : skill.name).join(" • ");
-        writeBodyText(doc, skillsLine, textColor);
-      });
-
-      doc.end();
-      createPdfBuffer(doc).then(resolve).catch(reject);
-    } catch (error) { reject(error); }
-  });
+  doc.end();
+  return createPdfBuffer(doc);
 }
 
-function buildHeader(doc: PDFKit.PDFDocument, resumeData: ResumeData, imageBuffer: Buffer | null, colors: { accentColor: string; mutedColor: string; dividerColor: string; }): void {
-  const hasPhotoSlot = Boolean(resumeData.photoUrl);
-  const headerStartY = doc.y;
-  const photoX = PAGE_MARGIN + CONTENT_WIDTH - PHOTO_DIAMETER;
-  const photoY = headerStartY;
-  const textColumnWidth = hasPhotoSlot ? CONTENT_WIDTH - PHOTO_DIAMETER - PHOTO_GAP : CONTENT_WIDTH;
+function buildSidebar(
+  doc: PDFKit.PDFDocument,
+  resumeData: ResumeData,
+  imageBuffer: Buffer | null,
+  frame: Frame,
+): void {
+  const bottomLimit = doc.page.height - doc.page.margins.bottom;
+  let y = doc.page.margins.top;
 
-  doc.rect(PAGE_MARGIN, headerStartY, CONTENT_WIDTH, 4).fill(colors.accentColor);
-
-  const titleY = headerStartY + 14;
-  if (hasPhotoSlot) {
-    if (imageBuffer) {
-      try {
-        doc.save();
-        doc.circle(photoX + PHOTO_RADIUS, photoY + PHOTO_RADIUS, PHOTO_RADIUS);
-        doc.clip();
-        doc.image(imageBuffer, photoX, photoY, { width: PHOTO_DIAMETER, height: PHOTO_DIAMETER });
-        doc.restore();
-        doc.circle(photoX + PHOTO_RADIUS, photoY + PHOTO_RADIUS, PHOTO_RADIUS).lineWidth(1).stroke(colors.dividerColor);
-      } catch (error) {
-        drawPhotoPlaceholder(doc, photoX, photoY, PHOTO_DIAMETER, colors.dividerColor, colors.mutedColor);
-      }
-    } else {
-      drawPhotoPlaceholder(doc, photoX, photoY, PHOTO_DIAMETER, colors.dividerColor, colors.mutedColor);
-    }
+  if (resumeData.photoUrl) {
+    const photoX = Math.round((SIDEBAR_WIDTH - PHOTO_SIZE) / 2);
+    renderPhoto(doc, imageBuffer, photoX, y, PHOTO_SIZE, "circle", "#FFFFFF", "#065F46", SIDEBAR_MUTED);
+    y += PHOTO_SIZE + 18;
   }
 
-  doc.font("Helvetica-Bold").fontSize(25).fillColor(colors.accentColor).text(resumeData.title?.trim() || "Untitled Resume", PAGE_MARGIN, titleY, { width: textColumnWidth, align: "left" });
-  const titleBottomY = doc.y;
-  doc.font("Helvetica").fontSize(10.5).fillColor(colors.mutedColor).text("Healthcare Resume", PAGE_MARGIN, titleBottomY + 4, { width: textColumnWidth, align: "left" });
-  const dividerY = Math.max(doc.y, hasPhotoSlot ? photoY + PHOTO_DIAMETER : titleY) + HEADER_BOTTOM_GAP;
-  doc.strokeColor(colors.dividerColor).lineWidth(1).moveTo(PAGE_MARGIN, dividerY).lineTo(PAGE_MARGIN + CONTENT_WIDTH, dividerY).stroke();
-  doc.y = dividerY + 16;
-}
+  doc
+    .font("Helvetica-Bold")
+    .fontSize(15.6)
+    .fillColor(SIDEBAR_TEXT)
+    .text(resumeData.title?.trim() || "Untitled Resume", frame.x, y, { width: frame.width });
+  y = doc.y + 14;
 
-function drawPhotoPlaceholder(doc: PDFKit.PDFDocument, x: number, y: number, size: number, borderColor: string, mutedColor: string): void {
-  const radius = size / 2;
-  doc.save().circle(x + radius, y + radius, radius).fillAndStroke("#F8FAFC", borderColor).restore();
-  doc.font("Helvetica").fontSize(9).fillColor(mutedColor).text("Photo", x, y + radius - 5, { width: size, align: "center" });
-}
+  const extras = readExtraLists(resumeData);
+  if (extras.achievements.length) {
+    y = renderSidebarHeading(doc, "LICENSURE", frame, y);
+    extras.achievements.slice(0, 10).forEach((line) => {
+      if (y + 14 > bottomLimit) return;
+      doc
+        .font("Helvetica")
+        .fontSize(8.8)
+        .fillColor(SIDEBAR_MUTED)
+        .text(`• ${line}`, frame.x, y, { width: frame.width, lineGap: 2 });
+      y = doc.y + 5;
+    });
+    y += 10;
+  }
 
-function addSection(doc: PDFKit.PDFDocument, title: string, titleColor: string, dividerColor: string, renderContent: () => void): void {
-  doc.font("Helvetica-Bold").fontSize(11).fillColor(titleColor).text(title.toUpperCase(), PAGE_MARGIN, doc.y, { width: CONTENT_WIDTH, characterSpacing: 1.1 });
-  doc.moveDown(0.18);
-  const dividerY = doc.y;
-  doc.strokeColor(dividerColor).lineWidth(1).moveTo(PAGE_MARGIN, dividerY).lineTo(PAGE_MARGIN + CONTENT_WIDTH, dividerY).stroke();
-  doc.y = dividerY + 12;
-  renderContent();
-  doc.moveDown(1.05);
-}
-
-function writeWorkExperience(doc: PDFKit.PDFDocument, exp: ResumeData["workExperiences"][number], colors: { accentColor: string; mutedColor: string; textColor: string; }): void {
-  doc.font("Helvetica-Bold").fontSize(12.2).fillColor(colors.accentColor).text(exp.role?.trim() || "Untitled Role", PAGE_MARGIN, doc.y, { width: CONTENT_WIDTH });
-  const companyLocation = [exp.company?.trim(), exp.location?.trim()].filter(Boolean).join(" - ");
-  if (companyLocation) { doc.moveDown(0.12); doc.font("Helvetica").fontSize(10.3).fillColor("#4B5563").text(companyLocation, PAGE_MARGIN, doc.y, { width: CONTENT_WIDTH }); }
-  const start = formatDate(exp.startDate); const end = exp.endDate ? formatDate(exp.endDate) : "Present";
-  doc.moveDown(0.1); doc.font("Helvetica").fontSize(9.8).fillColor(colors.mutedColor).text(`${start} - ${end}`, PAGE_MARGIN, doc.y, { width: CONTENT_WIDTH });
-  if (exp.bulletPoints?.length) {
-    doc.moveDown(0.3);
-    exp.bulletPoints.forEach((bullet) => {
-      const text = bullet?.trim(); if (!text) return;
-      const currentY = doc.y;
-      doc.font("Helvetica").fontSize(10.2).fillColor("#0F766E").text("•", PAGE_MARGIN, currentY, { width: 8 });
-      doc.font("Helvetica").fontSize(10.2).fillColor(colors.textColor).text(text, PAGE_MARGIN + 12, currentY, { width: CONTENT_WIDTH - 12, lineGap: 3 });
+  const competencies = resumeData.skills.map((s) => s.name).filter((s) => s.trim());
+  if (competencies.length) {
+    y = renderSidebarHeading(doc, "COMPETENCIES", frame, y);
+    competencies.slice(0, 16).forEach((line) => {
+      if (y + 14 > bottomLimit) return;
+      doc
+        .font("Helvetica")
+        .fontSize(8.8)
+        .fillColor(SIDEBAR_MUTED)
+        .text(line, frame.x, y, { width: frame.width, lineGap: 2 });
+      y = doc.y + 5;
     });
   }
 }
 
-function writeEducation(doc: PDFKit.PDFDocument, edu: ResumeData["educations"][number], colors: { accentColor: string; mutedColor: string; }): void {
-  const degreeLine = [edu.degree?.trim(), edu.field?.trim()].filter(Boolean).join(" in ") || "Education";
-  doc.font("Helvetica-Bold").fontSize(11.8).fillColor(colors.accentColor).text(degreeLine, PAGE_MARGIN, doc.y, { width: CONTENT_WIDTH });
-  const schoolLine = edu.school?.trim() || "";
-  if (schoolLine) { doc.moveDown(0.12); doc.font("Helvetica").fontSize(10.3).fillColor("#4B5563").text(schoolLine, PAGE_MARGIN, doc.y, { width: CONTENT_WIDTH }); }
-  const grad = edu.graduationDate ? formatDate(edu.graduationDate) : "";
-  const meta = [grad ? `Graduation: ${grad}` : null, edu.gpa ? `GPA: ${edu.gpa}` : null].filter(Boolean).join(" - ");
-  if (meta) { doc.moveDown(0.1); doc.font("Helvetica").fontSize(9.8).fillColor(colors.mutedColor).text(meta, PAGE_MARGIN, doc.y, { width: CONTENT_WIDTH }); }
+function renderSidebarHeading(
+  doc: PDFKit.PDFDocument,
+  title: string,
+  frame: Frame,
+  y: number,
+): number {
+  doc
+    .font("Helvetica-Bold")
+    .fontSize(9.9)
+    .fillColor(SIDEBAR_TEXT)
+    .text(title, frame.x, y, { width: frame.width, characterSpacing: 0.9 });
+
+  const dividerY = doc.y + 6;
+  doc
+    .strokeColor(SIDEBAR_DIVIDER)
+    .lineWidth(1)
+    .moveTo(frame.x, dividerY)
+    .lineTo(frame.x + frame.width, dividerY)
+    .stroke();
+
+  return dividerY + 10;
 }
 
-function writeMiniListBlock(doc: PDFKit.PDFDocument, label: string, items: any[], colors: { textColor: string; mutedColor: string }): void {
-  doc.font("Helvetica-Bold").fontSize(9.8).fillColor(colors.mutedColor).text(label.toUpperCase(), PAGE_MARGIN, doc.y, { width: CONTENT_WIDTH });
-  doc.moveDown(0.15);
-  items.slice(0, 3).forEach((item) => {
-    const text = typeof item === "string" ? item : item?.name || item?.title || item?.label || JSON.stringify(item);
-    doc.font("Helvetica").fontSize(9.8).fillColor(colors.textColor).text(`• ${text}`, PAGE_MARGIN + 8, doc.y, { width: CONTENT_WIDTH - 8, lineGap: 2 });
-  });
-  doc.moveDown(0.25);
+function buildMainHeader(doc: PDFKit.PDFDocument, subtitle: string, frame: Frame): void {
+  const startY = doc.page.margins.top;
+  doc.rect(frame.x, startY, frame.width, 4).fill(ACCENT);
+
+  const titleY = startY + 14;
+  doc
+    .font("Helvetica-Bold")
+    .fontSize(24)
+    .fillColor("#111111")
+    .text("Healthcare", frame.x, titleY, { width: frame.width, align: "left" });
+
+  const bottomY = doc.y;
+  doc
+    .font("Helvetica")
+    .fontSize(10.5)
+    .fillColor(MUTED)
+    .text(subtitle, frame.x, bottomY + 4, { width: frame.width });
+
+  const dividerY = doc.y + 18;
+  drawDivider(doc, frame.x, dividerY, frame.width, DIVIDER, 1);
+  doc.y = dividerY + 14;
 }
 
-function writeBodyText(doc: PDFKit.PDFDocument, text: string, textColor: string): void {
-  doc.font("Helvetica").fontSize(10.6).fillColor(textColor).text(text, PAGE_MARGIN, doc.y, { width: CONTENT_WIDTH, lineGap: 4 });
+function buildMainContent(doc: PDFKit.PDFDocument, resumeData: ResumeData, frame: Frame): void {
+  const headingStyle = {
+    titleColor: ACCENT,
+    dividerColor: DIVIDER,
+    fontSize: 10.8,
+    uppercase: true,
+    characterSpacing: 1.1,
+    gapAfterDivider: 10,
+  } as const;
+
+  renderSectionHeading(doc, "Clinical Summary", headingStyle, frame);
+  writeBodyText(doc, resumeData.personalSummary?.trim() || "No personal summary provided.", { color: TEXT }, frame);
+  doc.moveDown(1.0);
+
+  renderSectionHeading(doc, "Experience", headingStyle, frame);
+  if (!resumeData.workExperiences?.length) {
+    writeBodyText(doc, "No work experience added.", { color: TEXT }, frame);
+  } else {
+    resumeData.workExperiences.forEach((exp, index) => {
+      writeWorkExperienceBlock(
+        doc,
+        exp,
+        {
+          roleColor: "#111111",
+          companyColor: "#4B5563",
+          dateColor: MUTED,
+          bodyColor: TEXT,
+          bullet: {
+            marker: "•",
+            markerColor: ACCENT,
+            textColor: TEXT,
+            fontSize: 10.2,
+            lineGap: 3,
+            indent: 12,
+          },
+        },
+        frame,
+      );
+      if (index < resumeData.workExperiences.length - 1) doc.moveDown(0.9);
+    });
+  }
+  doc.moveDown(1.0);
+
+  renderSectionHeading(doc, "Education", headingStyle, frame);
+  if (!resumeData.educations?.length) {
+    writeBodyText(doc, "No education added.", { color: TEXT }, frame);
+  } else {
+    resumeData.educations.forEach((edu, index) => {
+      writeEducationBlock(doc, edu, { degreeColor: "#111111", schoolColor: "#4B5563", metaColor: MUTED }, frame);
+      if (index < resumeData.educations.length - 1) doc.moveDown(0.8);
+    });
+  }
+
+  const extras = readExtraLists(resumeData);
+  if (extras.projects.length) {
+    doc.moveDown(1.0);
+    renderSectionHeading(doc, "Projects & Volunteering", headingStyle, frame);
+    extras.projects.slice(0, 8).forEach((line) => {
+      ensureSpace(doc, 18);
+      writeBodyText(doc, `• ${line}`, { color: TEXT, fontSize: 10.2 }, frame);
+    });
+  }
+
+  if (resumeData.skills.length) {
+    doc.moveDown(1.0);
+    renderSectionHeading(doc, "Core Competencies", headingStyle, frame);
+    const lines = resumeData.skills.map((s) => s.name).filter((s) => s.trim());
+    writeTwoColumnList(doc, lines, { color: TEXT, fontSize: 10.1, columnGap: 18, bulletMarker: "•" }, frame);
+  }
 }
+

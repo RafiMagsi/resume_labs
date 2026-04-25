@@ -320,25 +320,177 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
                 );
               }
 
-              return GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-                child: SingleChildScrollView(
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      controls,
-                      const SizedBox(height: 20),
-                      preview,
-                    ],
-                  ),
-                ),
+              return _MobilePreviewLayout(
+                selectedTemplate: selectedTemplate,
+                isLoading: isAnyExportLoading,
+                preview: previewWidget,
+                onTemplateChanged: (template) {
+                  if (template == null) return;
+                  ref.read(selectedResumeTemplateProvider.notifier).state =
+                      template;
+                },
+                onExportPdf: _handleExport,
+                onExportDocx: _handleExportDocx,
               );
             },
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _MobilePreviewLayout extends StatelessWidget {
+  final ResumeTemplate selectedTemplate;
+  final bool isLoading;
+  final Widget preview;
+  final ValueChanged<ResumeTemplate?> onTemplateChanged;
+  final VoidCallback onExportPdf;
+  final VoidCallback onExportDocx;
+
+  const _MobilePreviewLayout({
+    required this.selectedTemplate,
+    required this.isLoading,
+    required this.preview,
+    required this.onTemplateChanged,
+    required this.onExportPdf,
+    required this.onExportDocx,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+            child: _PreviewControlsCompact(
+              selectedTemplate: selectedTemplate,
+              isLoading: isLoading,
+              onTemplateChanged: onTemplateChanged,
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AppColors.secondarySurface,
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: preview,
+                ),
+              ),
+            ),
+          ),
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: AppButton(
+                      text: 'Export PDF',
+                      icon: Icons.picture_as_pdf_outlined,
+                      isLoading: isLoading,
+                      onPressed: isLoading ? null : onExportPdf,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: AppButton(
+                      text: 'Export DOCX',
+                      variant: AppButtonVariant.secondary,
+                      icon: Icons.description_outlined,
+                      onPressed: isLoading ? null : onExportDocx,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PreviewControlsCompact extends StatelessWidget {
+  final ResumeTemplate selectedTemplate;
+  final bool isLoading;
+  final ValueChanged<ResumeTemplate?> onTemplateChanged;
+
+  const _PreviewControlsCompact({
+    required this.selectedTemplate,
+    required this.isLoading,
+    required this.onTemplateChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.screenSurface,
+        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
+        border: Border.all(color: AppColors.border),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.shadowCard,
+            blurRadius: 14,
+            offset: Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const Expanded(
+            child: Text(
+              'Template',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 190,
+            child: DropdownButtonFormField<ResumeTemplate>(
+              initialValue: selectedTemplate,
+              items: ResumeTemplate.values
+                  .map(
+                    (template) => DropdownMenuItem(
+                      value: template,
+                      child: Text(_templateLabel(template)),
+                    ),
+                  )
+                  .toList(),
+              onChanged: isLoading ? null : onTemplateChanged,
+              decoration: InputDecoration(
+                isDense: true,
+                filled: true,
+                fillColor: AppColors.secondarySurface,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: AppColors.border),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: AppColors.border),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -551,7 +703,17 @@ class _ResumePdfPreviewState extends ConsumerState<_ResumePdfPreview> {
           allowSharing: false,
           pdfFileName: fileName,
           initialPageFormat: PdfPageFormat.a4,
-          padding: EdgeInsets.zero,
+          padding: const EdgeInsets.all(8),
+          previewPageMargin:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          scrollViewDecoration: const BoxDecoration(
+            color: AppColors.secondarySurface,
+          ),
+          pdfPreviewPageDecoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.border),
+          ),
         ),
         Positioned.fill(
           child: IgnorePointer(

@@ -168,18 +168,39 @@ class _ResumeDetailScreenState extends ConsumerState<ResumeDetailScreen> {
       ),
       body: Stack(
         children: [
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                _buildTemplateSelector(selectedTemplate),
-                const Divider(height: 1),
-                SizedBox(
-                  height: 600,
-                  child: _buildPdfPreview(formState, selectedTemplate),
+          Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSizes.screenPadding,
+                  AppSizes.screenPadding,
+                  AppSizes.screenPadding,
+                  AppSizes.sm,
                 ),
-                const SizedBox(height: 24),
-              ],
-            ),
+                child: _buildTemplatePickerBar(selectedTemplate),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSizes.screenPadding,
+                    AppSizes.sm,
+                    AppSizes.screenPadding,
+                    AppSizes.sm,
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: AppColors.secondarySurface,
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: _buildPdfPreview(formState, selectedTemplate),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           if (_isExporting)
             LoadingOverlay(
@@ -192,61 +213,70 @@ class _ResumeDetailScreenState extends ConsumerState<ResumeDetailScreen> {
     );
   }
 
-  Widget _buildTemplateSelector(ResumeTemplate selectedTemplate) {
-    return SizedBox(
-      height: 200,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSizes.screenPadding,
-          vertical: AppSizes.sm,
+  Widget _buildTemplatePickerBar(ResumeTemplate selectedTemplate) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: screenWidth),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.screenSurface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.border),
+          boxShadow: const [
+            BoxShadow(
+              color: AppColors.shadowCard,
+              blurRadius: 14,
+              offset: Offset(0, 5),
+            ),
+          ],
         ),
-        child: Column(
+        child: Row(
           children: [
-            // Section: Tech & IT
-            _buildTemplateSection(
-              title: 'Tech & IT',
-              templates: [
-                ResumeTemplate.modernClean,
-                ResumeTemplate.modern,
-                ResumeTemplate.minimal,
-              ],
-              selectedTemplate: selectedTemplate,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Template',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    _getTemplateName(selectedTemplate),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: AppSizes.md),
-            // Section: Business & Management
-            _buildTemplateSection(
-              title: 'Business & Management',
-              templates: [
-                ResumeTemplate.executive,
-                ResumeTemplate.modernSidebar,
-                ResumeTemplate.classic,
-              ],
-              selectedTemplate: selectedTemplate,
-            ),
-            const SizedBox(height: AppSizes.md),
-            // Section: Sales & Marketing
-            _buildTemplateSection(
-              title: 'Sales & Marketing',
-              templates: [
-                ResumeTemplate.sales,
-                ResumeTemplate.marketing,
-              ],
-              selectedTemplate: selectedTemplate,
-            ),
-            const SizedBox(height: AppSizes.md),
-            // Section: Specialized
-            _buildTemplateSection(
-              title: 'Specialized',
-              templates: [
-                ResumeTemplate.datascience,
-                ResumeTemplate.finance,
-                ResumeTemplate.creative,
-                ResumeTemplate.academic,
-                ResumeTemplate.healthcare,
-                ResumeTemplate.startup,
-              ],
-              selectedTemplate: selectedTemplate,
+            const SizedBox(width: 12),
+            ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 44, maxWidth: 140),
+              child: OutlinedButton.icon(
+                onPressed: () => _openTemplatePickerSheet(selectedTemplate),
+                icon: const Icon(Icons.tune_rounded, size: 18),
+                label: const Text('Change'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: _getTemplateColor(selectedTemplate),
+                  side: BorderSide(color: _getTemplateColor(selectedTemplate)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -254,10 +284,90 @@ class _ResumeDetailScreenState extends ConsumerState<ResumeDetailScreen> {
     );
   }
 
+  Future<void> _openTemplatePickerSheet(ResumeTemplate selectedTemplate) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      backgroundColor: AppColors.screenSurface,
+      builder: (context) {
+        return Consumer(
+          builder: (context, ref, _) {
+            final currentTemplate = ref.watch(selectedResumeTemplateProvider);
+
+            return SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSizes.screenPadding,
+                  AppSizes.sm,
+                  AppSizes.screenPadding,
+                  AppSizes.screenPadding,
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _buildTemplateSection(
+                        title: 'Tech & IT',
+                        templates: [
+                          ResumeTemplate.modernClean,
+                          ResumeTemplate.modern,
+                          ResumeTemplate.minimal,
+                        ],
+                        selectedTemplate: currentTemplate,
+                        onSelected: () => Navigator.of(context).pop(),
+                      ),
+                      const SizedBox(height: AppSizes.md),
+                      _buildTemplateSection(
+                        title: 'Business & Management',
+                        templates: [
+                          ResumeTemplate.executive,
+                          ResumeTemplate.modernSidebar,
+                          ResumeTemplate.classic,
+                        ],
+                        selectedTemplate: currentTemplate,
+                        onSelected: () => Navigator.of(context).pop(),
+                      ),
+                      const SizedBox(height: AppSizes.md),
+                      _buildTemplateSection(
+                        title: 'Sales & Marketing',
+                        templates: [
+                          ResumeTemplate.sales,
+                          ResumeTemplate.marketing,
+                        ],
+                        selectedTemplate: currentTemplate,
+                        onSelected: () => Navigator.of(context).pop(),
+                      ),
+                      const SizedBox(height: AppSizes.md),
+                      _buildTemplateSection(
+                        title: 'Specialized',
+                        templates: [
+                          ResumeTemplate.datascience,
+                          ResumeTemplate.finance,
+                          ResumeTemplate.creative,
+                          ResumeTemplate.academic,
+                          ResumeTemplate.healthcare,
+                          ResumeTemplate.startup,
+                        ],
+                        selectedTemplate: currentTemplate,
+                        onSelected: () => Navigator.of(context).pop(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildTemplateSection({
     required String title,
     required List<ResumeTemplate> templates,
     required ResumeTemplate selectedTemplate,
+    VoidCallback? onSelected,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,9 +388,11 @@ class _ResumeDetailScreenState extends ConsumerState<ResumeDetailScreen> {
             children: templates.map((template) {
               final isSelected = selectedTemplate == template;
               return GestureDetector(
-                onTap: () => ref
-                    .read(selectedResumeTemplateProvider.notifier)
-                    .state = template,
+                onTap: () {
+                  ref.read(selectedResumeTemplateProvider.notifier).state =
+                      template;
+                  onSelected?.call();
+                },
                 child: Container(
                   margin: const EdgeInsets.only(right: AppSizes.md),
                   padding: const EdgeInsets.symmetric(
@@ -336,53 +448,48 @@ class _ResumeDetailScreenState extends ConsumerState<ResumeDetailScreen> {
     ResumeFormState formState,
     ResumeTemplate template,
   ) {
-    return Padding(
-      padding: const EdgeInsets.all(AppSizes.screenPadding),
-      child: _ResumePdfPreview(
-        template: template,
-        title: formState.title,
-        personalSummary: formState.personalSummary,
-        photoUrl: formState.photoUrl,
-        workExperiences: formState.workExperiences,
-        educations: formState.educations,
-        skills: formState.skills,
-        buildPdfBytes: (resume, template) async {
-          final firebasePdfService = ref.read(firebasePdfServiceProvider);
-          final resumeData = {
-            'title': resume.title,
-            'personalSummary': resume.personalSummary,
-            'photoUrl': resume.photoUrl,
-            'workExperiences': resume.workExperiences
-                .map((e) => {
-                  'role': e.role,
-                  'company': e.company,
-                  'location': e.location,
-                  'startDate': e.startDate.toString(),
-                  'endDate': e.endDate?.toString(),
-                  'bulletPoints': e.bulletPoints,
-                })
-                .toList(),
-            'educations': resume.educations
-                .map((e) => {
-                  'degree': e.degree,
-                  'field': e.field,
-                  'school': e.school,
-                  'graduationDate': e.graduationDate.toString(),
-                  'gpa': e.gpa,
-                })
-                .toList(),
-            'skills': resume.skills
-                .map((s) => {'name': s.name})
-                .toList(),
-          };
+    return _ResumePdfPreview(
+      template: template,
+      title: formState.title,
+      personalSummary: formState.personalSummary,
+      photoUrl: formState.photoUrl,
+      workExperiences: formState.workExperiences,
+      educations: formState.educations,
+      skills: formState.skills,
+      buildPdfBytes: (resume, template) async {
+        final firebasePdfService = ref.read(firebasePdfServiceProvider);
+        final resumeData = {
+          'title': resume.title,
+          'personalSummary': resume.personalSummary,
+          'photoUrl': resume.photoUrl,
+          'workExperiences': resume.workExperiences
+              .map((e) => {
+                    'role': e.role,
+                    'company': e.company,
+                    'location': e.location,
+                    'startDate': e.startDate.toString(),
+                    'endDate': e.endDate?.toString(),
+                    'bulletPoints': e.bulletPoints,
+                  })
+              .toList(),
+          'educations': resume.educations
+              .map((e) => {
+                    'degree': e.degree,
+                    'field': e.field,
+                    'school': e.school,
+                    'graduationDate': e.graduationDate.toString(),
+                    'gpa': e.gpa,
+                  })
+              .toList(),
+          'skills': resume.skills.map((s) => {'name': s.name}).toList(),
+        };
 
-          final pdfBytes = await firebasePdfService.generateResumePdf(
-            resumeData: resumeData,
-            template: template.name,
-          );
-          return Uint8List.fromList(pdfBytes);
-        },
-      ),
+        final pdfBytes = await firebasePdfService.generateResumePdf(
+          resumeData: resumeData,
+          template: template.name,
+        );
+        return Uint8List.fromList(pdfBytes);
+      },
     );
   }
 
@@ -574,7 +681,17 @@ class _ResumePdfPreviewState extends ConsumerState<_ResumePdfPreview> {
         allowSharing: false,
         pdfFileName: fileName,
         initialPageFormat: PdfPageFormat.a4,
-        padding: EdgeInsets.zero,
+        padding: const EdgeInsets.all(8),
+        previewPageMargin:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        scrollViewDecoration: const BoxDecoration(
+          color: AppColors.secondarySurface,
+        ),
+        pdfPreviewPageDecoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.border),
+        ),
         onError: (context, error) {
           debugPrint('[PdfPreview] Error: $error');
           return Center(
