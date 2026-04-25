@@ -1,4 +1,6 @@
 import 'education.dart';
+import 'contact_details.dart';
+import 'resume_template.dart';
 import 'skill.dart';
 import 'work_experience.dart';
 
@@ -8,6 +10,8 @@ class Resume {
   final String title;
   final String personalSummary;
   final String? photoUrl;
+  final ContactDetails contactDetails;
+  final ResumeTemplate template;
   final List<WorkExperience> workExperiences;
   final List<Education> educations;
   final List<Skill> skills;
@@ -20,6 +24,8 @@ class Resume {
     required this.title,
     required this.personalSummary,
     this.photoUrl,
+    this.contactDetails = const ContactDetails(),
+    this.template = ResumeTemplate.classic,
     required this.workExperiences,
     required this.educations,
     required this.skills,
@@ -33,6 +39,8 @@ class Resume {
     String? title,
     String? personalSummary,
     String? photoUrl,
+    ContactDetails? contactDetails,
+    ResumeTemplate? template,
     List<WorkExperience>? workExperiences,
     List<Education>? educations,
     List<Skill>? skills,
@@ -45,6 +53,8 @@ class Resume {
       title: title ?? this.title,
       personalSummary: personalSummary ?? this.personalSummary,
       photoUrl: photoUrl ?? this.photoUrl,
+      contactDetails: contactDetails ?? this.contactDetails,
+      template: template ?? this.template,
       workExperiences: workExperiences ?? this.workExperiences,
       educations: educations ?? this.educations,
       skills: skills ?? this.skills,
@@ -63,6 +73,8 @@ class Resume {
         other.title == title &&
         other.personalSummary == personalSummary &&
         other.photoUrl == photoUrl &&
+        other.contactDetails == contactDetails &&
+        other.template == template &&
         _listEquals(other.workExperiences, workExperiences) &&
         _listEquals(other.educations, educations) &&
         _listEquals(other.skills, skills) &&
@@ -77,6 +89,8 @@ class Resume {
         title.hashCode ^
         personalSummary.hashCode ^
         (photoUrl?.hashCode ?? 0) ^
+        contactDetails.hashCode ^
+        template.hashCode ^
         Object.hashAll(workExperiences) ^
         Object.hashAll(educations) ^
         Object.hashAll(skills) ^

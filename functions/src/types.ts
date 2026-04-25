@@ -2,9 +2,22 @@ export interface ResumeData {
   title: string;
   personalSummary: string;
   photoUrl?: string;
+  contactDetails?: ContactDetails;
   workExperiences: WorkExperience[];
   educations: Education[];
   skills: Skill[];
+}
+
+export interface ContactDetails {
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  location?: string;
+  website?: string;
+  linkedin?: string;
+  github?: string;
+  dateOfBirth?: string;
+  nationality?: string;
 }
 
 export interface WorkExperience {

@@ -45,6 +45,12 @@ void main() {
           password: testPassword,
         ),
       ).thenAnswer((_) async => testModel);
+      when(
+        () => userDatasource.createUserDoc(
+          uid: testModel.uid,
+          email: testEmail,
+        ),
+      ).thenAnswer((_) async {});
 
       final result = await repository.signUp(
         email: testEmail,
@@ -64,6 +70,12 @@ void main() {
         () => dataSource.signUp(
           email: testEmail,
           password: testPassword,
+        ),
+      ).called(1);
+      verify(
+        () => userDatasource.createUserDoc(
+          uid: testModel.uid,
+          email: testEmail,
         ),
       ).called(1);
     });

@@ -23,9 +23,11 @@ class PdfService {
     required ResumeTemplate template,
   }) async {
     try {
-      debugPrint('[PdfService] Starting PDF generation for resume: ${resume.title}');
+      debugPrint(
+          '[PdfService] Starting PDF generation for resume: ${resume.title}');
       debugPrint('[PdfService] Template: ${template.name}');
-      debugPrint('[PdfService] Resume data: title=${resume.title}, workExps=${resume.workExperiences.length}, educations=${resume.educations.length}, skills=${resume.skills.length}');
+      debugPrint(
+          '[PdfService] Resume data: title=${resume.title}, workExps=${resume.workExperiences.length}, educations=${resume.educations.length}, skills=${resume.skills.length}');
 
       final regularFont = await _loadFontWithFallback(
         primary: 'assets/fonts/Inter-Regular.ttf',
@@ -74,7 +76,8 @@ class PdfService {
       );
 
       final bytes = await pdf.save();
-      debugPrint('[PdfService] PDF generated successfully, size: ${bytes.length} bytes');
+      debugPrint(
+          '[PdfService] PDF generated successfully, size: ${bytes.length} bytes');
       return bytes;
     } catch (e) {
       debugPrint('[PdfService] Error during PDF generation: $e');

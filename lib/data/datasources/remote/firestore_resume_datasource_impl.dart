@@ -95,7 +95,8 @@ class FirestoreResumeDataSourceImpl implements FirestoreResumeDataSource {
         'updatedAt': FieldValue.serverTimestamp(),
       });
       if (kDebugMode) {
-        debugPrint('Firestore: soft-deleted resume at $_collectionName/$resumeId');
+        debugPrint(
+            'Firestore: soft-deleted resume at $_collectionName/$resumeId');
       }
     } on FirebaseException catch (e) {
       throw _mapFirebaseException(e);

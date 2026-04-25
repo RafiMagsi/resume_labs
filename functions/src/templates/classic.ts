@@ -5,7 +5,7 @@ export async function generateClassicTemplate(resumeData: ResumeData): Promise<B
   return generateSingleColumnTemplate(resumeData, {
     header: {
       accentColor: "#111111",
-      subtitle: "Professional Resume",
+      subtitle: "",
       subtitleColor: "#6B7280",
       dividerColor: "#CBD5E1",
       topAccentBar: false,

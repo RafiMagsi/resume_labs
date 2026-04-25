@@ -5,7 +5,7 @@ export async function generateModernCleanTemplate(resumeData: ResumeData): Promi
   return generateSingleColumnTemplate(resumeData, {
     header: {
       accentColor: "#111111",
-      subtitle: "Modern Clean Resume",
+      subtitle: "",
       subtitleColor: "#6B7280",
       dividerColor: "#E5E7EB",
       topAccentBar: false,

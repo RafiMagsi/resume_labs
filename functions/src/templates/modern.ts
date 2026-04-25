@@ -6,7 +6,7 @@ export async function generateModernTemplate(resumeData: ResumeData): Promise<Bu
     header: {
       accentColor: "#2563EB",
       nameColor: "#111111",
-      subtitle: "Modern Resume",
+      subtitle: "",
       subtitleColor: "#6B7280",
       dividerColor: "#E2E8F0",
       topAccentBar: true,

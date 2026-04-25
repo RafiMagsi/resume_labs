@@ -48,7 +48,8 @@ abstract final class AppStrings {
   // Credits & Paywall
   static const String unlockCredits = 'Buy Resume Optimizations';
   static const String creditsFeature = 'AI-Powered Resume Optimization';
-  static const String creditsDescription = 'Get professional resume recommendations powered by AI';
+  static const String creditsDescription =
+      'Get professional resume recommendations powered by AI';
   static const String buyCredits = 'Buy 10 Optimizations';
   static const String restoreCredits = 'Restore Purchases';
   static const String creditsRemaining = 'Optimizations remaining';
@@ -68,6 +69,7 @@ abstract final class AppStrings {
   static const String originalResume = 'Original Resume';
   static const String copy = 'Copy';
   static const String importToResume = 'Import to Resume';
+  static const String createResume = 'Create Resume';
   static const String optimizeAnother = 'Optimize Another Resume';
   static const String resumeTooShort = 'Please enter a longer resume text';
   static const String resumeOptimizationFailed = 'Failed to optimize resume';

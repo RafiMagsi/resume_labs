@@ -66,6 +66,12 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
   void initState() {
     super.initState();
 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final formState = ref.read(resumeFormProvider);
+      ref.read(selectedResumeTemplateProvider.notifier).state =
+          formState.template;
+    });
+
     ref.listenManual(pdfExportProvider, (previous, next) async {
       await next.whenOrNull(
         data: (data) async {
@@ -144,28 +150,37 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
       'title': formState.title,
       'personalSummary': formState.personalSummary,
       'photoUrl': formState.photoUrl,
+      'contactDetails': {
+        'fullName': formState.contactDetails.fullName,
+        'email': formState.contactDetails.email,
+        'phone': formState.contactDetails.phone,
+        'location': formState.contactDetails.location,
+        'website': formState.contactDetails.website,
+        'linkedin': formState.contactDetails.linkedin,
+        'github': formState.contactDetails.github,
+        'dateOfBirth': formState.contactDetails.dateOfBirth,
+        'nationality': formState.contactDetails.nationality,
+      },
       'workExperiences': formState.workExperiences
           .map((e) => {
-            'role': e.role,
-            'company': e.company,
-            'location': e.location,
-            'startDate': e.startDate.toString(),
-            'endDate': e.endDate?.toString(),
-            'bulletPoints': e.bulletPoints,
-          })
+                'role': e.role,
+                'company': e.company,
+                'location': e.location,
+                'startDate': e.startDate.toString(),
+                'endDate': e.endDate?.toString(),
+                'bulletPoints': e.bulletPoints,
+              })
           .toList(),
       'educations': formState.educations
           .map((e) => {
-            'degree': e.degree,
-            'field': e.field,
-            'school': e.school,
-            'graduationDate': e.graduationDate.toString(),
-            'gpa': e.gpa,
-          })
+                'degree': e.degree,
+                'field': e.field,
+                'school': e.school,
+                'graduationDate': e.graduationDate.toString(),
+                'gpa': e.gpa,
+              })
           .toList(),
-      'skills': formState.skills
-          .map((s) => {'name': s.name})
-          .toList(),
+      'skills': formState.skills.map((s) => {'name': s.name}).toList(),
     };
 
     try {
@@ -195,6 +210,8 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
       title: formState.title.trim(),
       personalSummary: formState.personalSummary.trim(),
       photoUrl: formState.photoUrl,
+      contactDetails: formState.contactDetails,
+      template: template,
       workExperiences: formState.workExperiences,
       educations: formState.educations,
       skills: formState.skills,
@@ -238,6 +255,9 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
                   if (template == null) return;
                   ref.read(selectedResumeTemplateProvider.notifier).state =
                       template;
+                  ref
+                      .read(resumeFormProvider.notifier)
+                      .persistTemplateSelection(template);
                 },
                 onExportPdf: _handleExport,
                 onExportDocx: _handleExportDocx,
@@ -255,33 +275,44 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
                 educations: formState.educations,
                 skills: formState.skills,
                 buildPdfBytes: (resume, template) async {
-                  final firebasePdfService = ref.read(firebasePdfServiceProvider);
+                  final firebasePdfService =
+                      ref.read(firebasePdfServiceProvider);
                   final resumeData = {
                     'title': resume.title,
                     'personalSummary': resume.personalSummary,
                     'photoUrl': resume.photoUrl,
+                    'contactDetails': {
+                      'fullName': resume.contactDetails.fullName,
+                      'email': resume.contactDetails.email,
+                      'phone': resume.contactDetails.phone,
+                      'location': resume.contactDetails.location,
+                      'website': resume.contactDetails.website,
+                      'linkedin': resume.contactDetails.linkedin,
+                      'github': resume.contactDetails.github,
+                      'dateOfBirth': resume.contactDetails.dateOfBirth,
+                      'nationality': resume.contactDetails.nationality,
+                    },
                     'workExperiences': resume.workExperiences
                         .map((e) => {
-                          'role': e.role,
-                          'company': e.company,
-                          'location': e.location,
-                          'startDate': e.startDate.toString(),
-                          'endDate': e.endDate?.toString(),
-                          'bulletPoints': e.bulletPoints,
-                        })
+                              'role': e.role,
+                              'company': e.company,
+                              'location': e.location,
+                              'startDate': e.startDate.toString(),
+                              'endDate': e.endDate?.toString(),
+                              'bulletPoints': e.bulletPoints,
+                            })
                         .toList(),
                     'educations': resume.educations
                         .map((e) => {
-                          'degree': e.degree,
-                          'field': e.field,
-                          'school': e.school,
-                          'graduationDate': e.graduationDate.toString(),
-                          'gpa': e.gpa,
-                        })
+                              'degree': e.degree,
+                              'field': e.field,
+                              'school': e.school,
+                              'graduationDate': e.graduationDate.toString(),
+                              'gpa': e.gpa,
+                            })
                         .toList(),
-                    'skills': resume.skills
-                        .map((s) => {'name': s.name})
-                        .toList(),
+                    'skills':
+                        resume.skills.map((s) => {'name': s.name}).toList(),
                   };
 
                   final pdfBytes = await firebasePdfService.generateResumePdf(
@@ -328,6 +359,9 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
                   if (template == null) return;
                   ref.read(selectedResumeTemplateProvider.notifier).state =
                       template;
+                  ref
+                      .read(resumeFormProvider.notifier)
+                      .persistTemplateSelection(template);
                 },
                 onExportPdf: _handleExport,
                 onExportDocx: _handleExportDocx,
@@ -460,32 +494,35 @@ class _PreviewControlsCompact extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(
-            width: 190,
-            child: DropdownButtonFormField<ResumeTemplate>(
-              initialValue: selectedTemplate,
-              items: ResumeTemplate.values
-                  .map(
-                    (template) => DropdownMenuItem(
-                      value: template,
-                      child: Text(_templateLabel(template)),
-                    ),
-                  )
-                  .toList(),
-              onChanged: isLoading ? null : onTemplateChanged,
-              decoration: InputDecoration(
-                isDense: true,
-                filled: true,
-                fillColor: AppColors.secondarySurface,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: AppColors.border),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: AppColors.border),
+          Flexible(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 140, maxWidth: 240),
+              child: DropdownButtonFormField<ResumeTemplate>(
+                initialValue: selectedTemplate,
+                isExpanded: true,
+                items: ResumeTemplate.values
+                    .map(
+                      (template) => DropdownMenuItem(
+                        value: template,
+                        child: Text(_templateLabel(template)),
+                      ),
+                    )
+                    .toList(),
+                onChanged: isLoading ? null : onTemplateChanged,
+                decoration: InputDecoration(
+                  isDense: true,
+                  filled: true,
+                  fillColor: AppColors.secondarySurface,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: AppColors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: AppColors.border),
+                  ),
                 ),
               ),
             ),
@@ -656,6 +693,7 @@ class _ResumePdfPreviewState extends ConsumerState<_ResumePdfPreview> {
       title: widget.title.trim(),
       personalSummary: widget.personalSummary.trim(),
       photoUrl: widget.photoUrl,
+      template: widget.template,
       workExperiences: widget.workExperiences,
       educations: widget.educations,
       skills: widget.skills,

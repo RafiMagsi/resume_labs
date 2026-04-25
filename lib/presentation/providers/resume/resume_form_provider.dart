@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../domain/entities/contact_details.dart';
 import '../../../domain/entities/education.dart';
 import '../../../domain/entities/resume.dart';
+import '../../../domain/entities/resume_template.dart';
 import '../../../domain/entities/skill.dart';
 import '../../../domain/entities/work_experience.dart';
 import '../../../injection/injection_container.dart';
@@ -25,6 +27,8 @@ class ResumeFormNotifier extends Notifier<ResumeFormState> {
       title: resume.title,
       personalSummary: resume.personalSummary,
       photoUrl: resume.photoUrl,
+      contactDetails: resume.contactDetails,
+      template: resume.template,
       workExperiences: resume.workExperiences,
       educations: resume.educations,
       skills: resume.skills,
@@ -78,6 +82,99 @@ class ResumeFormNotifier extends Notifier<ResumeFormState> {
 
   void updatePhotoUrl(String? photoUrl) {
     state = state.copyWith(photoUrl: photoUrl);
+  }
+
+  void updateTemplate(ResumeTemplate template) {
+    state = state.copyWith(template: template);
+  }
+
+  Future<void> persistTemplateSelection(ResumeTemplate template) async {
+    updateTemplate(template);
+    if (!state.isEditing || state.resumeId == null || state.userId == null) {
+      return;
+    }
+
+    final resume = Resume(
+      id: state.resumeId!,
+      userId: state.userId!,
+      title: state.title.trim(),
+      personalSummary: state.personalSummary.trim(),
+      photoUrl: state.photoUrl,
+      contactDetails: state.contactDetails,
+      template: template,
+      workExperiences: state.workExperiences,
+      educations: state.educations,
+      skills: state.skills,
+      createdAt: state.createdAt ?? DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+
+    final result = await ref.read(updateResumeUseCaseProvider)(resume);
+    result.match(
+      (failure) {
+        state = state.copyWith(errorMessage: failure.message);
+      },
+      (_) {
+        ref.invalidate(resumeListProvider);
+      },
+    );
+  }
+
+  void updateContactFullName(String value) {
+    state = state.copyWith(
+      contactDetails: state.contactDetails.copyWith(fullName: value),
+    );
+  }
+
+  void updateContactEmail(String value) {
+    final updatedErrors = Map<String, String>.of(state.validationErrors)
+      ..remove('contactEmail');
+    state = state.copyWith(
+      contactDetails: state.contactDetails.copyWith(email: value),
+      validationErrors: updatedErrors,
+    );
+  }
+
+  void updateContactPhone(String value) {
+    state = state.copyWith(
+      contactDetails: state.contactDetails.copyWith(phone: value),
+    );
+  }
+
+  void updateContactLocation(String value) {
+    state = state.copyWith(
+      contactDetails: state.contactDetails.copyWith(location: value),
+    );
+  }
+
+  void updateContactWebsite(String value) {
+    state = state.copyWith(
+      contactDetails: state.contactDetails.copyWith(website: value),
+    );
+  }
+
+  void updateContactLinkedin(String value) {
+    state = state.copyWith(
+      contactDetails: state.contactDetails.copyWith(linkedin: value),
+    );
+  }
+
+  void updateContactGithub(String value) {
+    state = state.copyWith(
+      contactDetails: state.contactDetails.copyWith(github: value),
+    );
+  }
+
+  void updateContactDateOfBirth(String value) {
+    state = state.copyWith(
+      contactDetails: state.contactDetails.copyWith(dateOfBirth: value),
+    );
+  }
+
+  void updateContactNationality(String value) {
+    state = state.copyWith(
+      contactDetails: state.contactDetails.copyWith(nationality: value),
+    );
   }
 
   void addWorkExperience(WorkExperience experience) {
@@ -151,6 +248,11 @@ class ResumeFormNotifier extends Notifier<ResumeFormState> {
         if (state.personalSummary.trim().isEmpty) {
           errors['personalSummary'] = 'Personal summary is required';
         }
+        final email = (state.contactDetails.email ?? '').trim();
+        if (email.isNotEmpty &&
+            !RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) {
+          errors['contactEmail'] = 'Please enter a valid email address';
+        }
         break;
       case 1:
         if (state.workExperiences.isEmpty) {
@@ -181,6 +283,11 @@ class ResumeFormNotifier extends Notifier<ResumeFormState> {
     }
     if (state.personalSummary.trim().isEmpty) {
       errors['personalSummary'] = 'Personal summary is required';
+    }
+    final email = (state.contactDetails.email ?? '').trim();
+    if (email.isNotEmpty &&
+        !RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) {
+      errors['contactEmail'] = 'Please enter a valid email address';
     }
     if (state.workExperiences.isEmpty) {
       errors['workExperiences'] = 'Add at least one work experience';
@@ -225,6 +332,8 @@ class ResumeFormNotifier extends Notifier<ResumeFormState> {
       title: state.title.trim(),
       personalSummary: state.personalSummary.trim(),
       photoUrl: state.photoUrl,
+      contactDetails: state.contactDetails,
+      template: state.template,
       workExperiences: state.workExperiences,
       educations: state.educations,
       skills: state.skills,
@@ -261,12 +370,79 @@ class ResumeFormNotifier extends Notifier<ResumeFormState> {
     );
   }
 
+  /// Always creates a new resume document in Firestore (never updates).
+  /// Use this for AI Optimize imports and any "Save as new" flows.
+  Future<bool> saveAsNew() async {
+    if (!validateAll()) {
+      final errors = state.validationErrors;
+      state = state.copyWith(
+        currentStep: _firstInvalidStep(errors),
+        errorMessage: 'Please complete the required fields before saving.',
+        clearSuccessMessage: true,
+      );
+      return false;
+    }
+    if (state.userId == null || state.userId!.trim().isEmpty) {
+      state = state.copyWith(
+        errorMessage: 'User not found. Please sign in again.',
+      );
+      return false;
+    }
+
+    state = state.copyWith(
+      isLoading: true,
+      clearErrorMessage: true,
+      clearSuccessMessage: true,
+    );
+
+    final resume = Resume(
+      id: _generateResumeId(),
+      userId: state.userId!,
+      title: state.title.trim(),
+      personalSummary: state.personalSummary.trim(),
+      photoUrl: state.photoUrl,
+      contactDetails: state.contactDetails,
+      template: state.template,
+      workExperiences: state.workExperiences,
+      educations: state.educations,
+      skills: state.skills,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+
+    final result = await ref.read(createResumeUseCaseProvider)(resume);
+
+    return result.match(
+      (failure) {
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: failure.message,
+        );
+        return false;
+      },
+      (savedResume) {
+        ref.invalidate(resumeListProvider);
+        state = state.copyWith(
+          isLoading: false,
+          successMessage: 'Resume created successfully',
+          resumeId: savedResume.id,
+          photoUrl: savedResume.photoUrl,
+          createdAt: savedResume.createdAt,
+          isEditing: true,
+        );
+        return true;
+      },
+    );
+  }
+
   String _generateResumeId() {
     return DateTime.now().microsecondsSinceEpoch.toString();
   }
 
   int _firstInvalidStep(Map<String, String> errors) {
-    if (errors.containsKey('title') || errors.containsKey('personalSummary')) {
+    if (errors.containsKey('title') ||
+        errors.containsKey('personalSummary') ||
+        errors.containsKey('contactEmail')) {
       return 0;
     }
     if (errors.containsKey('workExperiences')) return 1;
@@ -283,6 +459,8 @@ class ResumeFormState {
   final String title;
   final String personalSummary;
   final String? photoUrl;
+  final ContactDetails contactDetails;
+  final ResumeTemplate template;
   final List<WorkExperience> workExperiences;
   final List<Education> educations;
   final List<Skill> skills;
@@ -300,6 +478,8 @@ class ResumeFormState {
     required this.title,
     required this.personalSummary,
     this.photoUrl,
+    required this.contactDetails,
+    required this.template,
     required this.workExperiences,
     required this.educations,
     required this.skills,
@@ -321,6 +501,8 @@ class ResumeFormState {
       title: '',
       personalSummary: '',
       photoUrl: null,
+      contactDetails: const ContactDetails(),
+      template: ResumeTemplate.classic,
       workExperiences: const [],
       educations: const [],
       skills: const [],
@@ -340,6 +522,8 @@ class ResumeFormState {
     String? title,
     String? personalSummary,
     String? photoUrl,
+    ContactDetails? contactDetails,
+    ResumeTemplate? template,
     List<WorkExperience>? workExperiences,
     List<Education>? educations,
     List<Skill>? skills,
@@ -359,6 +543,8 @@ class ResumeFormState {
       title: title ?? this.title,
       personalSummary: personalSummary ?? this.personalSummary,
       photoUrl: photoUrl ?? this.photoUrl,
+      contactDetails: contactDetails ?? this.contactDetails,
+      template: template ?? this.template,
       workExperiences: workExperiences ?? this.workExperiences,
       educations: educations ?? this.educations,
       skills: skills ?? this.skills,

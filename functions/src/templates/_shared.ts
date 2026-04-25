@@ -12,6 +12,39 @@ export interface Frame {
   width: number;
 }
 
+function safeTrim(value?: string): string {
+  return (value ?? "").trim();
+}
+
+export function getDisplayName(resumeData: ResumeData): string {
+  const fullName = safeTrim(resumeData.contactDetails?.fullName);
+  if (fullName) return fullName;
+  const title = safeTrim(resumeData.title);
+  return title || "Untitled Resume";
+}
+
+export function getDisplayHeadline(
+  resumeData: ResumeData,
+): string | null {
+  const fullName = safeTrim(resumeData.contactDetails?.fullName);
+  const title = safeTrim(resumeData.title);
+  if (!fullName || !title) return null;
+  if (title.toLowerCase() === fullName.toLowerCase()) return null;
+  return title;
+}
+
+export function getContactLine(resumeData: ResumeData): string {
+  const parts = [
+    safeTrim(resumeData.contactDetails?.email),
+    safeTrim(resumeData.contactDetails?.phone),
+    safeTrim(resumeData.contactDetails?.location),
+    safeTrim(resumeData.contactDetails?.website),
+    safeTrim(resumeData.contactDetails?.linkedin),
+    safeTrim(resumeData.contactDetails?.github),
+  ].filter(Boolean);
+  return parts.join(" • ");
+}
+
 export function getContentFrame(doc: PDFKit.PDFDocument): Frame {
   const x = doc.page.margins.left;
   const width = doc.page.width - doc.page.margins.left - doc.page.margins.right;
@@ -223,21 +256,41 @@ export function renderSingleColumnHeader(
 
   const nameSize = style.nameFontSize ?? 25;
   const subtitleSize = style.subtitleFontSize ?? 10.5;
+  const displayName = getDisplayName(resumeData);
+  const displayHeadline = getDisplayHeadline(resumeData);
+  const subtitleText = displayHeadline ?? style.subtitle;
   doc
     .font("Helvetica-Bold")
     .fontSize(nameSize)
     .fillColor(style.nameColor ?? style.accentColor)
-    .text(resumeData.title?.trim() || "Untitled Resume", frame.x, titleY, {
+    .text(displayName, frame.x, titleY, {
       width: textColumnWidth,
       align: "left",
     });
 
   const nameBottom = doc.y;
-  doc
-    .font("Helvetica")
-    .fontSize(subtitleSize)
-    .fillColor(style.subtitleColor)
-    .text(style.subtitle, frame.x, nameBottom + 4, { width: textColumnWidth, align: "left" });
+  if (subtitleText.trim()) {
+    doc
+      .font("Helvetica")
+      .fontSize(subtitleSize)
+      .fillColor(style.subtitleColor)
+      .text(subtitleText, frame.x, nameBottom + 4, {
+        width: textColumnWidth,
+        align: "left",
+      });
+  }
+
+  const contactLine = getContactLine(resumeData);
+  if (contactLine) {
+    doc
+      .font("Helvetica")
+      .fontSize(9.5)
+      .fillColor(style.subtitleColor)
+      .text(contactLine, frame.x, doc.y + 4, {
+        width: textColumnWidth,
+        align: "left",
+      });
+  }
 
   const headerBottom = Math.max(
     doc.y,

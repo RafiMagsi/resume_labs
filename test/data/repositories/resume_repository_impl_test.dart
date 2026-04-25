@@ -177,11 +177,14 @@ void main() {
     test('returns Right(null) on remote success', () async {
       when(() => remoteDataSource.deleteResume('resume-1'))
           .thenAnswer((_) async {});
+      when(() => localDataSource.deleteResume('resume-1'))
+          .thenAnswer((_) async {});
 
       final result = await repository.deleteResume('resume-1');
 
       expect(result, const Right(null));
       verify(() => remoteDataSource.deleteResume('resume-1')).called(1);
+      verify(() => localDataSource.deleteResume('resume-1')).called(1);
     });
 
     test('returns Left(NetworkFailure) on network error', () async {

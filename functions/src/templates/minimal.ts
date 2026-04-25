@@ -5,7 +5,7 @@ export async function generateMinimalTemplate(resumeData: ResumeData): Promise<B
   return generateSingleColumnTemplate(resumeData, {
     header: {
       accentColor: "#111111",
-      subtitle: "Minimal Resume",
+      subtitle: "",
       subtitleColor: "#6B7280",
       dividerColor: "#E5E7EB",
       topAccentBar: false,

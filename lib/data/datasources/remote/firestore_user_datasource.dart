@@ -47,21 +47,17 @@ class FirestoreUserDatasourceImpl implements FirestoreUserDatasource {
         .doc(uid)
         .snapshots()
         .map((doc) {
-          if (!doc.exists) return 0;
-          return doc.data()?['availableCredits'] as int? ?? 0;
-        })
-        .handleError((e) {
-          throw AppException('Failed to stream credits: $e');
-        });
+      if (!doc.exists) return 0;
+      return doc.data()?['availableCredits'] as int? ?? 0;
+    }).handleError((e) {
+      throw AppException('Failed to stream credits: $e');
+    });
   }
 
   @override
   Future<void> addCredits(String uid, int amount) async {
     try {
-      await _firestore
-          .collection(AppStrings.usersCollection)
-          .doc(uid)
-          .update({
+      await _firestore.collection(AppStrings.usersCollection).doc(uid).update({
         'availableCredits': FieldValue.increment(amount),
         'lastPurchaseDate': DateTime.now(),
       });
@@ -73,10 +69,7 @@ class FirestoreUserDatasourceImpl implements FirestoreUserDatasource {
   @override
   Future<void> deductCredit(String uid) async {
     try {
-      await _firestore
-          .collection(AppStrings.usersCollection)
-          .doc(uid)
-          .update({
+      await _firestore.collection(AppStrings.usersCollection).doc(uid).update({
         'availableCredits': FieldValue.increment(-1),
       });
     } catch (e) {
@@ -90,10 +83,7 @@ class FirestoreUserDatasourceImpl implements FirestoreUserDatasource {
     required String email,
   }) async {
     try {
-      await _firestore
-          .collection(AppStrings.usersCollection)
-          .doc(uid)
-          .set({
+      await _firestore.collection(AppStrings.usersCollection).doc(uid).set({
         'uid': uid,
         'email': email,
         'createdAt': DateTime.now(),

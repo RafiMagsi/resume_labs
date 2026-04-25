@@ -22,20 +22,22 @@ class CvOptimizationDatasourceImpl implements CvOptimizationDatasource {
         throw AppException('OpenAI API key not configured');
       }
 
-      final response = await _client.post(
-        Uri.parse('https://api.openai.com/v1/chat/completions'),
-        headers: {
-          'Authorization': 'Bearer $apiKey',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'model': 'gpt-4o',
-          'temperature': 0.2,
-          'max_tokens': 3000,
-          'messages': [
-            {
-              'role': 'system',
-              'content': '''You are a professional CV optimizer. Your task is to enhance the provided CV for maximum impact.
+      final response = await _client
+          .post(
+            Uri.parse('https://api.openai.com/v1/chat/completions'),
+            headers: {
+              'Authorization': 'Bearer $apiKey',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({
+              'model': 'gpt-4o',
+              'temperature': 0.2,
+              'max_tokens': 3000,
+              'messages': [
+                {
+                  'role': 'system',
+                  'content':
+                      '''You are a professional CV optimizer. Your task is to enhance the provided CV for maximum impact.
 
 Respond ONLY with valid JSON, no markdown, no backticks, no explanation.
 
@@ -74,20 +76,25 @@ Rules:
 - Add relevant keywords from the industry
 - Enhance with professional tone
 - Keep content authentic and factual
+- Preserve ALL information from the original resume: do not drop jobs, education entries, or skills
+- Do not remove bullet points; rewrite/improve them, but keep the meaning and coverage
+- Do not invent new companies, roles, degrees, or dates
 - Use ISO date format (YYYY-MM-DD)
 - Separate bullet points as array items
 - Extract dates from the CV if available, use reasonable estimates if not'''
-            },
-            {
-              'role': 'user',
-              'content': cvText,
-            }
-          ],
-        }),
-      ).timeout(
-        const Duration(seconds: 30),
-        onTimeout: () => throw AppException('CV optimization request timed out'),
-      );
+                },
+                {
+                  'role': 'user',
+                  'content': cvText,
+                }
+              ],
+            }),
+          )
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () =>
+                throw AppException('CV optimization request timed out'),
+          );
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body) as Map<String, dynamic>;

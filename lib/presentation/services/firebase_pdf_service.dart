@@ -29,10 +29,8 @@ class FirebasePdfService {
   }) async {
     final url = _cloudFunctionUrl;
     if (url == null || url.isEmpty) {
-      throw ServerFailure(
-        'Firebase PDF Cloud Function URL not configured. '
-        'Set FIREBASE_PDF_FUNCTION_URL environment variable.'
-      );
+      throw ServerFailure('Firebase PDF Cloud Function URL not configured. '
+          'Set FIREBASE_PDF_FUNCTION_URL environment variable.');
     }
 
     try {
@@ -49,18 +47,23 @@ class FirebasePdfService {
       debugPrint('[FirebasePdfService] Resume title: ${resumeData['title']}');
       debugPrint('[FirebasePdfService] Template: $template');
 
-      final response = await http.post(
-        Uri.parse(url),
-        headers: headers,
-        body: jsonEncode({
-          'resumeData': resumeData,
-          'template': template,
-        }),
-      ).timeout(timeout);
+      final response = await http
+          .post(
+            Uri.parse(url),
+            headers: headers,
+            body: jsonEncode({
+              'resumeData': resumeData,
+              'template': template,
+            }),
+          )
+          .timeout(timeout);
 
-      debugPrint('[FirebasePdfService] Response status code: ${response.statusCode}');
-      debugPrint('[FirebasePdfService] Response content type: ${response.headers['content-type']}');
-      debugPrint('[FirebasePdfService] Response size: ${response.bodyBytes.length} bytes');
+      debugPrint(
+          '[FirebasePdfService] Response status code: ${response.statusCode}');
+      debugPrint(
+          '[FirebasePdfService] Response content type: ${response.headers['content-type']}');
+      debugPrint(
+          '[FirebasePdfService] Response size: ${response.bodyBytes.length} bytes');
 
       if (response.statusCode == 200) {
         debugPrint('[FirebasePdfService] PDF generated successfully');

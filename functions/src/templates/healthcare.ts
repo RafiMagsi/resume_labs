@@ -4,6 +4,9 @@ import {
   downloadImage,
   drawDivider,
   ensureSpace,
+  getContactLine,
+  getDisplayHeadline,
+  getDisplayName,
   readExtraLists,
   renderPhoto,
   renderSectionHeading,
@@ -54,7 +57,7 @@ export async function generateHealthcareTemplate(resumeData: ResumeData): Promis
   };
 
   buildSidebar(doc, resumeData, imageBuffer, sidebarFrame);
-  buildMainHeader(doc, "Healthcare Resume", mainFrame);
+  buildMainHeader(doc, resumeData, mainFrame);
   buildMainContent(doc, resumeData, mainFrame);
 
   doc.end();
@@ -80,7 +83,26 @@ function buildSidebar(
     .font("Helvetica-Bold")
     .fontSize(15.6)
     .fillColor(SIDEBAR_TEXT)
-    .text(resumeData.title?.trim() || "Untitled Resume", frame.x, y, { width: frame.width });
+    .text(getDisplayName(resumeData), frame.x, y, { width: frame.width });
+
+  const headline = getDisplayHeadline(resumeData);
+  if (headline) {
+    doc
+      .font("Helvetica")
+      .fontSize(9.2)
+      .fillColor(SIDEBAR_MUTED)
+      .text(headline, frame.x, doc.y + 4, { width: frame.width });
+  }
+
+  const contactLine = getContactLine(resumeData);
+  if (contactLine) {
+    doc
+      .font("Helvetica")
+      .fontSize(8.6)
+      .fillColor(SIDEBAR_MUTED)
+      .text(contactLine, frame.x, doc.y + 6, { width: frame.width, lineGap: 2 });
+  }
+
   y = doc.y + 14;
 
   const extras = readExtraLists(resumeData);
@@ -136,7 +158,7 @@ function renderSidebarHeading(
   return dividerY + 10;
 }
 
-function buildMainHeader(doc: PDFKit.PDFDocument, subtitle: string, frame: Frame): void {
+function buildMainHeader(doc: PDFKit.PDFDocument, resumeData: ResumeData, frame: Frame): void {
   const startY = doc.page.margins.top;
   doc.rect(frame.x, startY, frame.width, 4).fill(ACCENT);
 
@@ -145,14 +167,20 @@ function buildMainHeader(doc: PDFKit.PDFDocument, subtitle: string, frame: Frame
     .font("Helvetica-Bold")
     .fontSize(24)
     .fillColor("#111111")
-    .text("Healthcare", frame.x, titleY, { width: frame.width, align: "left" });
+    .text(getDisplayName(resumeData), frame.x, titleY, {
+      width: frame.width,
+      align: "left",
+    });
 
   const bottomY = doc.y;
-  doc
-    .font("Helvetica")
-    .fontSize(10.5)
-    .fillColor(MUTED)
-    .text(subtitle, frame.x, bottomY + 4, { width: frame.width });
+  const headline = getDisplayHeadline(resumeData);
+  if (headline) {
+    doc
+      .font("Helvetica")
+      .fontSize(10.5)
+      .fillColor(MUTED)
+      .text(headline, frame.x, bottomY + 4, { width: frame.width });
+  }
 
   const dividerY = doc.y + 18;
   drawDivider(doc, frame.x, dividerY, frame.width, DIVIDER, 1);
@@ -229,4 +257,3 @@ function buildMainContent(doc: PDFKit.PDFDocument, resumeData: ResumeData, frame
     writeTwoColumnList(doc, lines, { color: TEXT, fontSize: 10.1, columnGap: 18, bulletMarker: "•" }, frame);
   }
 }
-

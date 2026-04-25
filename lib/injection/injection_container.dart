@@ -221,7 +221,8 @@ final exportDocxUseCaseProvider = Provider<ExportDocxUseCase>((ref) {
   return ExportDocxUseCase(repository);
 });
 
-final firestoreUserDataSourceProvider = Provider<FirestoreUserDatasource>((ref) {
+final firestoreUserDataSourceProvider =
+    Provider<FirestoreUserDatasource>((ref) {
   return FirestoreUserDatasourceImpl();
 });
 
@@ -245,17 +246,20 @@ final deductCreditUseCaseProvider = Provider<DeductCreditUseCase>((ref) {
   return DeductCreditUseCase(repository);
 });
 
-final restorePurchasesUseCaseProvider = Provider<RestorePurchasesUseCase>((ref) {
+final restorePurchasesUseCaseProvider =
+    Provider<RestorePurchasesUseCase>((ref) {
   final repository = ref.watch(purchaseRepositoryProvider);
   return RestorePurchasesUseCase(repository);
 });
 
-final cvOptimizationDataSourceProvider = Provider<CvOptimizationDatasource>((ref) {
+final cvOptimizationDataSourceProvider =
+    Provider<CvOptimizationDatasource>((ref) {
   final client = ref.watch(httpClientProvider);
   return CvOptimizationDatasourceImpl(client);
 });
 
-final cvOptimizationRepositoryProvider = Provider<CvOptimizationRepository>((ref) {
+final cvOptimizationRepositoryProvider =
+    Provider<CvOptimizationRepository>((ref) {
   final datasource = ref.watch(cvOptimizationDataSourceProvider);
   return CvOptimizationRepositoryImpl(datasource);
 });

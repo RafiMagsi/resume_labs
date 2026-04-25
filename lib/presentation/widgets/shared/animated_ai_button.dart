@@ -86,7 +86,8 @@ class _AnimatedAIButtonState extends State<AnimatedAIButton>
           // Icon animation
           final iconValue = _iconController.value;
           final iconRotation = iconValue * math.pi * 2;
-          final iconScale = 0.9 + (math.sin(iconValue * math.pi * 2) + 1) / 4 * 0.2;
+          final iconScale =
+              0.9 + (math.sin(iconValue * math.pi * 2) + 1) / 4 * 0.2;
 
           return SizedBox(
             width: 160,
@@ -122,7 +123,8 @@ class _AnimatedAIButtonState extends State<AnimatedAIButton>
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(30),
                   border: Border.all(
-                    color: AppColors.white.withAlpha((glowOpacity * 180).toInt()),
+                    color:
+                        AppColors.white.withAlpha((glowOpacity * 180).toInt()),
                     width: glowWidth,
                   ),
                 ),

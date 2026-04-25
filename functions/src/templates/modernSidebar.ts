@@ -4,6 +4,8 @@ import {
   downloadImage,
   drawDivider,
   ensureSpace,
+  getDisplayHeadline,
+  getDisplayName,
   readExtraLists,
   renderPhoto,
   renderSectionHeading,
@@ -91,17 +93,21 @@ function buildSidebar(
     .font("Helvetica-Bold")
     .fontSize(16.5)
     .fillColor(SIDEBAR_TEXT)
-    .text(resumeData.title?.trim() || "Untitled Resume", frame.x, y, {
+    .text(getDisplayName(resumeData), frame.x, y, {
       width: frame.width,
       align: "left",
     });
   y = doc.y + 10;
 
+  const headline = getDisplayHeadline(resumeData);
   doc
     .font("Helvetica")
     .fontSize(9.5)
     .fillColor(SIDEBAR_MUTED)
-    .text("Modern Sidebar Resume", frame.x, y, { width: frame.width, align: "left" });
+    .text(headline ?? "", frame.x, y, {
+      width: frame.width,
+      align: "left",
+    });
   y = doc.y + 14;
 
   const contactLines = extractContactLines(resumeData);
@@ -180,17 +186,18 @@ function buildMainHeader(
     .font("Helvetica-Bold")
     .fontSize(24)
     .fillColor("#111111")
-    .text(resumeData.title?.trim() || "Untitled Resume", frame.x, titleY, {
+    .text(getDisplayName(resumeData), frame.x, titleY, {
       width: frame.width,
       align: "left",
     });
 
   const bottomY = doc.y;
+  const headline = getDisplayHeadline(resumeData);
   doc
     .font("Helvetica")
     .fontSize(10.5)
     .fillColor(MUTED)
-    .text("Modern Sidebar Resume", frame.x, bottomY + 4, {
+    .text(headline ?? "", frame.x, bottomY + 4, {
       width: frame.width,
       align: "left",
     });
@@ -348,7 +355,10 @@ function buildMainContent(
 
 function extractContactLines(resumeData: ResumeData): string[] {
   const extra = resumeData as any;
-  const contact = (extra.contact ?? extra.personalDetails ?? extra.profile) as any;
+  const contact = (resumeData.contactDetails ??
+    extra.contact ??
+    extra.personalDetails ??
+    extra.profile) as any;
 
   const lines: string[] = [];
   const email = extra.email ?? contact?.email;
@@ -364,4 +374,3 @@ function extractContactLines(resumeData: ResumeData): string[] {
 
   return lines;
 }
-

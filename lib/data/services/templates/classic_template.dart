@@ -49,8 +49,8 @@ class ClassicTemplate extends BaseResumeTemplate {
                     children: [
                       ...resume.workExperiences.asMap().entries.map(
                         (entry) {
-                          final isLast = entry.key ==
-                              resume.workExperiences.length - 1;
+                          final isLast =
+                              entry.key == resume.workExperiences.length - 1;
                           return pw.Padding(
                             padding: pw.EdgeInsets.only(
                               bottom: isLast ? 0 : 14,

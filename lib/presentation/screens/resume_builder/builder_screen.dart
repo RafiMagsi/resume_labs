@@ -31,9 +31,20 @@ class BuilderScreen extends ConsumerStatefulWidget {
 }
 
 class _BuilderScreenState extends ConsumerState<BuilderScreen> {
+  final _fullNameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _locationController = TextEditingController();
+  final _websiteController = TextEditingController();
+  final _linkedinController = TextEditingController();
+  final _githubController = TextEditingController();
+  final _dobController = TextEditingController();
+  final _nationalityController = TextEditingController();
   final _titleController = TextEditingController();
   final _summaryController = TextEditingController();
 
+  final _fullNameFocusNode = FocusNode();
+  final _emailFocusNode = FocusNode();
   final _titleFocusNode = FocusNode();
   final _summaryFocusNode = FocusNode();
 
@@ -56,8 +67,20 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
 
   @override
   void dispose() {
+    _fullNameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _locationController.dispose();
+    _websiteController.dispose();
+    _linkedinController.dispose();
+    _githubController.dispose();
+    _dobController.dispose();
+    _nationalityController.dispose();
     _titleController.dispose();
     _summaryController.dispose();
+
+    _fullNameFocusNode.dispose();
+    _emailFocusNode.dispose();
     _titleFocusNode.dispose();
     _summaryFocusNode.dispose();
     super.dispose();
@@ -65,20 +88,27 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
 
   void _syncControllers() {
     final state = ref.read(resumeFormProvider);
+    final contact = state.contactDetails;
 
-    if (_titleController.text != state.title) {
-      _titleController.text = state.title;
-      _titleController.selection = TextSelection.fromPosition(
-        TextPosition(offset: _titleController.text.length),
+    void sync(TextEditingController controller, String value) {
+      if (controller.text == value) return;
+      controller.text = value;
+      controller.selection = TextSelection.fromPosition(
+        TextPosition(offset: controller.text.length),
       );
     }
 
-    if (_summaryController.text != state.personalSummary) {
-      _summaryController.text = state.personalSummary;
-      _summaryController.selection = TextSelection.fromPosition(
-        TextPosition(offset: _summaryController.text.length),
-      );
-    }
+    sync(_fullNameController, (contact.fullName ?? ''));
+    sync(_emailController, (contact.email ?? ''));
+    sync(_phoneController, (contact.phone ?? ''));
+    sync(_locationController, (contact.location ?? ''));
+    sync(_websiteController, (contact.website ?? ''));
+    sync(_linkedinController, (contact.linkedin ?? ''));
+    sync(_githubController, (contact.github ?? ''));
+    sync(_dobController, (contact.dateOfBirth ?? ''));
+    sync(_nationalityController, (contact.nationality ?? ''));
+    sync(_titleController, state.title);
+    sync(_summaryController, state.personalSummary);
   }
 
   Future<void> _handlePhotoUpload(String localPath) async {
@@ -344,8 +374,19 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
                 final formContent = _BuilderFormContent(
                   formState: formState,
                   formNotifier: formNotifier,
+                  fullNameController: _fullNameController,
+                  emailController: _emailController,
+                  phoneController: _phoneController,
+                  locationController: _locationController,
+                  websiteController: _websiteController,
+                  linkedinController: _linkedinController,
+                  githubController: _githubController,
+                  dobController: _dobController,
+                  nationalityController: _nationalityController,
                   titleController: _titleController,
                   summaryController: _summaryController,
+                  fullNameFocusNode: _fullNameFocusNode,
+                  emailFocusNode: _emailFocusNode,
                   titleFocusNode: _titleFocusNode,
                   summaryFocusNode: _summaryFocusNode,
                   isAiLoading: isAiLoading,
@@ -360,6 +401,7 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
 
                 final preview = ResumePreview(
                   photoUrl: formState.photoUrl,
+                  contactDetails: formState.contactDetails,
                   title: formState.title,
                   personalSummary: formState.personalSummary,
                   workExperiences: formState.workExperiences,
@@ -414,8 +456,19 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
 class _BuilderFormContent extends StatelessWidget {
   final ResumeFormState formState;
   final ResumeFormNotifier formNotifier;
+  final TextEditingController fullNameController;
+  final TextEditingController emailController;
+  final TextEditingController phoneController;
+  final TextEditingController locationController;
+  final TextEditingController websiteController;
+  final TextEditingController linkedinController;
+  final TextEditingController githubController;
+  final TextEditingController dobController;
+  final TextEditingController nationalityController;
   final TextEditingController titleController;
   final TextEditingController summaryController;
+  final FocusNode fullNameFocusNode;
+  final FocusNode emailFocusNode;
   final FocusNode titleFocusNode;
   final FocusNode summaryFocusNode;
   final bool isAiLoading;
@@ -430,8 +483,19 @@ class _BuilderFormContent extends StatelessWidget {
   const _BuilderFormContent({
     required this.formState,
     required this.formNotifier,
+    required this.fullNameController,
+    required this.emailController,
+    required this.phoneController,
+    required this.locationController,
+    required this.websiteController,
+    required this.linkedinController,
+    required this.githubController,
+    required this.dobController,
+    required this.nationalityController,
     required this.titleController,
     required this.summaryController,
+    required this.fullNameFocusNode,
+    required this.emailFocusNode,
     required this.titleFocusNode,
     required this.summaryFocusNode,
     required this.isAiLoading,
@@ -468,7 +532,7 @@ class _BuilderFormContent extends StatelessWidget {
       case 0:
         return SectionForm(
           title: 'Personal Information',
-          subtitle: 'Add a resume title and a strong personal summary.',
+          subtitle: 'Add your contact details, resume title, and summary.',
           trailing: AppButton(
             text: 'AI Summary',
             expand: false,
@@ -488,6 +552,122 @@ class _BuilderFormContent extends StatelessWidget {
                 },
               ),
               const SizedBox(height: 24),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final isTwoColumn = constraints.maxWidth >= 560;
+
+                  final fields = <Widget>[
+                    AppTextField(
+                      controller: fullNameController,
+                      labelText: 'Full Name',
+                      hintText: 'e.g. John Mathew',
+                      focusNode: fullNameFocusNode,
+                      nextFocusNode: emailFocusNode,
+                      onChanged: formNotifier.updateContactFullName,
+                      autofillHints: const [AutofillHints.name],
+                    ),
+                    AppTextField(
+                      controller: emailController,
+                      labelText: 'Email',
+                      hintText: 'e.g. john@email.com',
+                      keyboardType: TextInputType.emailAddress,
+                      focusNode: emailFocusNode,
+                      onChanged: formNotifier.updateContactEmail,
+                      autofillHints: const [AutofillHints.email],
+                    ),
+                    AppTextField(
+                      controller: phoneController,
+                      labelText: 'Phone',
+                      hintText: 'e.g. +1 555 123 4567',
+                      keyboardType: TextInputType.phone,
+                      onChanged: formNotifier.updateContactPhone,
+                      autofillHints: const [AutofillHints.telephoneNumber],
+                    ),
+                    AppTextField(
+                      controller: locationController,
+                      labelText: 'Location',
+                      hintText: 'e.g. Dubai, UAE',
+                      onChanged: formNotifier.updateContactLocation,
+                      autofillHints: const [AutofillHints.addressCity],
+                    ),
+                    AppTextField(
+                      controller: websiteController,
+                      labelText: 'Website',
+                      hintText: 'e.g. https://yourdomain.com',
+                      keyboardType: TextInputType.url,
+                      onChanged: formNotifier.updateContactWebsite,
+                    ),
+                    AppTextField(
+                      controller: linkedinController,
+                      labelText: 'LinkedIn',
+                      hintText: 'e.g. https://linkedin.com/in/username',
+                      keyboardType: TextInputType.url,
+                      onChanged: formNotifier.updateContactLinkedin,
+                    ),
+                    AppTextField(
+                      controller: githubController,
+                      labelText: 'GitHub',
+                      hintText: 'e.g. https://github.com/username',
+                      keyboardType: TextInputType.url,
+                      onChanged: formNotifier.updateContactGithub,
+                    ),
+                    AppTextField(
+                      controller: dobController,
+                      labelText: 'Date of Birth',
+                      hintText: 'e.g. 1995-07-12',
+                      keyboardType: TextInputType.datetime,
+                      onChanged: formNotifier.updateContactDateOfBirth,
+                    ),
+                    AppTextField(
+                      controller: nationalityController,
+                      labelText: 'Nationality',
+                      hintText: 'e.g. Canadian',
+                      onChanged: formNotifier.updateContactNationality,
+                    ),
+                  ];
+
+                  if (!isTwoColumn) {
+                    return Column(
+                      children: [
+                        for (final field in fields) ...[
+                          field,
+                          const SizedBox(height: 12),
+                        ],
+                      ],
+                    );
+                  }
+
+                  final left = <Widget>[];
+                  final right = <Widget>[];
+                  for (int i = 0; i < fields.length; i++) {
+                    (i.isEven ? left : right).add(fields[i]);
+                    (i.isEven ? left : right).add(const SizedBox(height: 12));
+                  }
+
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: Column(children: left)),
+                      const SizedBox(width: 12),
+                      Expanded(child: Column(children: right)),
+                    ],
+                  );
+                },
+              ),
+              if (formState.validationErrors['contactEmail'] != null) ...[
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    formState.validationErrors['contactEmail']!,
+                    style: const TextStyle(
+                      color: AppColors.error,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 16),
               AppTextField(
                 controller: titleController,
                 labelText: 'Resume Title',

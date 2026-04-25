@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'contact_details_model.dart';
 import 'education_model.dart';
 import 'skill_model.dart';
 import 'work_experience_model.dart';
@@ -15,6 +16,8 @@ class ResumeModel with _$ResumeModel {
     required String title,
     required String personalSummary,
     String? photoUrl,
+    ContactDetailsModel? contactDetails,
+    @Default('classic') String template,
     @Default(<WorkExperienceModel>[]) List<WorkExperienceModel> workExperiences,
     @Default(<EducationModel>[]) List<EducationModel> educations,
     @Default(<SkillModel>[]) List<SkillModel> skills,

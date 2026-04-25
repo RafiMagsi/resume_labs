@@ -16,7 +16,7 @@ import '../../providers/resume/resume_form_provider.dart';
 import '../../providers/resume/resume_optimization_provider.dart';
 import '../../widgets/shared/credits_paywall.dart';
 import '../../widgets/shared/error_dialog.dart';
-import '../resume_builder/preview_screen.dart';
+import '../resume_detail/resume_detail_screen.dart';
 import 'widgets/resume_optimizer_input.dart';
 import 'widgets/resume_optimization_result.dart';
 import 'widgets/resume_file_upload.dart';
@@ -129,7 +129,8 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
                   originalResume: _resumeController.text,
                   optimizedResume: resumeState.value!,
                   onOptimizeAnother: _resetForm,
-                  onImportToResume: () => _handleImportToResume(resumeState.value!),
+                  onCreateResume: () =>
+                      _handleImportToResume(resumeState.value!),
                 )
               else
                 _buildInputTabs(),
@@ -234,8 +235,7 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
               borderSide: const BorderSide(color: AppColors.primary, width: 2),
             ),
             contentPadding: const EdgeInsets.all(12),
-            counterText:
-                '$currentLength/$maxLength', // Show character count
+            counterText: '$currentLength/$maxLength', // Show character count
           ),
           onChanged: (_) => setState(() {}),
         ),
@@ -365,7 +365,8 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
 
   Future<void> _handleImportToResume(String optimizedText) async {
     debugPrint('[ResumeOptimizer] Starting import to resume...');
-    debugPrint('[ResumeOptimizer] Optimized text length: ${optimizedText.length}');
+    debugPrint(
+        '[ResumeOptimizer] Optimized text length: ${optimizedText.length}');
 
     try {
       if (!context.mounted) {
@@ -382,7 +383,8 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
         if (context.mounted) {
           ErrorDialog.show(
             context,
-            failure: const AuthFailure('User not authenticated. Please sign in again.'),
+            failure: const AuthFailure(
+                'User not authenticated. Please sign in again.'),
             title: 'Auth Error',
           );
         }
@@ -391,26 +393,22 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
       debugPrint('[ResumeOptimizer] User ID: $userId');
 
       final notifier = ref.read(resumeFormProvider.notifier);
-      final currentState = ref.read(resumeFormProvider);
 
-      // Reset to create mode if no existing resume is loaded
-      // This ensures we create a NEW resume, not update an existing one
-      if (!currentState.isEditing) {
-        debugPrint('[ResumeOptimizer] Creating NEW resume record');
-        notifier.reset(userId: userId);
-      } else {
-        debugPrint('[ResumeOptimizer] Updating existing resume: ${currentState.resumeId}');
-      }
+      // AI Optimize import must ALWAYS create a brand new resume record.
+      // No linking to, or updating, any currently-loaded resume.
+      debugPrint('[ResumeOptimizer] Creating NEW resume record (AI Optimize)');
+      notifier.reset(userId: userId);
 
       // Parse JSON and update each section directly
       _parseJsonAndUpdateSections(optimizedText, notifier);
-      debugPrint('[ResumeOptimizer] ✓ All sections parsed and updated from JSON');
+      debugPrint(
+          '[ResumeOptimizer] ✓ All sections parsed and updated from JSON');
 
-      // Save to Firestore (will create new or update based on isEditing flag)
+      // Save to Firestore (AI Optimize import always creates a new resume)
       debugPrint('[ResumeOptimizer] Saving resume to Firestore...');
-      final saveSuccess = await notifier.save();
+      final saveSuccess = await notifier.saveAsNew();
 
-      if (!context.mounted) {
+      if (!mounted) {
         debugPrint('[ResumeOptimizer] ✗ Context not mounted after save');
         return;
       }
@@ -418,16 +416,16 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
       if (saveSuccess) {
         debugPrint('[ResumeOptimizer] ✓ Resume saved to Firestore');
 
-        // Navigate to preview/export screen
-        context.pushReplacement(PreviewScreen.routePath);
-        debugPrint('[ResumeOptimizer] ✓ Navigated to preview screen');
+        // Navigate to resume details screen
+        context.pushReplacement(ResumeDetailScreen.routePath);
+        debugPrint('[ResumeOptimizer] ✓ Navigated to resume details screen');
 
         // Show success message
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (context.mounted) {
+          if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Resume optimized and saved! 🎉'),
+                content: Text('Resume created from AI optimization.'),
                 duration: Duration(seconds: 3),
               ),
             );
@@ -436,12 +434,13 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
         });
       } else {
         debugPrint('[ResumeOptimizer] ✗ Failed to save resume');
-        if (context.mounted) {
+        if (mounted) {
           final formState = ref.read(resumeFormProvider);
           ErrorDialog.show(
             context,
             failure: ServerFailure(
-              formState.errorMessage ?? 'Failed to save resume. Please check all fields are filled.',
+              formState.errorMessage ??
+                  'Failed to save resume. Please check all fields are filled.',
             ),
             title: 'Save Failed',
           );
@@ -449,7 +448,7 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
       }
     } catch (e) {
       debugPrint('[ResumeOptimizer] ✗ Error: $e');
-      if (context.mounted) {
+      if (mounted) {
         ErrorDialog.show(
           context,
           failure: ServerFailure('Failed to import resume: $e'),
@@ -459,7 +458,9 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
     }
   }
 
-  void _parseAndUpdateSections(String optimizedText, ResumeFormNotifier notifier) {
+  // ignore: unused_element
+  void _parseAndUpdateSections(
+      String optimizedText, ResumeFormNotifier notifier) {
     debugPrint('[ResumeOptimizer] Parsing optimized text...');
 
     // Split text into sections
@@ -478,28 +479,34 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
     if (sections.containsKey('summary') && sections['summary']!.isNotEmpty) {
       final summary = sections['summary']!.trim();
       notifier.updatePersonalSummary(summary);
-      debugPrint('[ResumeOptimizer] ✓ Updated Summary (${summary.length} chars)');
+      debugPrint(
+          '[ResumeOptimizer] ✓ Updated Summary (${summary.length} chars)');
     } else {
       // Use entire text as summary if no summary section found
       final summary = optimizedText.trim();
       notifier.updatePersonalSummary(summary);
-      debugPrint('[ResumeOptimizer] ⚠ No summary section found, using entire text (${summary.length} chars)');
+      debugPrint(
+          '[ResumeOptimizer] ⚠ No summary section found, using entire text (${summary.length} chars)');
     }
 
     // Update work experience - REQUIRED (create defaults if missing)
-    if (sections.containsKey('experience') && sections['experience']!.isNotEmpty) {
+    if (sections.containsKey('experience') &&
+        sections['experience']!.isNotEmpty) {
       _createOrUpdateExperience(notifier, sections['experience']!);
     } else {
       _createDefaultWorkExperience(notifier);
-      debugPrint('[ResumeOptimizer] ⚠ No work experience found, created default entry');
+      debugPrint(
+          '[ResumeOptimizer] ⚠ No work experience found, created default entry');
     }
 
     // Update education - REQUIRED (create defaults if missing)
-    if (sections.containsKey('education') && sections['education']!.isNotEmpty) {
+    if (sections.containsKey('education') &&
+        sections['education']!.isNotEmpty) {
       _createOrUpdateEducation(notifier, sections['education']!);
     } else {
       _createDefaultEducation(notifier);
-      debugPrint('[ResumeOptimizer] ⚠ No education found, created default entry');
+      debugPrint(
+          '[ResumeOptimizer] ⚠ No education found, created default entry');
     }
 
     // Update skills - REQUIRED (create defaults if missing)
@@ -554,10 +561,13 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
     }
   }
 
-  String _extractOrGenerateTitle(Map<String, String> sections, String optimizedText) {
+  String _extractOrGenerateTitle(
+      Map<String, String> sections, String optimizedText) {
     // Try to extract title from first line
     final firstLine = optimizedText.split('\n').first.trim();
-    if (firstLine.isNotEmpty && firstLine.length > 5 && firstLine.length < 100) {
+    if (firstLine.isNotEmpty &&
+        firstLine.length > 5 &&
+        firstLine.length < 100) {
       return firstLine;
     }
     // Generate default title
@@ -588,8 +598,8 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
           lower == 'work experience:' ||
           lower == 'professional experience:';
 
-      final isEducationHeader = lower.startsWith('education') ||
-          lower == 'education:';
+      final isEducationHeader =
+          lower.startsWith('education') || lower == 'education:';
 
       final isSkillsHeader = lower.startsWith('skill') ||
           lower.startsWith('competenc') ||
@@ -633,7 +643,8 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
     return sections;
   }
 
-  void _createOrUpdateExperience(ResumeFormNotifier notifier, String experienceText) {
+  void _createOrUpdateExperience(
+      ResumeFormNotifier notifier, String experienceText) {
     final currentExperiences = ref.read(resumeFormProvider).workExperiences;
 
     // Split experience text by job entries (separated by blank lines)
@@ -663,10 +674,13 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
         // Update existing
         final updated = currentExperiences[i].copyWith(bulletPoints: bullets);
         notifier.updateWorkExperience(i, updated);
-        debugPrint('[ResumeOptimizer] ✓ Updated Work Experience #${i + 1} (${bullets.length} bullets)');
+        debugPrint(
+            '[ResumeOptimizer] ✓ Updated Work Experience #${i + 1} (${bullets.length} bullets)');
       } else {
         // Create new - use first bullet as role, others as description
-        final role = bullets.isNotEmpty ? bullets[0].substring(0, math.min(50, bullets[0].length)) : 'Position';
+        final role = bullets.isNotEmpty
+            ? bullets[0].substring(0, math.min(50, bullets[0].length))
+            : 'Position';
         final experience = WorkExperience(
           company: 'Company',
           role: role,
@@ -677,12 +691,14 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
           isCurrentRole: true,
         );
         notifier.addWorkExperience(experience);
-        debugPrint('[ResumeOptimizer] ✓ Created Work Experience #${i + 1} (${bullets.length} bullets)');
+        debugPrint(
+            '[ResumeOptimizer] ✓ Created Work Experience #${i + 1} (${bullets.length} bullets)');
       }
     }
   }
 
-  void _createOrUpdateEducation(ResumeFormNotifier notifier, String educationText) {
+  void _createOrUpdateEducation(
+      ResumeFormNotifier notifier, String educationText) {
     final currentEducations = ref.read(resumeFormProvider).educations;
 
     final entries = educationText
@@ -765,7 +781,8 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
     debugPrint('[ResumeOptimizer] ✓ Processed ${skillNames.length} skills');
   }
 
-  void _parseJsonAndUpdateSections(String jsonString, ResumeFormNotifier notifier) {
+  void _parseJsonAndUpdateSections(
+      String jsonString, ResumeFormNotifier notifier) {
     debugPrint('[ResumeOptimizer] Parsing JSON response...');
 
     try {
@@ -798,7 +815,8 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
           );
           notifier.addWorkExperience(experience);
         }
-        debugPrint('[ResumeOptimizer] ✓ Added ${experienceList.length} work experiences');
+        debugPrint(
+            '[ResumeOptimizer] ✓ Added ${experienceList.length} work experiences');
       }
 
       // Extract educations
@@ -826,7 +844,8 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
           );
           notifier.addEducation(education);
         }
-        debugPrint('[ResumeOptimizer] ✓ Added ${educationList.length} educations');
+        debugPrint(
+            '[ResumeOptimizer] ✓ Added ${educationList.length} educations');
       }
 
       // Extract skills
@@ -865,8 +884,6 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
     _resumeController.clear();
     _optimizationPrompt.clear();
     _tabController.animateTo(0);
-    ref
-        .read(resumeOptimizationNotifierProvider.notifier)
-        .optimizeResume('');
+    ref.read(resumeOptimizationNotifierProvider.notifier).optimizeResume('');
   }
 }

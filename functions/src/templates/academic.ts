@@ -27,7 +27,7 @@ export async function generateAcademicTemplate(resumeData: ResumeData): Promise<
   renderSingleColumnHeader(doc, resumeData, imageBuffer, {
     accentColor: ACCENT,
     nameColor: "#111111",
-    subtitle: "Academic CV",
+    subtitle: "",
     subtitleColor: MUTED,
     dividerColor: DIVIDER,
     topAccentBar: false,
@@ -123,4 +123,3 @@ export async function generateAcademicTemplate(resumeData: ResumeData): Promise<
   doc.end();
   return createPdfBuffer(doc);
 }
-

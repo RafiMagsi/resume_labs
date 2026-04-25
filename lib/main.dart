@@ -52,7 +52,8 @@ Future<void> main() async {
   if (kDebugMode) {
     debugPrint('OPENAI_API_KEY loaded: ${openAiApiKey != null}');
     debugPrint('FIREBASE_PROJECT_ID loaded: $firebaseProjectId');
-    debugPrint('FIREBASE_PDF_FUNCTION_URL loaded: ${firebasePdfFunctionUrl != null}');
+    debugPrint(
+        'FIREBASE_PDF_FUNCTION_URL loaded: ${firebasePdfFunctionUrl != null}');
     debugPrint('Firebase initialized successfully');
   }
 

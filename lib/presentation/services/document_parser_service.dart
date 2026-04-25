@@ -53,7 +53,8 @@ class DocumentParserService {
       final PdfTextExtractor extractor = PdfTextExtractor(document);
 
       for (int i = 1; i <= document.pages.count; i++) {
-        final text = extractor.extractText(startPageIndex: i - 1, endPageIndex: i - 1);
+        final text =
+            extractor.extractText(startPageIndex: i - 1, endPageIndex: i - 1);
         buffer.writeln(text);
       }
 

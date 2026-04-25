@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../domain/entities/contact_details.dart';
 import '../../../domain/entities/education.dart';
 import '../../../domain/entities/skill.dart';
 import '../../../domain/entities/work_experience.dart';
@@ -10,6 +11,7 @@ import 'resume_paper.dart';
 
 class ResumePreview extends StatelessWidget {
   final String? photoUrl;
+  final ContactDetails contactDetails;
   final String title;
   final String personalSummary;
   final List<WorkExperience> workExperiences;
@@ -19,6 +21,7 @@ class ResumePreview extends StatelessWidget {
   const ResumePreview({
     super.key,
     required this.photoUrl,
+    required this.contactDetails,
     required this.title,
     required this.personalSummary,
     required this.workExperiences,
@@ -29,6 +32,44 @@ class ResumePreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pagePadding = MediaQuery.sizeOf(context).width < 380 ? 18.0 : 24.0;
+    final fullName = (contactDetails.fullName ?? '').trim();
+    final trimmedTitle = title.trim();
+    final headerTitle = fullName.isNotEmpty
+        ? fullName
+        : (trimmedTitle.isEmpty ? 'Untitled Resume' : trimmedTitle);
+    final headerSubtitle = fullName.isNotEmpty
+        ? (trimmedTitle.isEmpty ? null : trimmedTitle)
+        : null;
+
+    final contactItems = <_PreviewContactItemData>[
+      if ((contactDetails.email ?? '').trim().isNotEmpty)
+        _PreviewContactItemData(
+            Icons.email_outlined, contactDetails.email!.trim()),
+      if ((contactDetails.phone ?? '').trim().isNotEmpty)
+        _PreviewContactItemData(
+            Icons.phone_outlined, contactDetails.phone!.trim()),
+      if ((contactDetails.location ?? '').trim().isNotEmpty)
+        _PreviewContactItemData(
+          Icons.location_on_outlined,
+          contactDetails.location!.trim(),
+        ),
+      if ((contactDetails.website ?? '').trim().isNotEmpty)
+        _PreviewContactItemData(
+          Icons.language_outlined,
+          contactDetails.website!.trim(),
+        ),
+      if ((contactDetails.linkedin ?? '').trim().isNotEmpty)
+        _PreviewContactItemData(
+          Icons.work_outline_rounded,
+          contactDetails.linkedin!.trim(),
+        ),
+      if ((contactDetails.github ?? '').trim().isNotEmpty)
+        _PreviewContactItemData(
+          Icons.code_rounded,
+          contactDetails.github!.trim(),
+        ),
+    ];
+
     return ResumePaper(
       maxWidth: 900,
       padding: EdgeInsets.all(pagePadding),
@@ -43,16 +84,34 @@ class ResumePreview extends StatelessWidget {
                 _PreviewAvatar(photoUrl: photoUrl),
                 const SizedBox(width: 14),
                 Expanded(
-                  child: Text(
-                    title.trim().isEmpty ? 'Untitled Resume' : title.trim(),
-                    style: const TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
-                      height: 1.1,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        headerTitle,
+                        style: const TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                          height: 1.1,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (headerSubtitle != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          headerSubtitle,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textSecondary,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ],
@@ -62,6 +121,16 @@ class ResumePreview extends StatelessWidget {
               height: 1,
               color: AppColors.divider,
             ),
+            if (contactItems.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 10,
+                runSpacing: 8,
+                children: contactItems
+                    .map((item) => _PreviewContactItem(data: item))
+                    .toList(),
+              ),
+            ],
             const SizedBox(height: 16),
             _PreviewSection(
               title: 'Professional Summary',
@@ -151,6 +220,55 @@ class ResumePreview extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _PreviewContactItemData {
+  final IconData icon;
+  final String text;
+
+  const _PreviewContactItemData(this.icon, this.text);
+}
+
+class _PreviewContactItem extends StatelessWidget {
+  final _PreviewContactItemData data;
+
+  const _PreviewContactItem({required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.secondarySurface,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            data.icon,
+            size: 16,
+            color: AppColors.textTertiary,
+          ),
+          const SizedBox(width: 6),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 220),
+            child: Text(
+              data.text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

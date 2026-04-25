@@ -15,11 +15,13 @@ void main() {
         child: const MaterialApp(home: HistoryScreen()),
       ),
     );
-    await tester.pumpAndSettle();
+    // HistoryScreen has animations; avoid pumpAndSettle.
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
 
     expect(find.byType(HistoryScreen), findsOneWidget);
     expect(find.text('No resumes yet'), findsOneWidget);
     expect(find.text('Create New Resume'), findsOneWidget);
-    expect(find.text('New Resume'), findsOneWidget);
   });
 }

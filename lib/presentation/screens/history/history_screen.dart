@@ -221,8 +221,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
             child: SlideTransition(
               position: _slideAnimation,
               child: AnimatedAIButton(
-                onPressed: () =>
-                    context.push(ResumeOptimizerScreen.routePath),
+                onPressed: () => context.push(ResumeOptimizerScreen.routePath),
               ),
             ),
           ),
@@ -376,7 +375,8 @@ class _HistoryListState extends State<_HistoryList> {
           ),
           child: ResumeCard(
             resume: resume,
-            onEdit: () => widget.onTapResume(resume),
+            onOpen: () => widget.onTapResume(resume),
+            onEditSteps: () => widget.onEditResume(resume),
             onExport: () => widget.onExportResume(resume),
             onDelete: () => widget.onDeleteResume(resume),
           ),

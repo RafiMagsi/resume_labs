@@ -7,18 +7,19 @@ class ResumeOptimizationResult extends StatefulWidget {
   final String originalResume;
   final String optimizedResume;
   final VoidCallback onOptimizeAnother;
-  final VoidCallback onImportToResume;
+  final VoidCallback onCreateResume;
 
   const ResumeOptimizationResult({
     super.key,
     required this.originalResume,
     required this.optimizedResume,
     required this.onOptimizeAnother,
-    required this.onImportToResume,
+    required this.onCreateResume,
   });
 
   @override
-  State<ResumeOptimizationResult> createState() => _ResumeOptimizationResultState();
+  State<ResumeOptimizationResult> createState() =>
+      _ResumeOptimizationResultState();
 }
 
 class _ResumeOptimizationResultState extends State<ResumeOptimizationResult>
@@ -92,7 +93,7 @@ class _ResumeOptimizationResultState extends State<ResumeOptimizationResult>
           width: double.infinity,
           height: 48,
           child: ElevatedButton(
-            onPressed: widget.onImportToResume,
+            onPressed: widget.onCreateResume,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               shape: RoundedRectangleBorder(
@@ -100,7 +101,7 @@ class _ResumeOptimizationResultState extends State<ResumeOptimizationResult>
               ),
             ),
             child: const Text(
-              AppStrings.importToResume,
+              AppStrings.createResume,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,

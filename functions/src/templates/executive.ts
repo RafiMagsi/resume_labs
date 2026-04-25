@@ -6,7 +6,7 @@ export async function generateExecutiveTemplate(resumeData: ResumeData): Promise
     header: {
       accentColor: "#1E3A8A",
       nameColor: "#111111",
-      subtitle: "Executive Resume",
+      subtitle: "",
       subtitleColor: "#6B7280",
       dividerColor: "#E2E8F0",
       topAccentBar: true,

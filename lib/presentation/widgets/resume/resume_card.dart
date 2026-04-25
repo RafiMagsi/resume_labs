@@ -8,14 +8,16 @@ import '../../../domain/entities/resume_template.dart';
 
 class ResumeCard extends StatelessWidget {
   final Resume resume;
-  final VoidCallback onEdit;
+  final VoidCallback onOpen;
+  final VoidCallback onEditSteps;
   final VoidCallback onDelete;
   final VoidCallback onExport;
 
   const ResumeCard({
     super.key,
     required this.resume,
-    required this.onEdit,
+    required this.onOpen,
+    required this.onEditSteps,
     required this.onDelete,
     required this.onExport,
   });
@@ -29,7 +31,7 @@ class ResumeCard extends StatelessWidget {
         side: const BorderSide(color: AppColors.border, width: 1),
       ),
       child: InkWell(
-        onTap: onEdit,
+        onTap: onOpen,
         borderRadius: BorderRadius.circular(AppSizes.cardRadius),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -102,7 +104,7 @@ class ResumeCard extends StatelessWidget {
                         const SizedBox(height: 8),
                         Row(
                           children: [
-                            _TemplateTag(template: ResumeTemplate.values.first),
+                            _TemplateTag(template: resume.template),
                             const SizedBox(width: 8),
                             Text(
                               'Updated ${_formatDate(resume.updatedAt)}',
@@ -119,6 +121,8 @@ class ResumeCard extends StatelessWidget {
                   PopupMenuButton<String>(
                     onSelected: (value) {
                       switch (value) {
+                        case 'edit':
+                          onEditSteps();
                         case 'export':
                           onExport();
                         case 'delete':
@@ -126,6 +130,16 @@ class ResumeCard extends StatelessWidget {
                       }
                     },
                     itemBuilder: (BuildContext context) => [
+                      const PopupMenuItem(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            Icon(Icons.edit_outlined, size: 18),
+                            SizedBox(width: 8),
+                            Text('Edit'),
+                          ],
+                        ),
+                      ),
                       const PopupMenuItem(
                         value: 'export',
                         child: Row(
