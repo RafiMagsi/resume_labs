@@ -5,26 +5,37 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 import '../../../core/errors/app_exception.dart';
+import 'system_settings_datasource.dart';
 import 'openai_datasource.dart';
 
 class OpenAiDataSourceImpl implements OpenAiDataSource {
   final http.Client client;
+  final SystemSettingsDatasource systemSettings;
 
-  const OpenAiDataSourceImpl(this.client);
+  const OpenAiDataSourceImpl(
+    this.client, {
+    required this.systemSettings,
+  });
 
   static const String _endpoint = 'https://api.openai.com/v1/responses';
   static const String _model = 'gpt-4o';
   static const int _maxOutputTokens = 1500;
 
-  String get _apiKey {
-    final key = dotenv.env['OPENAI_API_KEY'];
-    if (key == null || key.trim().isEmpty) {
+  Future<String> _getApiKey() async {
+    final envKey = dotenv.env['OPENAI_API_KEY'];
+    if (envKey != null && envKey.trim().isNotEmpty) {
+      return envKey.trim();
+    }
+
+    final remoteKey = await systemSettings.getOpenAiApiKey();
+    if (remoteKey == null || remoteKey.trim().isEmpty) {
       throw const ValidationException(
         'OpenAI API key is missing.',
         code: 'openai-api-key-missing',
       );
     }
-    return key;
+
+    return remoteKey.trim();
   }
 
   @override
@@ -158,12 +169,13 @@ Rules:
     required String prompt,
     required double temperature,
   }) async {
+    final apiKey = await _getApiKey();
     final response = await client
         .post(
           Uri.parse(_endpoint),
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer $_apiKey',
+            'Authorization': 'Bearer $apiKey',
           },
           body: jsonEncode({
             'model': _model,

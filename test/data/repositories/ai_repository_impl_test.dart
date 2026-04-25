@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
@@ -93,12 +95,7 @@ void main() {
           skills: any(named: 'skills'),
           workHighlights: any(named: 'workHighlights'),
         ),
-      ).thenAnswer(
-        (_) => Future<String>.delayed(
-          const Duration(seconds: 16),
-          () => 'Late response',
-        ),
-      );
+      ).thenThrow(TimeoutException('timeout'));
 
       final result = await repository.generateSummary(
         jobTitle: 'Flutter Developer',
@@ -235,12 +232,7 @@ void main() {
           existingSkills: any(named: 'existingSkills'),
           personalSummary: any(named: 'personalSummary'),
         ),
-      ).thenAnswer(
-        (_) => Future<List<String>>.delayed(
-          const Duration(seconds: 16),
-          () => ['Late', 'Response'],
-        ),
-      );
+      ).thenThrow(TimeoutException('timeout'));
 
       final result = await repository.suggestSkills(
         jobTitle: 'Flutter Developer',

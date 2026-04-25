@@ -30,28 +30,21 @@ Future<void> main() async {
   }
   registerHiveAdapters();
 
-  await dotenv.load(fileName: '.env');
-  final openAiApiKey = dotenv.env['OPENAI_API_KEY'];
-  final firebaseProjectId = dotenv.env['FIREBASE_PROJECT_ID'];
+  try {
+    await dotenv.load(fileName: '.env');
+  } catch (_) {
+    // `.env` is optional in release builds. Sensitive keys should not be
+    // bundled inside the app. If present, it can still provide development
+    // configuration like FIREBASE_PDF_FUNCTION_URL.
+  }
+
   final firebasePdfFunctionUrl = dotenv.env['FIREBASE_PDF_FUNCTION_URL'];
-
-  assert(
-    openAiApiKey != null && openAiApiKey.isNotEmpty,
-    'OPENAI_API_KEY is missing in .env',
-  );
-
-  assert(
-    firebaseProjectId != null && firebaseProjectId.isNotEmpty,
-    'FIREBASE_PROJECT_ID is missing in .env',
-  );
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
   if (kDebugMode) {
-    debugPrint('OPENAI_API_KEY loaded: ${openAiApiKey != null}');
-    debugPrint('FIREBASE_PROJECT_ID loaded: $firebaseProjectId');
     debugPrint(
         'FIREBASE_PDF_FUNCTION_URL loaded: ${firebasePdfFunctionUrl != null}');
     debugPrint('Firebase initialized successfully');

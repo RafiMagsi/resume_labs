@@ -4,23 +4,30 @@ import 'package:http/http.dart' as http;
 import 'package:mocktail/mocktail.dart';
 import 'package:resume_labs/core/errors/app_exception.dart';
 import 'package:resume_labs/data/datasources/remote/openai_datasource_impl.dart';
+import 'package:resume_labs/data/datasources/remote/system_settings_datasource.dart';
 
 class _MockHttpClient extends Mock implements http.Client {}
+class _MockSystemSettings extends Mock implements SystemSettingsDatasource {}
 
 void main() {
   setUpAll(() {
     registerFallbackValue(Uri.parse('https://example.com'));
   });
 
+  late SystemSettingsDatasource systemSettings;
+
   setUp(() {
     dotenv.testLoad(fileInput: 'OPENAI_API_KEY=test-key');
+    systemSettings = _MockSystemSettings();
+    when(() => systemSettings.getOpenAiApiKey()).thenAnswer((_) async => null);
   });
 
   group('OpenAiDataSourceImpl', () {
     test('throws ValidationException when OPENAI_API_KEY is missing', () async {
       dotenv.testLoad(fileInput: '');
       final client = _MockHttpClient();
-      final dataSource = OpenAiDataSourceImpl(client);
+      final dataSource =
+          OpenAiDataSourceImpl(client, systemSettings: systemSettings);
 
       expect(
         () => dataSource.generateSummary(
@@ -44,7 +51,8 @@ void main() {
         (_) async => http.Response('{"output_text":"  Hello  "}', 200),
       );
 
-      final dataSource = OpenAiDataSourceImpl(client);
+      final dataSource =
+          OpenAiDataSourceImpl(client, systemSettings: systemSettings);
       final result = await dataSource.generateSummary(
         jobTitle: 'Developer',
         skills: const ['Dart'],
@@ -69,7 +77,8 @@ void main() {
         ),
       );
 
-      final dataSource = OpenAiDataSourceImpl(client);
+      final dataSource =
+          OpenAiDataSourceImpl(client, systemSettings: systemSettings);
       final result = await dataSource.improveBullet(
         bullet: 'Built app',
         jobTitle: 'Flutter Dev',
@@ -91,7 +100,8 @@ void main() {
             http.Response('{"output_text":"{\\"skills\\":[\\"Dart\\"]}"}', 200),
       );
 
-      final dataSource = OpenAiDataSourceImpl(client);
+      final dataSource =
+          OpenAiDataSourceImpl(client, systemSettings: systemSettings);
       final result = await dataSource.suggestSkills(
         jobTitle: 'Developer',
         existingSkills: const ['Flutter'],
@@ -113,7 +123,8 @@ void main() {
         (_) async => http.Response('{"output_text":"not json"}', 200),
       );
 
-      final dataSource = OpenAiDataSourceImpl(client);
+      final dataSource =
+          OpenAiDataSourceImpl(client, systemSettings: systemSettings);
 
       expect(
         () => dataSource.suggestSkills(
@@ -143,7 +154,8 @@ void main() {
         (_) async => http.Response('{"error":{"message":"Bad key"}}', 401),
       );
 
-      final dataSource = OpenAiDataSourceImpl(client);
+      final dataSource =
+          OpenAiDataSourceImpl(client, systemSettings: systemSettings);
 
       expect(
         () => dataSource.generateSummary(
@@ -171,7 +183,8 @@ void main() {
         (_) async => http.Response('{"error":{"message":"Too many"}}', 429),
       );
 
-      final dataSource = OpenAiDataSourceImpl(client);
+      final dataSource =
+          OpenAiDataSourceImpl(client, systemSettings: systemSettings);
 
       expect(
         () => dataSource.improveBullet(bullet: 'x'),

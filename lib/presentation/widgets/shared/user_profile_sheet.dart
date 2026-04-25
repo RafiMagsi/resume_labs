@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_strings.dart';
 import '../../../injection/injection_container.dart';
 import '../../providers/auth/auth_provider.dart';
 import '../../providers/resume/resume_form_provider.dart';
 import '../../providers/resume/resume_optimization_provider.dart';
 import '../../screens/resume_optimizer/resume_optimizer_screen.dart';
+import 'app_loader.dart';
 
 class UserProfileSheet extends ConsumerWidget {
   const UserProfileSheet({super.key});
@@ -48,6 +50,8 @@ class UserProfileSheet extends ConsumerWidget {
             _buildMenuItems(context, ref),
             const SizedBox(height: 24),
             _buildSignOutButton(context, ref),
+            const SizedBox(height: 12),
+            _buildDeleteAccountButton(context, ref),
           ],
         ),
       ),
@@ -218,6 +222,89 @@ class UserProfileSheet extends ConsumerWidget {
         ),
         child: const Text(
           'Sign Out',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: AppColors.error,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDeleteAccountButton(BuildContext context, WidgetRef ref) {
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: OutlinedButton(
+        onPressed: () async {
+          final confirm = await showDialog<bool>(
+            context: context,
+            builder: (dialogContext) {
+              return AlertDialog(
+                title: const Text('Delete Account'),
+                content: const Text(
+                  'This permanently deletes your account and all resumes. This action cannot be undone.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(false),
+                    child: const Text(AppStrings.cancel),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(true),
+                    child: const Text(
+                      'Delete',
+                      style: TextStyle(color: AppColors.error),
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+
+          if (confirm != true || !context.mounted) return;
+
+          // Close the bottom sheet first.
+          Navigator.of(context).pop();
+
+          // Show a blocking loader while deleting.
+          showDialog<void>(
+            context: context,
+            barrierDismissible: false,
+            builder: (_) => const Center(
+              child: AppLoader(size: 36),
+            ),
+          );
+
+          final deleteAccountUseCase = ref.read(deleteAccountUseCaseProvider);
+          final result = await deleteAccountUseCase();
+
+          if (!context.mounted) return;
+          Navigator.of(context, rootNavigator: true).pop(); // loader
+
+          result.fold(
+            (failure) => ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(failure.message),
+                backgroundColor: AppColors.error,
+              ),
+            ),
+            (_) => ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Account deleted successfully.'),
+              ),
+            ),
+          );
+        },
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: AppColors.error),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: const Text(
+          'Delete Account',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,

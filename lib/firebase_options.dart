@@ -60,13 +60,13 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBEOdfwJMmJnCNKhcmkPHc9cb1oFLKCnHM',
-    appId: '1:346453081708:ios:9c01d5df7d266395ab2249',
+    appId: '1:346453081708:ios:5a74459d8e3ed58bab2249',
     messagingSenderId: '346453081708',
     projectId: 'resume-labs-cdc63',
     storageBucket: 'resume-labs-cdc63.firebasestorage.app',
     iosClientId:
-        '346453081708-42sjllvvup56b3roq5eka0gn4dd62ra8.apps.googleusercontent.com',
-    iosBundleId: 'com.nextfiction.resumelabs.ai.RunnerTests',
+        '346453081708-qtqa84doegaii0rd4e5vjhqg0of1gdk2.apps.googleusercontent.com',
+    iosBundleId: 'com.nextfiction.resumelabs.ai',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(

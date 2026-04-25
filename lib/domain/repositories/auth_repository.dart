@@ -16,6 +16,8 @@ abstract interface class AuthRepository {
 
   Future<Either<Failure, void>> signOut();
 
+  Future<Either<Failure, void>> deleteAccount();
+
   Future<Either<Failure, void>> resetPassword({
     required String email,
   });

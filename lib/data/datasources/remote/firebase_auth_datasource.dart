@@ -13,6 +13,8 @@ abstract interface class FirebaseAuthDataSource {
 
   Future<void> signOut();
 
+  Future<void> deleteAccount();
+
   Future<void> resetPassword({
     required String email,
   });

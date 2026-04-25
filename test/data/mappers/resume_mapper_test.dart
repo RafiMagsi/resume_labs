@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:resume_labs/data/mappers/resume_mapper.dart';
+import 'package:resume_labs/data/models/contact_details_model.dart';
 import 'package:resume_labs/data/models/education_model.dart';
 import 'package:resume_labs/data/models/resume_model.dart';
 import 'package:resume_labs/data/models/skill_model.dart';
@@ -159,6 +160,7 @@ void main() {
               category: 'Mobile',
             ),
           ],
+          contactDetails: const ContactDetailsModel(),
           createdAt: DateTime(2024, 3, 1),
           updatedAt: DateTime(2024, 4, 1),
         ),

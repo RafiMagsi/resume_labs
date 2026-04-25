@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
+import '../../core/config/platform_config.dart';
 import '../../core/errors/failure.dart';
 
 /// Service for generating PDFs via Firebase Cloud Function.
@@ -27,10 +28,13 @@ class FirebasePdfService {
     required String template,
     Duration timeout = const Duration(seconds: 60),
   }) async {
-    final url = _cloudFunctionUrl;
+    final configuredUrl = _cloudFunctionUrl;
+    final url = (configuredUrl == null || configuredUrl.trim().isEmpty)
+        ? await PlatformConfig.getFirebasePdfFunctionUrl()
+        : configuredUrl;
     if (url == null || url.isEmpty) {
       throw ServerFailure('Firebase PDF Cloud Function URL not configured. '
-          'Set FIREBASE_PDF_FUNCTION_URL environment variable.');
+          'Configure it in Info.plist/strings.xml or pass FIREBASE_PDF_FUNCTION_URL for dev.');
     }
 
     try {

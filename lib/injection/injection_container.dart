@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 import 'package:resume_labs/data/repositories/pdf_repository_impl.dart';
@@ -24,6 +25,7 @@ import '../data/repositories/resume_repository_impl.dart';
 import '../domain/repositories/auth_repository.dart';
 import '../domain/repositories/resume_repository.dart';
 import '../domain/usecases/auth/get_current_user_usecase.dart';
+import '../domain/usecases/auth/delete_account_usecase.dart';
 import '../domain/usecases/auth/reset_password_usecase.dart';
 import '../domain/usecases/auth/sign_in_usecase.dart';
 import '../domain/usecases/auth/sign_out_usecase.dart';
@@ -39,6 +41,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import '../data/datasources/remote/openai_datasource.dart';
 import '../data/datasources/remote/openai_datasource_impl.dart';
+import '../data/datasources/remote/system_settings_datasource.dart';
 import '../data/repositories/ai_repository_impl.dart';
 import '../domain/repositories/ai_repository.dart';
 import '../domain/usecases/ai/generate_summary_usecase.dart';
@@ -46,6 +49,7 @@ import '../domain/usecases/ai/improve_bullet_usecase.dart';
 import '../domain/usecases/ai/suggest_skills_usecase.dart';
 import '../data/datasources/remote/firestore_user_datasource.dart';
 import '../data/datasources/remote/cv_optimization_datasource.dart';
+import '../data/datasources/remote/account_cleanup_datasource.dart';
 import '../data/repositories/purchase_repository_impl.dart';
 import '../data/repositories/cv_optimization_repository_impl.dart';
 import '../domain/repositories/purchase_repository.dart';
@@ -62,6 +66,10 @@ final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
 
 final firebaseFirestoreProvider = Provider<FirebaseFirestore>((ref) {
   return FirebaseFirestore.instance;
+});
+
+final firebaseStorageProvider = Provider<FirebaseStorage>((ref) {
+  return FirebaseStorage.instance;
 });
 
 final hiveProvider = Provider<HiveInterface>((ref) {
@@ -87,9 +95,11 @@ final resumeLocalDataSourceProvider = Provider<ResumeLocalDataSource>((ref) {
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final dataSource = ref.watch(firebaseAuthDataSourceProvider);
   final userDatasource = ref.watch(firestoreUserDataSourceProvider);
+  final cleanupDatasource = ref.watch(accountCleanupDataSourceProvider);
   return AuthRepositoryImpl(
     dataSource,
     userDatasource: userDatasource,
+    accountCleanupDatasource: cleanupDatasource,
   );
 });
 
@@ -116,6 +126,11 @@ final signInUseCaseProvider = Provider<SignInUseCase>((ref) {
 final signOutUseCaseProvider = Provider<SignOutUseCase>((ref) {
   final repository = ref.watch(authRepositoryProvider);
   return SignOutUseCase(repository);
+});
+
+final deleteAccountUseCaseProvider = Provider<DeleteAccountUseCase>((ref) {
+  final repository = ref.watch(authRepositoryProvider);
+  return DeleteAccountUseCase(repository);
 });
 
 final getCurrentUserUseCaseProvider = Provider<GetCurrentUserUseCase>((ref) {
@@ -157,9 +172,20 @@ final httpClientProvider = Provider<http.Client>((ref) {
   return http.Client();
 });
 
+final systemSettingsDataSourceProvider = Provider<SystemSettingsDatasource>(
+  (ref) {
+    final firestore = ref.watch(firebaseFirestoreProvider);
+    return FirestoreSystemSettingsDatasource(firestore);
+  },
+);
+
 final openAiDataSourceProvider = Provider<OpenAiDataSource>((ref) {
   final client = ref.watch(httpClientProvider);
-  return OpenAiDataSourceImpl(client);
+  final systemSettings = ref.watch(systemSettingsDataSourceProvider);
+  return OpenAiDataSourceImpl(
+    client,
+    systemSettings: systemSettings,
+  );
 });
 
 final aiRepositoryProvider = Provider<AiRepository>((ref) {
@@ -226,6 +252,16 @@ final firestoreUserDataSourceProvider =
   return FirestoreUserDatasourceImpl();
 });
 
+final accountCleanupDataSourceProvider =
+    Provider<AccountCleanupDatasource>((ref) {
+  final firestore = ref.watch(firebaseFirestoreProvider);
+  final storage = ref.watch(firebaseStorageProvider);
+  return AccountCleanupDatasourceImpl(
+    firestore: firestore,
+    storage: storage,
+  );
+});
+
 final purchaseRepositoryProvider = Provider<PurchaseRepository>((ref) {
   final userDatasource = ref.watch(firestoreUserDataSourceProvider);
   return PurchaseRepositoryImpl(userDatasource: userDatasource);
@@ -255,7 +291,11 @@ final restorePurchasesUseCaseProvider =
 final cvOptimizationDataSourceProvider =
     Provider<CvOptimizationDatasource>((ref) {
   final client = ref.watch(httpClientProvider);
-  return CvOptimizationDatasourceImpl(client);
+  final systemSettings = ref.watch(systemSettingsDataSourceProvider);
+  return CvOptimizationDatasourceImpl(
+    client,
+    systemSettings: systemSettings,
+  );
 });
 
 final cvOptimizationRepositoryProvider =

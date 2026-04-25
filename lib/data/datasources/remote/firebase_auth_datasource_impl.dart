@@ -91,6 +91,35 @@ class FirebaseAuthDataSourceImpl implements FirebaseAuthDataSource {
   }
 
   @override
+  Future<void> deleteAccount() async {
+    try {
+      final user = firebaseAuth.currentUser;
+      if (user == null) {
+        throw const AuthException(
+          'No signed-in user found.',
+          code: 'no-current-user',
+        );
+      }
+
+      await user.delete();
+    } on FirebaseAuthException catch (e) {
+      // Special-case common delete-account errors for better UX.
+      if (e.code == 'requires-recent-login') {
+        throw const AuthException(
+          'For security, please sign in again and try deleting your account.',
+          code: 'requires-recent-login',
+        );
+      }
+      throw _mapFirebaseAuthException(e);
+    } catch (_) {
+      throw const AuthException(
+        'Failed to delete account.',
+        code: 'unknown-delete-account-error',
+      );
+    }
+  }
+
+  @override
   Future<void> resetPassword({
     required String email,
   }) async {

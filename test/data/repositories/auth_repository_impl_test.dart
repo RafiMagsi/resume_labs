@@ -3,6 +3,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:resume_labs/core/errors/app_exception.dart';
 import 'package:resume_labs/core/errors/failure.dart';
+import 'package:resume_labs/data/datasources/remote/account_cleanup_datasource.dart';
 import 'package:resume_labs/data/datasources/remote/firebase_auth_datasource.dart';
 import 'package:resume_labs/data/datasources/remote/firestore_user_datasource.dart';
 import 'package:resume_labs/data/models/user_profile_model.dart';
@@ -14,9 +15,12 @@ class MockFirebaseAuthDataSource extends Mock
 class MockFirestoreUserDatasource extends Mock
     implements FirestoreUserDatasource {}
 
+class MockAccountCleanupDatasource extends Mock implements AccountCleanupDatasource {}
+
 void main() {
   late FirebaseAuthDataSource dataSource;
   late FirestoreUserDatasource userDatasource;
+  late AccountCleanupDatasource accountCleanupDatasource;
   late AuthRepositoryImpl repository;
 
   const testEmail = 'test@example.com';
@@ -31,9 +35,11 @@ void main() {
   setUp(() {
     dataSource = MockFirebaseAuthDataSource();
     userDatasource = MockFirestoreUserDatasource();
+    accountCleanupDatasource = MockAccountCleanupDatasource();
     repository = AuthRepositoryImpl(
       dataSource,
       userDatasource: userDatasource,
+      accountCleanupDatasource: accountCleanupDatasource,
     );
   });
 

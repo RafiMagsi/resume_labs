@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 import '../../../core/errors/app_exception.dart';
+import 'system_settings_datasource.dart';
 
 abstract interface class CvOptimizationDatasource {
   Future<String> optimizeCv(String cvText);
@@ -11,16 +12,31 @@ abstract interface class CvOptimizationDatasource {
 
 class CvOptimizationDatasourceImpl implements CvOptimizationDatasource {
   final http.Client _client;
+  final SystemSettingsDatasource _systemSettings;
 
-  CvOptimizationDatasourceImpl(this._client);
+  CvOptimizationDatasourceImpl(
+    this._client, {
+    required SystemSettingsDatasource systemSettings,
+  }) : _systemSettings = systemSettings;
+
+  Future<String> _getApiKey() async {
+    final envKey = dotenv.env['OPENAI_API_KEY'];
+    if (envKey != null && envKey.trim().isNotEmpty) {
+      return envKey.trim();
+    }
+
+    final remoteKey = await _systemSettings.getOpenAiApiKey();
+    if (remoteKey == null || remoteKey.trim().isEmpty) {
+      throw AppException('OpenAI API key not configured');
+    }
+
+    return remoteKey.trim();
+  }
 
   @override
   Future<String> optimizeCv(String cvText) async {
     try {
-      final apiKey = dotenv.env['OPENAI_API_KEY'];
-      if (apiKey == null || apiKey.isEmpty) {
-        throw AppException('OpenAI API key not configured');
-      }
+      final apiKey = await _getApiKey();
 
       final response = await _client
           .post(
