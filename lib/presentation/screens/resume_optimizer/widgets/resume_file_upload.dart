@@ -3,6 +3,7 @@ import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../widgets/shared/app_loader.dart';
 import '../../../services/document_parser_service.dart';
 
 class ResumeFileUpload extends StatefulWidget {
@@ -98,12 +99,10 @@ class _ResumeFileUploadState extends State<ResumeFileUpload> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     if (_isProcessing)
-                      const SizedBox(
-                        width: 48,
-                        height: 48,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                        ),
+                      const AppLoader(
+                        size: 48,
+                        color: AppColors.primary,
+                        strokeWidth: 3,
                       )
                     else
                       Icon(

@@ -18,6 +18,7 @@ import '../../providers/resume/resume_form_provider.dart';
 import '../../services/docx_share_service.dart';
 import '../../services/pdf_share_service.dart';
 import '../../widgets/shared/app_button.dart';
+import '../../widgets/shared/app_loader.dart';
 import '../../widgets/shared/loading_overlay.dart';
 import '../../../core/errors/failure.dart';
 import '../../widgets/shared/error_dialog.dart';
@@ -727,6 +728,9 @@ class _ResumePdfPreviewState extends ConsumerState<_ResumePdfPreview> {
           allowSharing: false,
           pdfFileName: fileName,
           initialPageFormat: PdfPageFormat.a4,
+          loadingWidget: const Center(
+            child: AppLoader(size: 34, strokeWidth: 3.2),
+          ),
           padding: const EdgeInsets.all(8),
           previewPageMargin:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -768,10 +772,10 @@ class _ResumePdfPreviewState extends ConsumerState<_ResumePdfPreview> {
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            SizedBox(
-                              height: 22,
-                              width: 22,
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                            AppLoader(
+                              size: 22,
+                              color: AppColors.primary,
+                              strokeWidth: 2.6,
                             ),
                             SizedBox(width: 12),
                             Text(

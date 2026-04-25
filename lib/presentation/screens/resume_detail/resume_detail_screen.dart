@@ -20,6 +20,7 @@ import '../../../injection/injection_container.dart';
 import '../../providers/resume/resume_form_provider.dart';
 import '../../providers/resume/resume_list_provider.dart';
 import '../../widgets/shared/error_dialog.dart';
+import '../../widgets/shared/app_loader.dart';
 import '../../widgets/shared/loading_overlay.dart';
 import '../history/history_screen.dart';
 import '../resume_builder/builder_screen.dart';
@@ -765,6 +766,9 @@ class _ResumePdfPreviewState extends ConsumerState<_ResumePdfPreview> {
         allowSharing: false,
         pdfFileName: fileName,
         initialPageFormat: PdfPageFormat.a4,
+        loadingWidget: const Center(
+          child: AppLoader(size: 34, strokeWidth: 3.2),
+        ),
         padding: const EdgeInsets.all(8),
         previewPageMargin:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

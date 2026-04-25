@@ -11,6 +11,7 @@ import '../../providers/resume/resume_form_provider.dart';
 import '../../providers/resume/resume_list_provider.dart';
 import '../../providers/resume/resume_optimization_provider.dart';
 import '../../widgets/shared/app_button.dart';
+import '../../widgets/shared/app_loader.dart';
 import '../../widgets/resume/resume_card.dart';
 import '../resume_builder/builder_screen.dart';
 import '../resume_builder/preview_screen.dart';
@@ -169,7 +170,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
                 padding: const EdgeInsets.all(AppSizes.lg),
                 children: const [
                   SizedBox(height: 40),
-                  Center(child: CircularProgressIndicator()),
+                  Center(child: AppLoader()),
                 ],
               ),
               error: (error, _) => ListView(

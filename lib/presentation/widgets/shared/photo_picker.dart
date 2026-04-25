@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/constants/app_colors.dart';
+import 'app_loader.dart';
 
 class PhotoPicker extends StatefulWidget {
   final String? photoUrl;
@@ -144,15 +145,10 @@ class _PhotoPickerState extends State<PhotoPicker> {
                   ],
                 ),
                 child: _isLoading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            AppColors.white,
-                          ),
-                          strokeWidth: 2,
-                        ),
+                    ? const AppLoader(
+                        size: 20,
+                        color: AppColors.white,
+                        strokeWidth: 2.2,
                       )
                     : const Icon(
                         Icons.camera_alt_rounded,

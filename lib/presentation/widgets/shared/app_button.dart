@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
+import 'app_loader.dart';
 
 enum AppButtonVariant {
   primary,
@@ -123,13 +124,11 @@ class _ButtonContent extends StatelessWidget {
     };
 
     if (isLoading) {
-      return SizedBox(
-        height: 22,
-        width: 22,
-        child: CircularProgressIndicator(
-          strokeWidth: 2.4,
-          valueColor: AlwaysStoppedAnimation<Color>(textColor),
-        ),
+      return AppLoader(
+        size: 22,
+        color: textColor,
+        strokeWidth: 2.6,
+        semanticsLabel: 'Loading',
       );
     }
 

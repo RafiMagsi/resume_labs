@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
+import 'app_loader.dart';
 
 class LoadingOverlay extends StatelessWidget {
   final bool isLoading;
@@ -59,8 +60,10 @@ class LoadingOverlay extends StatelessWidget {
                               const SizedBox(
                                 height: 28,
                                 width: 28,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.8,
+                                child: AppLoader(
+                                  size: 28,
+                                  color: AppColors.primary,
+                                  strokeWidth: 3,
                                 ),
                               ),
                               if (message != null) ...[

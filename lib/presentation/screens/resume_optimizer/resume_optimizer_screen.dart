@@ -16,6 +16,7 @@ import '../../providers/resume/resume_form_provider.dart';
 import '../../providers/resume/resume_optimization_provider.dart';
 import '../../widgets/shared/credits_paywall.dart';
 import '../../widgets/shared/error_dialog.dart';
+import '../../widgets/shared/app_loader.dart';
 import 'widgets/resume_optimizer_input.dart';
 import 'widgets/resume_optimization_result.dart';
 import 'widgets/resume_file_upload.dart';
@@ -391,7 +392,7 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const SizedBox(height: 100),
-          const CircularProgressIndicator(),
+          const AppLoader(size: 36, strokeWidth: 3.2),
           const SizedBox(height: 16),
           Text(
             AppStrings.optimizing,
