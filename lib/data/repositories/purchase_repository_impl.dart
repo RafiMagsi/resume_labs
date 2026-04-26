@@ -36,22 +36,93 @@ class PurchaseRepositoryImpl implements PurchaseRepository {
         return Left(AuthFailure('User not authenticated'));
       }
 
-      final productDetails = await _getProductDetails();
-      if (productDetails == null) {
-        return Left(ServerFailure('Product not found'));
-      }
+      final productDetailsResult = await _getCreditsProductDetails();
+      final productDetails = productDetailsResult.fold(
+        (failure) => null,
+        (product) => product,
+      );
+      if (productDetails == null) return productDetailsResult;
 
-      final result = await _inAppPurchase.buyNonConsumable(
+      final purchaseStarted = await _inAppPurchase.buyConsumable(
         purchaseParam: PurchaseParam(productDetails: productDetails),
+        autoConsume: true,
       );
 
-      if (!result) {
-        return Left(ServerFailure('Purchase failed'));
+      if (!purchaseStarted) {
+        return Left(ServerFailure('Purchase did not start.'));
       }
 
-      // Add 10 credits to user after successful purchase
-      await _userDatasource.addCredits(user.uid, 10);
-      return Right(null);
+      final completer = Completer<Either<Failure, void>>();
+      late final StreamSubscription<List<PurchaseDetails>> sub;
+
+      sub = _inAppPurchase.purchaseStream.listen(
+        (purchases) async {
+          for (final purchase in purchases) {
+            if (purchase.productID != AppStrings.creditsProductId) continue;
+
+            switch (purchase.status) {
+              case PurchaseStatus.pending:
+                // waiting
+                break;
+              case PurchaseStatus.canceled:
+                if (!completer.isCompleted) {
+                  completer.complete(
+                    Left(ServerFailure('Purchase cancelled.')),
+                  );
+                }
+                break;
+              case PurchaseStatus.error:
+                if (!completer.isCompleted) {
+                  completer.complete(
+                    Left(
+                      ServerFailure(
+                        purchase.error?.message ?? 'Purchase failed.',
+                      ),
+                    ),
+                  );
+                }
+                break;
+              case PurchaseStatus.purchased:
+              case PurchaseStatus.restored:
+                try {
+                  if (purchase.pendingCompletePurchase) {
+                    await _inAppPurchase.completePurchase(purchase);
+                  }
+
+                  // Grant credits only after a successful purchase signal.
+                  await _userDatasource.addCredits(user.uid, 10);
+
+                  if (!completer.isCompleted) {
+                    completer.complete(const Right(null));
+                  }
+                } catch (e) {
+                  if (!completer.isCompleted) {
+                    completer.complete(
+                      Left(ServerFailure('Failed to finalize purchase: $e')),
+                    );
+                  }
+                }
+                break;
+            }
+          }
+        },
+        onError: (e) {
+          if (!completer.isCompleted) {
+            completer
+                .complete(Left(ServerFailure('Purchase stream error: $e')));
+          }
+        },
+      );
+
+      final result = await completer.future.timeout(
+        const Duration(seconds: 60),
+        onTimeout: () => Left(
+          NetworkFailure('Purchase timed out. Please try again.'),
+        ),
+      );
+
+      await sub.cancel();
+      return result;
     } on AppException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {
@@ -79,27 +150,15 @@ class PurchaseRepositoryImpl implements PurchaseRepository {
   @override
   Future<Either<Failure, void>> restorePurchases() async {
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        return Left(AuthFailure('User not authenticated'));
-      }
-
-      await _inAppPurchase.restorePurchases();
-
-      // Listen to purchase stream to detect restored purchases
-      int restoredCount = 0;
-      await _inAppPurchase.purchaseStream.first.then((purchases) {
-        restoredCount = purchases
-            .where((p) => p.productID == AppStrings.creditsProductId)
-            .length;
-      });
-
-      // Add 10 credits for each restored purchase
-      if (restoredCount > 0) {
-        await _userDatasource.addCredits(user.uid, 10 * restoredCount);
-      }
-
-      return Right(null);
+      // `resume_labs_credits_10` should be configured as a Consumable.
+      // Consumables are not restored by Apple/Google (they are meant to be
+      // purchased repeatedly). Credits are stored in Firestore per-user, so a
+      // reinstall will keep them without restore.
+      return Left(
+        ServerFailure(
+          'Credits purchases cannot be restored. Your credits are tied to your account.',
+        ),
+      );
     } on AppException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {
@@ -107,24 +166,42 @@ class PurchaseRepositoryImpl implements PurchaseRepository {
     }
   }
 
-  Future<ProductDetails?> _getProductDetails() async {
+  Future<Either<Failure, ProductDetails>> _getCreditsProductDetails() async {
     try {
       final available = await _inAppPurchase.isAvailable();
       if (!available) {
-        return null;
+        return const Left(
+          ServerFailure(
+            'In-app purchases are not available on this device. '
+            'Test on a real device using TestFlight (iOS) or an internal testing track (Android).',
+          ),
+        );
       }
 
       final response = await _inAppPurchase.queryProductDetails(
         {AppStrings.creditsProductId},
       );
 
-      if (response.productDetails.isEmpty) {
-        return null;
+      if (response.error != null) {
+        return Left(
+          ServerFailure(
+            'Store error: ${response.error!.message} (${response.error!.code})',
+          ),
+        );
       }
 
-      return response.productDetails.first;
+      if (response.productDetails.isEmpty) {
+        return const Left(
+          ServerFailure(
+            'Product not found in the store. Make sure `resume_labs_credits_10` '
+            'exists in App Store Connect / Play Console and you are running from TestFlight / an internal testing track.',
+          ),
+        );
+      }
+
+      return Right(response.productDetails.first);
     } catch (e) {
-      return null;
+      return Left(ServerFailure('Failed to load product details: $e'));
     }
   }
 }

@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../injection/injection_container.dart';
+import 'app_loader.dart';
+import 'error_dialog.dart';
 
 class CreditsPaywall extends ConsumerWidget {
   final VoidCallback onClose;
@@ -215,43 +217,67 @@ class CreditsPaywall extends ConsumerWidget {
   }
 
   Future<void> _handlePurchase(BuildContext context, WidgetRef ref) async {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(
+        child: AppLoader(size: 40),
+      ),
+    );
+
     final useCase = ref.read(purchaseCreditsUseCaseProvider);
     final result = await useCase();
 
     if (!context.mounted) return;
 
+    Navigator.of(context, rootNavigator: true).pop(); // loader
+
     result.fold(
       (failure) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(failure.message)),
+        ErrorDialog.show(
+          context,
+          failure: failure,
+          title: 'Purchase Failed',
         );
       },
       (_) {
+        onClose();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text(AppStrings.purchaseSuccess)),
         );
-        onClose();
       },
     );
   }
 
   Future<void> _handleRestore(BuildContext context, WidgetRef ref) async {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(
+        child: AppLoader(size: 40),
+      ),
+    );
+
     final useCase = ref.read(restorePurchasesUseCaseProvider);
     final result = await useCase();
 
     if (!context.mounted) return;
 
+    Navigator.of(context, rootNavigator: true).pop(); // loader
+
     result.fold(
       (failure) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(failure.message)),
+        ErrorDialog.show(
+          context,
+          failure: failure,
+          title: 'Restore Failed',
         );
       },
       (_) {
+        onClose();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Purchases restored successfully!')),
         );
-        onClose();
       },
     );
   }
