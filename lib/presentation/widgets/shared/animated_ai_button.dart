@@ -136,10 +136,15 @@ class _AnimatedAIButtonState extends State<AnimatedAIButton>
                       angle: iconRotation,
                       child: Transform.scale(
                         scale: iconScale,
-                        child: const Icon(
-                          Icons.auto_awesome_rounded,
-                          color: AppColors.white,
-                          size: 20,
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CustomPaint(
+                            painter: _GlitterStarsPainter(
+                              progress: iconValue,
+                              color: AppColors.white,
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -164,5 +169,102 @@ class _AnimatedAIButtonState extends State<AnimatedAIButton>
         },
       ),
     );
+  }
+}
+
+class _GlitterStarsPainter extends CustomPainter {
+  const _GlitterStarsPainter({
+    required this.progress,
+    required this.color,
+  });
+
+  final double progress;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    _drawStar(
+      canvas,
+      center: Offset(size.width * 0.50, size.height * 0.48),
+      radius: size.width * (0.29 + 0.04 * _pulse(progress)),
+      opacity: 0.95,
+      points: 4,
+    );
+
+    _drawStar(
+      canvas,
+      center: Offset(size.width * 0.78, size.height * 0.22),
+      radius: size.width * (0.12 + 0.025 * _pulse(progress + 0.35)),
+      opacity: 0.72,
+      points: 4,
+    );
+
+    _drawStar(
+      canvas,
+      center: Offset(size.width * 0.22, size.height * 0.76),
+      radius: size.width * (0.10 + 0.02 * _pulse(progress + 0.68)),
+      opacity: 0.62,
+      points: 4,
+    );
+
+    final dotPaint = Paint()
+      ..color = color.withValues(alpha: 0.42 + 0.28 * _pulse(progress + 0.18))
+      ..style = PaintingStyle.fill;
+
+    canvas.drawCircle(
+      Offset(size.width * 0.18, size.height * 0.28),
+      size.width * 0.035,
+      dotPaint,
+    );
+
+    canvas.drawCircle(
+      Offset(size.width * 0.74, size.height * 0.72),
+      size.width * 0.026,
+      dotPaint,
+    );
+  }
+
+  double _pulse(double value) {
+    final normalized = value % 1;
+    return (math.sin(normalized * math.pi * 2) + 1) / 2;
+  }
+
+  void _drawStar(
+    Canvas canvas, {
+    required Offset center,
+    required double radius,
+    required double opacity,
+    required int points,
+  }) {
+    final paint = Paint()
+      ..color = color.withValues(alpha: opacity)
+      ..style = PaintingStyle.fill;
+
+    final path = Path();
+    final innerRadius = radius * 0.28;
+    final totalPoints = points * 2;
+
+    for (var i = 0; i < totalPoints; i++) {
+      final currentRadius = i.isEven ? radius : innerRadius;
+      final angle = -math.pi / 2 + (math.pi * 2 * i / totalPoints);
+      final point = Offset(
+        center.dx + math.cos(angle) * currentRadius,
+        center.dy + math.sin(angle) * currentRadius,
+      );
+
+      if (i == 0) {
+        path.moveTo(point.dx, point.dy);
+      } else {
+        path.lineTo(point.dx, point.dy);
+      }
+    }
+
+    path.close();
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _GlitterStarsPainter oldDelegate) {
+    return oldDelegate.progress != progress || oldDelegate.color != color;
   }
 }
