@@ -30,14 +30,31 @@ class ResumeCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppSizes.cardRadius),
         side: const BorderSide(color: AppColors.border, width: 1),
       ),
-      child: InkWell(
-        onTap: onOpen,
-        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Gradient header bar
+          Container(
+            height: 5,
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(AppSizes.cardRadius),
+                topRight: Radius.circular(AppSizes.cardRadius),
+              ),
+              gradient: LinearGradient(
+                colors: [AppColors.cardHeaderStart, AppColors.cardHeaderEnd],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+            ),
+          ),
+          InkWell(
+            onTap: onOpen,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -176,87 +193,90 @@ class ResumeCard extends StatelessWidget {
               const SizedBox(height: 12),
               Container(
                 width: double.infinity,
-                height: 100,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: AppColors.secondarySurface,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: AppColors.border, width: 0.5),
                 ),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (resume.personalSummary.isNotEmpty) ...[
                       Text(
-                        resume.title.isEmpty ? 'Untitled Resume' : resume.title,
+                        resume.personalSummary,
                         style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                          fontSize: 11,
+                          color: AppColors.textSecondary,
+                          height: 1.4,
                         ),
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      if (resume.personalSummary.isNotEmpty) ...[
-                        const SizedBox(height: 6),
-                        Text(
-                          resume.personalSummary,
-                          style: const TextStyle(
-                            fontSize: 10,
-                            color: AppColors.textSecondary,
-                            height: 1.3,
+                      const SizedBox(height: 8),
+                    ],
+                    if (resume.workExperiences.isNotEmpty) ...[
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.work_outline,
+                            size: 13,
+                            color: AppColors.textTertiary,
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                      if (resume.workExperiences.isNotEmpty) ...[
-                        const SizedBox(height: 6),
-                        Text(
-                          '${resume.workExperiences.first.role} at ${resume.workExperiences.first.company}',
-                          style: const TextStyle(
-                            fontSize: 10,
-                            color: AppColors.textSecondary,
-                            fontWeight: FontWeight.w500,
+                          const SizedBox(width: 5),
+                          Expanded(
+                            child: Text(
+                              '${resume.workExperiences.first.role} at ${resume.workExperiences.first.company}',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.textSecondary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                      if (resume.skills.isNotEmpty) ...[
-                        const SizedBox(height: 6),
-                        Wrap(
-                          spacing: 4,
-                          runSpacing: 2,
-                          children: resume.skills.take(3).map((skill) {
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                    ],
+                    if (resume.skills.isNotEmpty) ...[
+                      Wrap(
+                        spacing: 4,
+                        runSpacing: 3,
+                        children: [
+                          ...resume.skills.take(3).map((skill) {
                             return Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: AppColors.primaryLight,
-                                borderRadius: BorderRadius.circular(3),
+                                borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
                                 skill.name,
                                 style: const TextStyle(
-                                  fontSize: 9,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w500,
                                   color: AppColors.primaryDark,
                                 ),
                               ),
                             );
-                          }).toList(),
-                        ),
-                        if (resume.skills.length > 3)
-                          Text(
-                            '+${resume.skills.length - 3} more',
-                            style: const TextStyle(
-                              fontSize: 9,
-                              color: AppColors.textTertiary,
+                          }),
+                          if (resume.skills.length > 3)
+                            Text(
+                              '+${resume.skills.length - 3}',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: AppColors.textTertiary,
+                              ),
                             ),
-                          ),
-                      ],
+                        ],
+                      ),
                     ],
-                  ),
+                  ],
                 ),
               ),
               const SizedBox(height: 12),
@@ -292,6 +312,8 @@ class ResumeCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+        ],
       ),
     );
   }

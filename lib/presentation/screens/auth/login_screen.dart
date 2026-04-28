@@ -12,6 +12,8 @@ import 'password_reset_screen.dart';
 import 'register_screen.dart';
 import '../../../core/errors/failure.dart';
 import '../../widgets/shared/error_dialog.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_sizes.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -116,39 +118,98 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       isLoading: signInState.isLoading,
       message: 'Signing you in...',
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Sign In'),
-          centerTitle: true,
-        ),
-        body: SafeArea(
-          child: GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-            child: SingleChildScrollView(
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              padding: const EdgeInsets.all(20),
-              child: FocusTraversalGroup(
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 16),
-                      Semantics(
-                        header: true,
-                        child: Text(
-                          'Welcome back',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w700,
+        body: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+          child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            child: Column(
+              children: [
+                // Hero banner
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        AppColors.heroBannerStart,
+                        AppColors.heroBannerEnd,
+                      ],
+                    ),
+                  ),
+                  child: SafeArea(
+                    bottom: false,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 40,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: AppColors.white,
+                              borderRadius:
+                                  BorderRadius.circular(AppSizes.radiusSm),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.black.withValues(alpha: 0.1),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: Text(
+                                'R',
+                                style: const TextStyle(
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
+                          const SizedBox(height: 20),
+                          Semantics(
+                            header: true,
+                            child: const Text(
+                              'Welcome back',
+                              style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.white,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Sign in to continue building your resume',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: AppColors.white.withValues(alpha: 0.75),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Sign in to continue building your resume',
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 32),
+                    ),
+                  ),
+                ),
+                // Form section
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 28,
+                  ),
+                  child: FocusTraversalGroup(
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
                       AppTextField(
                         controller: _emailController,
                         labelText: 'Email',
@@ -206,8 +267,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     ],
                   ),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         ),

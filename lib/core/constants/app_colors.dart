@@ -71,6 +71,20 @@ abstract final class AppColors {
   static const Color premiumGradientStart = Color(0xFFFFB800);
   static const Color premiumGradientEnd = Color(0xFFFFA500);
 
+  // Gradient / hero
+  static const Color heroBannerStart = Color(0xFF1E1338);
+  static const Color heroBannerEnd = Color(0xFF2D1B69);
+  static const Color heroShimmerLine = Color(0x33A78BFA);
+  static const Color cardHeaderStart = Color(0xFF6C5CE7);
+  static const Color cardHeaderEnd = Color(0xFF8B5CF6);
+  static const Color glassSurface = Color(0xFFFAF9FF);
+  static const Color glassBorder = Color(0x1A6C5CE7);
+  static const Color surfaceElevated = Color(0xFFFFFFFF);
+  static const Color heroBadgeSurface = Color(0x1AFFFFFF);
+  static const Color heroBadgeBorder = Color(0x33FFFFFF);
+  static const Color destructiveSurface = Color(0xFFFFF1F2);
+  static const Color destructiveBorder = Color(0xFFFFCDD2);
+
   // Backwards-compatible aliases (prefer the new names in new code).
   static const Color background = appBackground;
   static const Color surface = screenSurface;

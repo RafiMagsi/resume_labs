@@ -44,29 +44,63 @@ class _ResumeFileUploadState extends State<ResumeFileUpload> {
 
         // Extract text from file
         String extractedText = '';
+        String? errorMessage;
 
-        if (fileName.toLowerCase().endsWith('.docx') ||
-            fileName.toLowerCase().endsWith('.doc')) {
-          extractedText = await DocumentParserService.extractFromDocx(file);
-        } else if (fileName.toLowerCase().endsWith('.pdf')) {
-          extractedText = await DocumentParserService.extractFromPdf(file);
-        }
+        try {
+          if (fileName.toLowerCase().endsWith('.docx') ||
+              fileName.toLowerCase().endsWith('.doc')) {
+            extractedText = await DocumentParserService.extractFromDocx(file);
+          } else if (fileName.toLowerCase().endsWith('.pdf')) {
+            extractedText = await DocumentParserService.extractFromPdf(file);
+          } else {
+            errorMessage = 'Unsupported file type. Please upload a valid resume (PDF, DOCX, or DOC).';
+          }
 
-        if (!mounted) return;
+          if (!mounted) return;
 
-        if (extractedText.isNotEmpty) {
-          widget.onFileSelected(extractedText);
-        } else {
-          widget.onError(
-            'Could not extract text from file',
-            fileName,
-          );
+          if (errorMessage != null) {
+            widget.onError(errorMessage, fileName);
+          } else if (extractedText.isNotEmpty) {
+            widget.onFileSelected(extractedText);
+          } else {
+            widget.onError(
+              'Could not extract text from the document. Please upload a valid resume.',
+              fileName,
+            );
+          }
+        } catch (e) {
+          if (!mounted) return;
+
+          // Extract user-friendly message from exception
+          String userMessage = e.toString().replaceFirst('Exception: ', '');
+
+          // If the exception is too technical, provide a default message
+          if (!userMessage.contains('Please upload') &&
+              !userMessage.contains('valid')) {
+            userMessage = 'Failed to read the document. Please upload a valid resume document.';
+          }
+
+          widget.onError(userMessage, fileName);
         }
       }
     } catch (e) {
       if (mounted) {
+        String errorMsg = e.toString();
+
+        // Convert technical errors to user-friendly messages
+        if (errorMsg.contains('NoFilePermission') ||
+            errorMsg.contains('permission')) {
+          errorMsg = 'Permission denied. Cannot read the file. Please try again.';
+        } else if (errorMsg.contains('FileNotFound') || errorMsg.contains('No such file')) {
+          errorMsg = 'File not found. The file may have been deleted. Please upload again.';
+        } else if (errorMsg.contains('OutOfMemory')) {
+          errorMsg = 'File is too large. Please upload a smaller resume document.';
+        } else if (!errorMsg.contains('Please upload')) {
+          errorMsg = 'Failed to process the file. Please upload a valid resume document.';
+        }
+
         widget.onError(
-          'Error: ${e.toString()}',
+          errorMsg,
           _selectedFileName ?? 'Unknown file',
         );
       }

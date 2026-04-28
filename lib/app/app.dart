@@ -27,8 +27,8 @@ class App extends ConsumerWidget {
           error: AppColors.error,
         ),
         scaffoldBackgroundColor: AppColors.appBackground,
-        splashColor: AppColors.transparent,
-        highlightColor: AppColors.transparent,
+        splashColor: AppColors.primary.withValues(alpha: 0.08),
+        highlightColor: AppColors.primary.withValues(alpha: 0.04),
         dividerColor: AppColors.divider,
         textTheme: Typography.blackCupertino
             .copyWith(
@@ -140,9 +140,26 @@ class App extends ConsumerWidget {
         cardTheme: CardThemeData(
           color: AppColors.screenSurface,
           elevation: 0,
+          shadowColor: AppColors.shadowCard,
+          clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSizes.cardRadius),
             side: const BorderSide(color: AppColors.border),
+          ),
+        ),
+        appBarTheme: AppBarTheme(
+          backgroundColor: AppColors.appBackground,
+          foregroundColor: AppColors.textPrimary,
+          elevation: 0,
+          scrolledUnderElevation: 0.5,
+          shadowColor: AppColors.shadowCard,
+          centerTitle: false,
+          titleTextStyle: const TextStyle(
+            fontFamily: 'Inter',
+            fontSize: AppTextSizes.titleLarge,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+            letterSpacing: -0.3,
           ),
         ),
       ),

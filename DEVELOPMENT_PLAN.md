@@ -536,3 +536,9 @@ Phase 19–21 (Build, Testing, Deployment)
 # Create From LinkedIn (linked-in login)
 # Create CV from existing docx or pdf
 # In app purchase for downloading CV
+
+# Changes
+
+make New Resume button same as AI Resume button (instead of floating action button), make it same border radius like AI Resume button
+
+in history screen add bottom padding to list view so the listview can scroll above the Ai/new resume buttons

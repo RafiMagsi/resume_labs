@@ -142,24 +142,34 @@ Rules:
     );
 
     try {
-      final decoded = jsonDecode(rawText);
+      // Clean and extract JSON from response
+      final cleanedJson = _extractJsonFromResponse(rawText);
+
+      final decoded = jsonDecode(cleanedJson);
 
       if (decoded is! Map<String, dynamic>) {
-        throw const FormatException('Response is not a JSON object');
+        throw const ServerException(
+          'Failed to process skill suggestions. Please try again.',
+          code: 'openai-parse-skills-failed',
+        );
       }
 
       final skills = decoded['skills'];
       if (skills is! List) {
-        throw const FormatException('Missing or invalid skills array');
+        throw const ServerException(
+          'Failed to process skill suggestions. Please try again.',
+          code: 'openai-parse-skills-failed',
+        );
       }
 
       return skills
           .map((e) => e.toString().trim())
           .where((e) => e.isNotEmpty)
           .toList();
-    } catch (_) {
+    } catch (e) {
+      if (e is ServerException) rethrow;
       throw const ServerException(
-        'Failed to parse suggested skills response.',
+        'Failed to process skill suggestions. Please try again.',
         code: 'openai-parse-skills-failed',
       );
     }
@@ -189,7 +199,14 @@ Rules:
     _handleHttpStatus(response);
 
     try {
-      final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+      final decoded = jsonDecode(response.body);
+
+      if (decoded is! Map<String, dynamic>) {
+        throw const ServerException(
+          'Failed to process the response. Please try again.',
+          code: 'openai-parse-failed',
+        );
+      }
 
       final directText = decoded['output_text'];
       if (directText is String && directText.trim().isNotEmpty) {
@@ -215,15 +232,15 @@ Rules:
         }
       }
 
-      throw const FormatException('No text content found in OpenAI response');
-    } on FormatException {
       throw const ServerException(
-        'Failed to parse OpenAI response.',
+        'Failed to process the response. Please try again.',
         code: 'openai-parse-failed',
       );
+    } on ServerException {
+      rethrow;
     } catch (_) {
       throw const ServerException(
-        'Unexpected OpenAI response format.',
+        'Failed to process the response. Please try again.',
         code: 'openai-invalid-response-format',
       );
     }
@@ -285,5 +302,44 @@ Rules:
           code: response.statusCode.toString(),
         );
     }
+  }
+
+  /// Extract valid JSON from response that may contain markdown or extra text
+  String _extractJsonFromResponse(String content) {
+    if (content.isEmpty) return content;
+
+    String text = content.trim();
+
+    // Remove markdown code blocks (```json ... ``` or ``` ... ```)
+    text = text.replaceAll(RegExp(r'^```(?:json)?\s*', multiLine: true), '');
+    text = text.replaceAll(RegExp(r'\s*```$', multiLine: true), '');
+
+    text = text.trim();
+
+    // Try to find JSON object { ... } if there's extra text
+    final openBrace = text.indexOf('{');
+    if (openBrace > 0) {
+      // Find the matching closing brace
+      int braceCount = 0;
+      int closeBraceIndex = -1;
+
+      for (int i = openBrace; i < text.length; i++) {
+        if (text[i] == '{') {
+          braceCount++;
+        } else if (text[i] == '}') {
+          braceCount--;
+          if (braceCount == 0) {
+            closeBraceIndex = i;
+            break;
+          }
+        }
+      }
+
+      if (closeBraceIndex > openBrace) {
+        text = text.substring(openBrace, closeBraceIndex + 1);
+      }
+    }
+
+    return text.trim();
   }
 }

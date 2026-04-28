@@ -16,9 +16,15 @@ class CvOptimizationRepositoryImpl implements CvOptimizationRepository {
       final result = await _datasource.optimizeCv(cvText);
       return Right(result);
     } on AppException catch (e) {
+      // Use the friendly error message from datasource
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('CV optimization failed: $e'));
+      // Never expose raw error messages to users
+      return Left(
+        ServerFailure(
+          'Failed to optimize your resume. Please try again or contact support if the issue persists.',
+        ),
+      );
     }
   }
 }

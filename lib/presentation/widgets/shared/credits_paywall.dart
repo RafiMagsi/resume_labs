@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_sizes.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../injection/injection_container.dart';
 import 'app_loader.dart';
@@ -130,48 +131,66 @@ class CreditsPaywall extends ConsumerWidget {
 
   Widget _buildPriceSection(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.primarySoft,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.primaryLight, width: 1),
+        color: AppColors.glassSurface,
+        borderRadius: BorderRadius.circular(AppSizes.radiusSm),
+        border: Border.all(color: AppColors.glassBorder),
       ),
       child: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                AppStrings.creditsAmount,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
+          Container(
+            height: 3,
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(AppSizes.radiusSm),
+                topRight: Radius.circular(AppSizes.radiusSm),
+              ),
+              gradient: LinearGradient(
+                colors: [AppColors.cardHeaderStart, AppColors.cardHeaderEnd],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      AppStrings.creditsAmount,
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primary,
+                          ),
                     ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                AppStrings.optimizationSuccess,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
+                    const SizedBox(width: 12),
+                    Text(
+                      'optimizations',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            AppStrings.creditsPrice,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
+                const SizedBox(height: 8),
+                Text(
+                  AppStrings.creditsPrice,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primary,
+                      ),
                 ),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            'One-time purchase, use anytime',
-            style: TextStyle(
-              fontSize: 12,
-              color: AppColors.textSecondary,
+                const SizedBox(height: 4),
+                const Text(
+                  'One-time purchase, use anytime',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
