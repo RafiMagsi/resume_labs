@@ -44,9 +44,16 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
   final _titleFocusNode = FocusNode();
   final _summaryFocusNode = FocusNode();
 
+  bool _isDisposed = false;
+  bool _syncScheduled = false;
+
   @override
   void initState() {
     super.initState();
+
+    ref.listenManual<ResumeFormState>(resumeFormProvider, (_, __) {
+      _scheduleControllerSync();
+    });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authUser = ref.read(authProvider).valueOrNull;
@@ -57,12 +64,13 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
         notifier.reset(userId: authUser.uid);
       }
 
-      _syncControllers();
+      _scheduleControllerSync();
     });
   }
 
   @override
   void dispose() {
+    _isDisposed = true;
     _fullNameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
@@ -82,29 +90,58 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
     super.dispose();
   }
 
+  void _scheduleControllerSync() {
+    if (_isDisposed || _syncScheduled) return;
+
+    _syncScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _syncScheduled = false;
+      if (!mounted || _isDisposed) return;
+      _syncControllers();
+    });
+  }
+
+  String _safeText(Object? value) {
+    if (value == null) return '';
+    return value.toString();
+  }
+
   void _syncControllers() {
+    if (!mounted || _isDisposed) return;
+
     final state = ref.read(resumeFormProvider);
     final contact = state.contactDetails;
 
-    void sync(TextEditingController controller, String value) {
+    void sync(
+      TextEditingController controller,
+      Object? rawValue, {
+      FocusNode? focusNode,
+    }) {
+      if (!mounted || _isDisposed) return;
+
+      final value = _safeText(rawValue);
       if (controller.text == value) return;
-      controller.text = value;
-      controller.selection = TextSelection.fromPosition(
-        TextPosition(offset: controller.text.length),
+
+      // Do not overwrite a field while the user is typing.
+      if (focusNode?.hasFocus ?? false) return;
+
+      controller.value = TextEditingValue(
+        text: value,
+        selection: TextSelection.collapsed(offset: value.length),
       );
     }
 
-    sync(_fullNameController, (contact.fullName ?? ''));
-    sync(_emailController, (contact.email ?? ''));
-    sync(_phoneController, (contact.phone ?? ''));
-    sync(_locationController, (contact.location ?? ''));
-    sync(_websiteController, (contact.website ?? ''));
-    sync(_linkedinController, (contact.linkedin ?? ''));
-    sync(_githubController, (contact.github ?? ''));
-    sync(_dobController, (contact.dateOfBirth ?? ''));
-    sync(_nationalityController, (contact.nationality ?? ''));
-    sync(_titleController, state.title);
-    sync(_summaryController, state.personalSummary);
+    sync(_fullNameController, contact.fullName, focusNode: _fullNameFocusNode);
+    sync(_emailController, contact.email, focusNode: _emailFocusNode);
+    sync(_phoneController, contact.phone);
+    sync(_locationController, contact.location);
+    sync(_websiteController, contact.website);
+    sync(_linkedinController, contact.linkedin);
+    sync(_githubController, contact.github);
+    sync(_dobController, contact.dateOfBirth);
+    sync(_nationalityController, contact.nationality);
+    sync(_titleController, state.title, focusNode: _titleFocusNode);
+    sync(_summaryController, state.personalSummary, focusNode: _summaryFocusNode);
   }
 
   Future<void> _handlePhotoUpload(String localPath) async {
@@ -223,7 +260,7 @@ class _BuilderScreenState extends ConsumerState<BuilderScreen> {
     final aiState = ref.watch(aiSuggestionsProvider);
     final isAiLoading = aiState.isLoading;
 
-    _syncControllers();
+    // (Post-frame controller sync now handled via ref.listenManual and _scheduleControllerSync)
 
     return Scaffold(
       appBar: AppBar(

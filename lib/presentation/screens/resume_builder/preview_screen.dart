@@ -12,6 +12,7 @@ import '../../providers/resume/resume_form_provider.dart';
 import '../../widgets/shared/app_button.dart';
 import '../../widgets/shared/loading_overlay.dart';
 import '../../widgets/resume/resume_pdf_preview.dart';
+import '../../widgets/resume/resume_template_picker_bar.dart';
 
 class PreviewScreen extends ConsumerStatefulWidget {
   const PreviewScreen({super.key});
@@ -256,6 +257,206 @@ class _MobilePreviewLayout extends StatelessWidget {
     required this.onExportPdf,
   });
 
+String _getTemplateName(ResumeTemplate template) => template.displayName;
+
+Color _getTemplateColor(ResumeTemplate template) {
+  switch (template.name) {
+    case 'classic':
+      return const Color(0xFF0066CC);
+    case 'modern':
+      return const Color(0xFF2563EB);
+    case 'modernClean':
+      return const Color(0xFF1A1A1A);
+    case 'minimal':
+      return const Color(0xFF6B7280);
+    case 'executive':
+      return const Color(0xFF1E3A8A);
+    case 'modernSidebar':
+      return const Color(0xFF2C3E50);
+    case 'datascience':
+      return const Color(0xFF0EA5E9);
+    case 'sales':
+      return const Color(0xFFDC2626);
+    case 'marketing':
+      return const Color(0xFF7C3AED);
+    case 'finance':
+      return const Color(0xFFB8860B);
+    case 'creative':
+      return const Color(0xFFD946EF);
+    case 'academic':
+      return const Color(0xFF0369A1);
+    case 'healthcare':
+      return const Color(0xFF059669);
+    case 'startup':
+      return const Color(0xFFF97316);
+    default:
+      return AppColors.primary;
+  }
+}
+
+Widget _buildTemplateSection({
+    required BuildContext context,
+    required String title,
+    required List<ResumeTemplate> templates,
+    required ResumeTemplate selectedTemplate,
+    VoidCallback? onSelected,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(
+            left: AppSizes.sm,
+            bottom: AppSizes.sm,
+          ),
+          child: Text(
+            title,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+        ),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: templates.map((template) {
+              final isSelected = selectedTemplate == template;
+              final templateColor = _getTemplateColor(template);
+
+              return GestureDetector(
+                onTap: () {
+                  onTemplateChanged(template);
+                  onSelected?.call();
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(right: AppSizes.md),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSizes.md,
+                    vertical: AppSizes.sm,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? templateColor.withValues(alpha: 0.10)
+                        : AppColors.secondarySurface,
+                    border: Border.all(
+                      color: isSelected ? templateColor : AppColors.border,
+                      width: isSelected ? 2 : 1,
+                    ),
+                    borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _getTemplateName(template),
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: isSelected
+                                  ? templateColor
+                                  : AppColors.textSecondary,
+                            ),
+                      ),
+                      const SizedBox(height: 4),
+                      Container(
+                        width: 30,
+                        height: 3,
+                        decoration: BoxDecoration(
+                          color: templateColor,
+                          borderRadius: BorderRadius.circular(1.5),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+  
+Future<void> _openTemplatePickerSheet(
+  BuildContext context,
+  ResumeTemplate selectedTemplate,
+) async {
+  await showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    isScrollControlled: true,
+    backgroundColor: AppColors.screenSurface,
+    builder: (context) {
+      return SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSizes.screenPadding,
+            AppSizes.sm,
+            AppSizes.screenPadding,
+            AppSizes.screenPadding,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildTemplateSection(
+                  context: context,
+                  title: 'Tech & IT',
+                  templates: [
+                    ResumeTemplate.modernClean,
+                    ResumeTemplate.modern,
+                    ResumeTemplate.minimal,
+                  ],
+                  selectedTemplate: selectedTemplate,
+                  onSelected: () => Navigator.of(context).pop(),
+                ),
+                const SizedBox(height: AppSizes.md),
+                _buildTemplateSection(
+                  context: context,
+                  title: 'Business & Management',
+                  templates: [
+                    ResumeTemplate.executive,
+                    ResumeTemplate.modernSidebar,
+                    ResumeTemplate.classic,
+                  ],
+                  selectedTemplate: selectedTemplate,
+                  onSelected: () => Navigator.of(context).pop(),
+                ),
+                const SizedBox(height: AppSizes.md),
+                _buildTemplateSection(
+                  context: context,
+                  title: 'Sales & Marketing',
+                  templates: [
+                    ResumeTemplate.sales,
+                    ResumeTemplate.marketing,
+                  ],
+                  selectedTemplate: selectedTemplate,
+                  onSelected: () => Navigator.of(context).pop(),
+                ),
+                const SizedBox(height: AppSizes.md),
+                _buildTemplateSection(
+                  context: context,
+                  title: 'Specialized',
+                  templates: [
+                    ResumeTemplate.datascience,
+                    ResumeTemplate.finance,
+                    ResumeTemplate.creative,
+                    ResumeTemplate.academic,
+                    ResumeTemplate.healthcare,
+                    ResumeTemplate.startup,
+                  ],
+                  selectedTemplate: selectedTemplate,
+                  onSelected: () => Navigator.of(context).pop(),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}  
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -265,10 +466,14 @@ class _MobilePreviewLayout extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-            child: _PreviewControlsCompact(
+            child: ResumeTemplatePickerBar(
               selectedTemplate: selectedTemplate,
-              isLoading: isLoading,
-              onTemplateChanged: onTemplateChanged,
+              onChangeTap: () {
+                if (isLoading) return;
+                _openTemplatePickerSheet(context, selectedTemplate);
+              },
+              getTemplateName: _getTemplateName,
+              getTemplateColor: _getTemplateColor,
             ),
           ),
           Expanded(
@@ -295,85 +500,6 @@ class _MobilePreviewLayout extends StatelessWidget {
                 icon: Icons.picture_as_pdf_outlined,
                 isLoading: isLoading,
                 onPressed: isLoading ? null : onExportPdf,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PreviewControlsCompact extends StatelessWidget {
-  final ResumeTemplate selectedTemplate;
-  final bool isLoading;
-  final ValueChanged<ResumeTemplate?> onTemplateChanged;
-
-  const _PreviewControlsCompact({
-    required this.selectedTemplate,
-    required this.isLoading,
-    required this.onTemplateChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.screenSurface,
-        borderRadius: BorderRadius.circular(AppSizes.cardRadius),
-        border: Border.all(color: AppColors.border),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.shadowCard,
-            blurRadius: 14,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          const Expanded(
-            child: Text(
-              'Template',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-              ),
-            ),
-          ),
-          Flexible(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(minWidth: 140, maxWidth: 240),
-              child: DropdownButtonFormField<ResumeTemplate>(
-                initialValue: selectedTemplate,
-                isExpanded: true,
-                items: ResumeTemplate.values
-                    .map(
-                      (template) => DropdownMenuItem(
-                        value: template,
-                        child: Text(_templateLabel(template)),
-                      ),
-                    )
-                    .toList(),
-                onChanged: isLoading ? null : onTemplateChanged,
-                decoration: InputDecoration(
-                  isDense: true,
-                  filled: true,
-                  fillColor: AppColors.secondarySurface,
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: AppColors.border),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: AppColors.border),
-                  ),
-                ),
               ),
             ),
           ),

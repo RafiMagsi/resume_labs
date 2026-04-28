@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -15,6 +16,47 @@ import 'credits_paywall.dart';
 
 class UserProfileSheet extends ConsumerWidget {
   const UserProfileSheet({super.key});
+
+  String _userInitial(dynamic user) {
+    final email = (user?.email as String?) ?? '';
+    if (email.trim().isEmpty) return '?';
+    return email.trim().split('@').first.characters.first.toUpperCase();
+  }
+
+  String? _profileImageUrlFromSnapshot(DocumentSnapshot<Map<String, dynamic>> snapshot) {
+    final data = snapshot.data();
+    if (data == null) return null;
+
+    final candidates = <String?>[
+      data['profileImageUrl'] as String?,
+      data['avatarUrl'] as String?,
+      data['photoUrl'] as String?,
+      data['photoURL'] as String?,
+      data['imageUrl'] as String?,
+    ];
+
+    for (final value in candidates) {
+      final trimmed = value?.trim();
+      if (trimmed != null && trimmed.isNotEmpty) {
+        return trimmed;
+      }
+    }
+
+    return null;
+  }
+
+  Widget _buildAvatarFallback(String initial) {
+    return Center(
+      child: Text(
+        initial,
+        style: const TextStyle(
+          color: AppColors.white,
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
 
   static void show(BuildContext context) {
     showModalBottomSheet<void>(
@@ -61,34 +103,65 @@ class UserProfileSheet extends ConsumerWidget {
   Widget _buildHeader(BuildContext context, AsyncValue<dynamic> userAsync) {
     return Row(
       children: [
-        Container(
-          width: 52,
-          height: 52,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              colors: [AppColors.cardHeaderStart, AppColors.cardHeaderEnd],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+        userAsync.maybeWhen(
+          data: (user) {
+            final uid = (user?.uid as String?) ?? '';
+            final initial = _userInitial(user);
+
+            return Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [AppColors.cardHeaderStart, AppColors.cardHeaderEnd],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: uid.isEmpty
+                  ? _buildAvatarFallback(initial)
+                  : StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                      stream: FirebaseFirestore.instance
+                          .collection('profiles')
+                          .doc(uid)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        final imageUrl = snapshot.hasData
+                            ? _profileImageUrlFromSnapshot(snapshot.data!)
+                            : null;
+
+                        if (imageUrl == null) {
+                          return _buildAvatarFallback(initial);
+                        }
+
+                        return Image.network(
+                          imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _buildAvatarFallback(initial),
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return _buildAvatarFallback(initial);
+                          },
+                        );
+                      },
+                    ),
+            );
+          },
+          orElse: () => Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [AppColors.cardHeaderStart, AppColors.cardHeaderEnd],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
-          ),
-          child: Center(
-            child: userAsync.maybeWhen(
-              data: (user) {
-                final email = user?.email ?? '?';
-                final initial = email.isNotEmpty
-                    ? email.split('@').first[0].toUpperCase()
-                    : '?';
-                return Text(
-                  initial,
-                  style: const TextStyle(
-                    color: AppColors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                  ),
-                );
-              },
-              orElse: () => const Icon(
+            child: const Center(
+              child: Icon(
                 Icons.person_rounded,
                 color: AppColors.white,
                 size: 24,
@@ -126,7 +199,7 @@ class UserProfileSheet extends ConsumerWidget {
     );
   }
 
-Widget _buildCreditsInfo(
+  Widget _buildCreditsInfo(
     BuildContext context,
     WidgetRef ref,
     AsyncValue<int> creditsAsync,

@@ -16,6 +16,7 @@ import '../../providers/resume/resume_list_provider.dart';
 import '../../widgets/shared/error_dialog.dart';
 import '../../widgets/shared/loading_overlay.dart';
 import '../../widgets/resume/resume_pdf_preview.dart';
+import '../../widgets/resume/resume_template_picker_bar.dart';
 import '../history/history_screen.dart';
 import '../resume_builder/builder_screen.dart';
 import '../resume_optimizer/resume_optimizer_screen.dart';
@@ -182,7 +183,12 @@ class _ResumeDetailScreenState extends ConsumerState<ResumeDetailScreen> {
                   AppSizes.screenPadding,
                   AppSizes.sm,
                 ),
-                child: _buildTemplatePickerBar(selectedTemplate),
+                child: ResumeTemplatePickerBar(
+                  selectedTemplate: selectedTemplate,
+                  onChangeTap: () => _openTemplatePickerSheet(selectedTemplate),
+                  getTemplateName: _getTemplateName,
+                  getTemplateColor: _getTemplateColor,
+                ),
               ),
               const Divider(height: 1),
               Expanded(
@@ -218,76 +224,6 @@ class _ResumeDetailScreenState extends ConsumerState<ResumeDetailScreen> {
     );
   }
 
-  Widget _buildTemplatePickerBar(ResumeTemplate selectedTemplate) {
-    final screenWidth = MediaQuery.sizeOf(context).width;
-
-    return ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: screenWidth),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: AppColors.screenSurface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.border),
-          boxShadow: const [
-            BoxShadow(
-              color: AppColors.shadowCard,
-              blurRadius: 14,
-              offset: Offset(0, 5),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Template',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    _getTemplateName(selectedTemplate),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 12),
-            ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: 44, maxWidth: 140),
-              child: OutlinedButton.icon(
-                onPressed: () => _openTemplatePickerSheet(selectedTemplate),
-                icon: const Icon(Icons.tune_rounded, size: 18),
-                label: const Text('Change'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: _getTemplateColor(selectedTemplate),
-                  side: BorderSide(color: _getTemplateColor(selectedTemplate)),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Future<void> _openTemplatePickerSheet(ResumeTemplate selectedTemplate) async {
     await showModalBottomSheet<void>(
