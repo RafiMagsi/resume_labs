@@ -53,6 +53,8 @@ class PurchaseRepositoryImpl implements PurchaseRepository {
       }
 
       final completer = Completer<Either<Failure, void>>();
+      var creditsGranted = false;
+      final processedPurchaseKeys = <String>{};
       late final StreamSubscription<List<PurchaseDetails>> sub;
 
       sub = _inAppPurchase.purchaseStream.listen(
@@ -83,14 +85,29 @@ class PurchaseRepositoryImpl implements PurchaseRepository {
                 }
                 break;
               case PurchaseStatus.purchased:
-              case PurchaseStatus.restored:
                 try {
+                  // The purchase stream can emit multiple events for the same
+                  // transaction; never grant credits more than once.
+                  if (creditsGranted) break;
+
+                  final purchaseKey = (purchase.purchaseID ??
+                          purchase.verificationData.serverVerificationData)
+                      .trim();
+                  if (purchaseKey.isNotEmpty &&
+                      processedPurchaseKeys.contains(purchaseKey)) {
+                    break;
+                  }
+
                   if (purchase.pendingCompletePurchase) {
                     await _inAppPurchase.completePurchase(purchase);
                   }
 
                   // Grant credits only after a successful purchase signal.
                   await _userDatasource.addCredits(user.uid, 10);
+                  creditsGranted = true;
+                  if (purchaseKey.isNotEmpty) {
+                    processedPurchaseKeys.add(purchaseKey);
+                  }
 
                   if (!completer.isCompleted) {
                     completer.complete(const Right(null));
@@ -102,6 +119,9 @@ class PurchaseRepositoryImpl implements PurchaseRepository {
                     );
                   }
                 }
+                break;
+              case PurchaseStatus.restored:
+                // Credits are configured as consumables; do not restore/grant.
                 break;
             }
           }

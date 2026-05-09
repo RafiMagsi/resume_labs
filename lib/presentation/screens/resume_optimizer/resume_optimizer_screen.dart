@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/errors/failure.dart';
+import '../../../domain/entities/contact_details.dart';
 import '../../../domain/entities/education.dart';
 import '../../../domain/entities/skill.dart';
 import '../../../domain/entities/work_experience.dart';
@@ -39,6 +40,7 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
   late TextEditingController _optimizationPrompt;
   late TabController _tabController;
   bool _isEditMode = false;
+  ContactDetails? _extractedContactDetails;
 
   @override
   void initState() {
@@ -88,16 +90,6 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
     if (formState.personalSummary.isNotEmpty) {
       buffer.writeln('\nPROFESSIONAL SUMMARY');
       buffer.writeln(formState.personalSummary);
-    }
-
-    // Contact Details
-    buffer.writeln('\nCONTACT');
-    buffer.writeln('Email: ${formState.contactDetails.email}');
-    if ((formState.contactDetails.phone ?? '').isNotEmpty) {
-      buffer.writeln('Phone: ${formState.contactDetails.phone}');
-    }
-    if ((formState.contactDetails.location ?? '').isNotEmpty) {
-      buffer.writeln('Location: ${formState.contactDetails.location}');
     }
 
     // Work Experience
@@ -178,9 +170,14 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
       }
 
       final prompt = _optimizationPrompt.text.trim();
+
+      // Extract personal/contact details locally, then strip them before sending to AI.
+      _extractedContactDetails = _extractContactDetails(resumeText);
+      final sanitized = _stripContactDetailsFromText(resumeText);
+
       ref
           .read(resumeOptimizationNotifierProvider.notifier)
-          .optimizeResume(resumeText, customPrompt: prompt);
+          .optimizeResume(sanitized, customPrompt: prompt);
     } catch (e) {
       ErrorDialog.show(
         context,
@@ -192,6 +189,7 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
 
   void _handleFileUploaded(String extractedText) {
     _resumeController.text = extractedText;
+    _extractedContactDetails = _extractContactDetails(extractedText);
     _tabController.animateTo(1); // Switch to paste tab
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Resume text extracted successfully!')),
@@ -501,6 +499,31 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
         debugPrint(
             '[ResumeOptimizer] Creating NEW resume record (AI Optimize)');
         notifier.reset(userId: userId);
+
+        // Restore locally-extracted personal/contact details (never sent to AI).
+        final contact = _extractedContactDetails;
+        if (contact != null) {
+          final fullName = (contact.fullName ?? '').trim();
+          if (fullName.isNotEmpty) notifier.updateContactFullName(fullName);
+
+          final email = (contact.email ?? '').trim();
+          if (email.isNotEmpty) notifier.updateContactEmail(email);
+
+          final phone = (contact.phone ?? '').trim();
+          if (phone.isNotEmpty) notifier.updateContactPhone(phone);
+
+          final location = (contact.location ?? '').trim();
+          if (location.isNotEmpty) notifier.updateContactLocation(location);
+
+          final website = (contact.website ?? '').trim();
+          if (website.isNotEmpty) notifier.updateContactWebsite(website);
+
+          final linkedin = (contact.linkedin ?? '').trim();
+          if (linkedin.isNotEmpty) notifier.updateContactLinkedin(linkedin);
+
+          final github = (contact.github ?? '').trim();
+          if (github.isNotEmpty) notifier.updateContactGithub(github);
+        }
       }
 
       // Parse JSON and update each section directly
@@ -1018,6 +1041,85 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
     _resumeController.clear();
     _optimizationPrompt.clear();
     _tabController.animateTo(0);
+    _extractedContactDetails = null;
     ref.invalidate(resumeOptimizationNotifierProvider);
+  }
+
+  ContactDetails _extractContactDetails(String text) {
+    final raw = text.trim();
+    if (raw.isEmpty) return const ContactDetails();
+
+    final email = RegExp(
+      r'([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})',
+      caseSensitive: false,
+    ).firstMatch(raw)?.group(1);
+
+    final phone = RegExp(
+      r'(\+?\d[\d\s\-\(\)]{7,}\d)',
+    ).firstMatch(raw)?.group(1);
+
+    final linkedin = RegExp(
+      r'(https?://[^\s]*linkedin\.com/[^\s]+)',
+      caseSensitive: false,
+    ).firstMatch(raw)?.group(1);
+
+    final github = RegExp(
+      r'(https?://[^\s]*github\.com/[^\s]+)',
+      caseSensitive: false,
+    ).firstMatch(raw)?.group(1);
+
+    final urls = RegExp(r'(https?://\S+)', caseSensitive: false)
+        .allMatches(raw)
+        .map((m) => m.group(1))
+        .whereType<String>()
+        .toList();
+
+    final website = urls.firstWhere(
+      (u) =>
+          !u.toLowerCase().contains('linkedin.com') &&
+          !u.toLowerCase().contains('github.com'),
+      orElse: () => '',
+    );
+
+    String? fullName;
+    for (final line in raw.split('\n').map((l) => l.trim())) {
+      if (line.isEmpty) continue;
+      if (email != null && line.contains(email)) continue;
+      if (line.toLowerCase().contains('http')) continue;
+      if (line.length > 60) continue;
+      fullName = line;
+      break;
+    }
+
+    return ContactDetails(
+      fullName: fullName,
+      email: email,
+      phone: phone,
+      website: website.isEmpty ? null : website,
+      linkedin: linkedin,
+      github: github,
+    );
+  }
+
+  String _stripContactDetailsFromText(String text) {
+    final emailRegex = RegExp(
+      r'[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}',
+      caseSensitive: false,
+    );
+    final phoneRegex = RegExp(r'\+?\d[\d\s\-\(\)]{7,}\d');
+    final urlRegex = RegExp(r'https?://\S+', caseSensitive: false);
+
+    final kept = <String>[];
+    for (final line in text.split('\n')) {
+      final trimmed = line.trim();
+      if (trimmed.isEmpty) continue;
+      if (emailRegex.hasMatch(trimmed) ||
+          phoneRegex.hasMatch(trimmed) ||
+          urlRegex.hasMatch(trimmed)) {
+        continue;
+      }
+      kept.add(line);
+    }
+    return kept.join('\n').trim();
   }
 }
