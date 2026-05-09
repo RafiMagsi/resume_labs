@@ -17,6 +17,7 @@ import '../../providers/resume/resume_optimization_provider.dart';
 import '../../widgets/shared/credits_paywall.dart';
 import '../../widgets/shared/error_dialog.dart';
 import '../../widgets/shared/app_loader.dart';
+import '../../widgets/shared/ai_resume_disclosure_dialog.dart';
 import 'widgets/resume_optimizer_input.dart';
 import 'widgets/resume_optimization_result.dart';
 import 'widgets/resume_file_upload.dart';
@@ -146,7 +147,7 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
     super.dispose();
   }
 
-  void _handleOptimize() {
+  Future<void> _handleOptimize() async {
     final resumeText = _resumeController.text.trim();
     if (resumeText.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -156,6 +157,10 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
     }
 
     try {
+      final ok = await AiResumeDisclosureDialog.show(context);
+      if (!mounted) return;
+      if (!ok) return;
+
       final creditsAsync = ref.read(creditsAvailableProvider);
       if (creditsAsync.hasError) {
         ErrorDialog.show(
