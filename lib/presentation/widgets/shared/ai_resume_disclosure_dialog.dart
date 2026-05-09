@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_sizes.dart';
 
 class AiResumeDisclosureDialog {
   static const _privacyUrl =
@@ -90,7 +91,8 @@ class _AiResumeDisclosureDialog extends StatelessWidget {
                         backgroundColor: AppColors.secondarySurface,
                         side: const BorderSide(color: AppColors.border),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius:
+                              BorderRadius.circular(AppSizes.dialogRadius),
                         ),
                       ),
                       onPressed: () => Navigator.of(context).pop(false),
@@ -106,7 +108,8 @@ class _AiResumeDisclosureDialog extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius:
+                              BorderRadius.circular(AppSizes.dialogRadius),
                         ),
                       ),
                       onPressed: () => Navigator.of(context).pop(true),

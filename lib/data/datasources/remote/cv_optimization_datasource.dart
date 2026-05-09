@@ -70,6 +70,17 @@ Your entire response must be ONLY the JSON object, nothing else.
 Use this exact JSON structure:
 {
   "title": "Job Title/Professional Role",
+  "contactDetails": {
+    "fullName": "Full name",
+    "email": "email@example.com",
+    "phone": "+123456789",
+    "location": "City, Country",
+    "website": "example.com",
+    "linkedin": "linkedin.com/in/username",
+    "github": "github.com/username",
+    "dateOfBirth": "1990-01-01",
+    "nationality": "Nationality"
+  },
   "personalSummary": "Enhanced 3-4 sentence professional summary",
   "workExperiences": [
     {
@@ -98,6 +109,8 @@ Use this exact JSON structure:
 }
 
 Rules:
+- Preserve and extract contact/personal details from the CV into "contactDetails" when present.
+- If a contact detail is not present in the original CV, set it to null (do not invent).
 - Improve weak bullet points with strong action verbs
 - Add relevant keywords from the industry
 - Enhance with professional tone
@@ -127,8 +140,8 @@ Skills Optimization:
           )
           .timeout(
             const Duration(seconds: 45),
-            onTimeout: () =>
-                throw AppException('CV optimization request timed out after 45 seconds. Check your internet connection.'),
+            onTimeout: () => throw AppException(
+                'CV optimization request timed out after 45 seconds. Check your internet connection.'),
           );
 
       if (response.statusCode == 200) {
@@ -153,14 +166,16 @@ Skills Optimization:
           final choices = apiResponse['choices'] as List?;
 
           if (choices == null || choices.isEmpty) {
-            throw AppException('OpenAI returned no response. Please try again.');
+            throw AppException(
+                'OpenAI returned no response. Please try again.');
           }
 
-          final content = (choices[0] as Map<String, dynamic>?)
-              ?['message']?['content'] as String?;
+          final content = (choices[0] as Map<String, dynamic>?)?['message']
+              ?['content'] as String?;
 
           if (content == null || content.isEmpty) {
-            throw AppException('Failed to process the optimization. Please try again.');
+            throw AppException(
+                'Failed to process the optimization. Please try again.');
           }
 
           // Validate that response is valid JSON with expected fields
@@ -188,11 +203,14 @@ Skills Optimization:
           );
         }
       } else if (response.statusCode == 401) {
-        throw AppException('OpenAI API key is invalid. Please contact support.');
+        throw AppException(
+            'OpenAI API key is invalid. Please contact support.');
       } else if (response.statusCode == 429) {
-        throw AppException('API rate limit exceeded. Please wait a moment and try again.');
+        throw AppException(
+            'API rate limit exceeded. Please wait a moment and try again.');
       } else if (response.statusCode == 500 || response.statusCode == 503) {
-        throw AppException('OpenAI service is temporarily unavailable. Please try again later.');
+        throw AppException(
+            'OpenAI service is temporarily unavailable. Please try again later.');
       } else {
         throw AppException(
           'Failed to optimize CV: Server returned ${response.statusCode}. Please check your connection and try again.',
@@ -201,7 +219,8 @@ Skills Optimization:
     } on AppException {
       rethrow;
     } catch (e) {
-      throw AppException('CV optimization failed: Check your internet connection and try again. Error: $e');
+      throw AppException(
+          'CV optimization failed: Check your internet connection and try again. Error: $e');
     }
   }
 
@@ -260,18 +279,21 @@ Skills Optimization:
     if (cvText.isEmpty) {
       return _ValidationResult(
         isValid: false,
-        message: 'The document is empty. Please provide a valid resume document.',
+        message:
+            'The document is empty. Please provide a valid resume document.',
       );
     }
 
     final text = cvText.toLowerCase();
-    final wordCount = cvText.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).length;
+    final wordCount =
+        cvText.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).length;
 
     // Must have minimum content
     if (wordCount < 15) {
       return _ValidationResult(
         isValid: false,
-        message: 'The document is too short. Please provide a resume with at least 15 words containing professional information.',
+        message:
+            'The document is too short. Please provide a resume with at least 15 words containing professional information.',
       );
     }
 
@@ -314,14 +336,17 @@ Skills Optimization:
     if (matchedKeywords < 1) {
       return _ValidationResult(
         isValid: false,
-        message: 'This doesn\'t appear to be a resume. Please upload a document that includes professional information such as experience, education, or skills.',
+        message:
+            'This doesn\'t appear to be a resume. Please upload a document that includes professional information such as experience, education, or skills.',
       );
     }
 
     // Check if it contains mostly readable content
     final readableChars = cvText
         .split('')
-        .where((char) => RegExp(r'[a-zA-Z0-9\s\.\,\-\:\;\(\)\&\@\#\$\%\*\+\=\[\]\{\}]').hasMatch(char))
+        .where((char) =>
+            RegExp(r'[a-zA-Z0-9\s\.\,\-\:\;\(\)\&\@\#\$\%\*\+\=\[\]\{\}]')
+                .hasMatch(char))
         .length;
 
     final readableRatio = readableChars / cvText.length;
@@ -329,21 +354,26 @@ Skills Optimization:
     if (readableRatio < 0.5) {
       return _ValidationResult(
         isValid: false,
-        message: 'The document contains too much unreadable or corrupted content. Please ensure you\'ve uploaded a valid resume file (PDF, DOCX, or TXT).',
+        message:
+            'The document contains too much unreadable or corrupted content. Please ensure you\'ve uploaded a valid resume file (PDF, DOCX, or TXT).',
       );
     }
 
     // Check for suspicious patterns (binary data, encoding issues)
     final suspiciousRatio = cvText
-        .split('')
-        .where((char) => char.codeUnitAt(0) > 127 &&
-            !RegExp(r'[À-ÿ]').hasMatch(char)) // Allow common accented characters
-        .length / cvText.length;
+            .split('')
+            .where((char) =>
+                char.codeUnitAt(0) > 127 &&
+                !RegExp(r'[À-ÿ]')
+                    .hasMatch(char)) // Allow common accented characters
+            .length /
+        cvText.length;
 
     if (suspiciousRatio > 0.2) {
       return _ValidationResult(
         isValid: false,
-        message: 'The document appears to be corrupted or in an unsupported format. Please re-save your resume as PDF, DOCX, or plain text.',
+        message:
+            'The document appears to be corrupted or in an unsupported format. Please re-save your resume as PDF, DOCX, or plain text.',
       );
     }
 
@@ -382,15 +412,18 @@ Skills Optimization:
     // Validate field types if they exist
     if (parsed.containsKey('workExperiences') &&
         parsed['workExperiences'] is! List) {
-      throw AppException('Invalid resume structure: work experiences format is incorrect.');
+      throw AppException(
+          'Invalid resume structure: work experiences format is incorrect.');
     }
 
     if (parsed.containsKey('educations') && parsed['educations'] is! List) {
-      throw AppException('Invalid resume structure: education format is incorrect.');
+      throw AppException(
+          'Invalid resume structure: education format is incorrect.');
     }
 
     if (parsed.containsKey('skills') && parsed['skills'] is! List) {
-      throw AppException('Invalid resume structure: skills format is incorrect.');
+      throw AppException(
+          'Invalid resume structure: skills format is incorrect.');
     }
   }
 }

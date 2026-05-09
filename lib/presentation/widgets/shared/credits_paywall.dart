@@ -5,8 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../injection/injection_container.dart';
-import 'app_loader.dart';
-import 'error_dialog.dart';
+import 'dialog_manager.dart';
 
 class CreditsPaywall extends ConsumerWidget {
   final VoidCallback onClose;
@@ -21,7 +20,9 @@ class CreditsPaywall extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSizes.sheetRadius),
+        ),
       ),
       builder: (_) => CreditsPaywall(
         onClose: () => Navigator.pop(context),
@@ -159,10 +160,11 @@ class CreditsPaywall extends ConsumerWidget {
                   children: [
                     Text(
                       AppStrings.creditsAmount,
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.primary,
-                          ),
+                      style:
+                          Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.primary,
+                              ),
                     ),
                     const SizedBox(width: 12),
                     Text(
@@ -236,13 +238,8 @@ class CreditsPaywall extends ConsumerWidget {
   }
 
   Future<void> _handlePurchase(BuildContext context, WidgetRef ref) async {
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const Center(
-        child: AppLoader(size: 40),
-      ),
-    );
+    DialogManager.showBlockingLoader(context,
+        message: 'Processing purchase...');
 
     final useCase = ref.read(purchaseCreditsUseCaseProvider);
     final result = await useCase();
@@ -253,7 +250,7 @@ class CreditsPaywall extends ConsumerWidget {
 
     result.fold(
       (failure) {
-        ErrorDialog.show(
+        DialogManager.showFailure(
           context,
           failure: failure,
           title: 'Purchase Failed',
@@ -269,13 +266,8 @@ class CreditsPaywall extends ConsumerWidget {
   }
 
   Future<void> _handleRestore(BuildContext context, WidgetRef ref) async {
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const Center(
-        child: AppLoader(size: 40),
-      ),
-    );
+    DialogManager.showBlockingLoader(context,
+        message: 'Restoring purchases...');
 
     final useCase = ref.read(restorePurchasesUseCaseProvider);
     final result = await useCase();
@@ -286,7 +278,7 @@ class CreditsPaywall extends ConsumerWidget {
 
     result.fold(
       (failure) {
-        ErrorDialog.show(
+        DialogManager.showFailure(
           context,
           failure: failure,
           title: 'Restore Failed',

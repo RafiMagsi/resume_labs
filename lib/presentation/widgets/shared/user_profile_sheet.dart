@@ -5,14 +5,13 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
-import '../../../core/constants/app_strings.dart';
 import '../../../injection/injection_container.dart';
 import '../../providers/auth/auth_provider.dart';
 import '../../providers/resume/resume_form_provider.dart';
 import '../../providers/resume/resume_optimization_provider.dart';
 import '../../screens/resume_optimizer/resume_optimizer_screen.dart';
-import 'app_loader.dart';
 import 'credits_paywall.dart';
+import 'dialog_manager.dart';
 
 class UserProfileSheet extends ConsumerWidget {
   const UserProfileSheet({super.key});
@@ -23,7 +22,8 @@ class UserProfileSheet extends ConsumerWidget {
     return email.trim().split('@').first.characters.first.toUpperCase();
   }
 
-  String? _profileImageUrlFromSnapshot(DocumentSnapshot<Map<String, dynamic>> snapshot) {
+  String? _profileImageUrlFromSnapshot(
+      DocumentSnapshot<Map<String, dynamic>> snapshot) {
     final data = snapshot.data();
     if (data == null) return null;
 
@@ -62,7 +62,9 @@ class UserProfileSheet extends ConsumerWidget {
     showModalBottomSheet<void>(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSizes.sheetRadius),
+        ),
       ),
       builder: (_) => const UserProfileSheet(),
     );
@@ -139,7 +141,8 @@ class UserProfileSheet extends ConsumerWidget {
                         return Image.network(
                           imageUrl,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _buildAvatarFallback(initial),
+                          errorBuilder: (_, __, ___) =>
+                              _buildAvatarFallback(initial),
                           loadingBuilder: (context, child, loadingProgress) {
                             if (loadingProgress == null) return child;
                             return _buildAvatarFallback(initial);
@@ -376,43 +379,24 @@ class UserProfileSheet extends ConsumerWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: () async {
-            final confirm = await showDialog<bool>(
-              context: context,
-              builder: (dialogContext) {
-                return AlertDialog(
-                  title: const Text('Delete Account'),
-                  content: const Text(
-                    'This permanently deletes your account and all resumes. This action cannot be undone.',
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(dialogContext).pop(false),
-                      child: const Text(AppStrings.cancel),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.of(dialogContext).pop(true),
-                      child: const Text(
-                        'Delete',
-                        style: TextStyle(color: AppColors.error),
-                      ),
-                    ),
-                  ],
-                );
-              },
+            final confirm = await DialogManager.confirm(
+              context,
+              title: 'Delete Account',
+              message:
+                  'This permanently deletes your account and all resumes. This action cannot be undone.',
+              confirmText: 'Delete',
+              isDestructive: true,
             );
 
-            if (confirm != true || !context.mounted) return;
+            if (!confirm || !context.mounted) return;
 
             // Close the bottom sheet first.
             Navigator.of(context).pop();
 
             // Show a blocking loader while deleting.
-            showDialog<void>(
-              context: context,
-              barrierDismissible: false,
-              builder: (_) => const Center(
-                child: AppLoader(size: 36),
-              ),
+            DialogManager.showBlockingLoader(
+              context,
+              message: 'Deleting account...',
             );
 
             final deleteAccountUseCase = ref.read(deleteAccountUseCaseProvider);
@@ -440,7 +424,8 @@ class UserProfileSheet extends ConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.delete_forever_rounded, size: 18, color: AppColors.error),
+              Icon(Icons.delete_forever_rounded,
+                  size: 18, color: AppColors.error),
               const SizedBox(width: 8),
               const Text(
                 'Delete Account',

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../domain/entities/contact_details.dart';
@@ -15,8 +17,15 @@ final resumeFormProvider =
 );
 
 class ResumeFormNotifier extends Notifier<ResumeFormState> {
+  Timer? _templateDebounce;
+  ResumeTemplate? _pendingTemplate;
+
   @override
   ResumeFormState build() {
+    ref.onDispose(() {
+      _templateDebounce?.cancel();
+      _templateDebounce = null;
+    });
     return ResumeFormState.initial();
   }
 
@@ -94,30 +103,44 @@ class ResumeFormNotifier extends Notifier<ResumeFormState> {
       return;
     }
 
-    final resume = Resume(
-      id: state.resumeId!,
-      userId: state.userId!,
-      title: state.title.trim(),
-      personalSummary: state.personalSummary.trim(),
-      photoUrl: state.photoUrl,
-      contactDetails: state.contactDetails,
-      template: template,
-      workExperiences: state.workExperiences,
-      educations: state.educations,
-      skills: state.skills,
-      createdAt: state.createdAt ?? DateTime.now(),
-      updatedAt: DateTime.now(),
-    );
+    // Debounce rapid template switching to avoid repeated writes and preview rebuild storms.
+    _pendingTemplate = template;
+    _templateDebounce?.cancel();
+    _templateDebounce = Timer(const Duration(milliseconds: 350), () async {
+      final pending = _pendingTemplate;
+      if (pending == null) return;
+      _pendingTemplate = null;
 
-    final result = await ref.read(updateResumeUseCaseProvider)(resume);
-    result.match(
-      (failure) {
-        state = state.copyWith(errorMessage: failure.message);
-      },
-      (_) {
-        ref.invalidate(resumeListProvider);
-      },
-    );
+      final current = state;
+      if (!current.isEditing || current.resumeId == null || current.userId == null) {
+        return;
+      }
+
+      final resume = Resume(
+        id: current.resumeId!,
+        userId: current.userId!,
+        title: current.title.trim(),
+        personalSummary: current.personalSummary.trim(),
+        photoUrl: current.photoUrl,
+        contactDetails: current.contactDetails,
+        template: pending,
+        workExperiences: current.workExperiences,
+        educations: current.educations,
+        skills: current.skills,
+        createdAt: current.createdAt ?? DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      final result = await ref.read(updateResumeUseCaseProvider)(resume);
+      result.match(
+        (failure) {
+          state = state.copyWith(errorMessage: failure.message);
+        },
+        (_) {
+          ref.invalidate(resumeListProvider);
+        },
+      );
+    });
   }
 
   void updateContactFullName(String value) {

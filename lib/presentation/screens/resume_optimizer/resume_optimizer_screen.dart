@@ -8,7 +8,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/errors/failure.dart';
-import '../../../domain/entities/contact_details.dart';
 import '../../../domain/entities/education.dart';
 import '../../../domain/entities/skill.dart';
 import '../../../domain/entities/work_experience.dart';
@@ -16,7 +15,7 @@ import '../../providers/auth/auth_provider.dart';
 import '../../providers/resume/resume_form_provider.dart';
 import '../../providers/resume/resume_optimization_provider.dart';
 import '../../widgets/shared/credits_paywall.dart';
-import '../../widgets/shared/error_dialog.dart';
+import '../../widgets/shared/dialog_manager.dart';
 import '../../widgets/shared/app_loader.dart';
 import '../../widgets/shared/ai_resume_disclosure_dialog.dart';
 import 'widgets/resume_optimizer_input.dart';
@@ -40,7 +39,12 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
   late TextEditingController _optimizationPrompt;
   late TabController _tabController;
   bool _isEditMode = false;
-  ContactDetails? _extractedContactDetails;
+  String? _rawResumeText;
+  bool _sendSummaryToAi = true;
+  bool _sendExperienceToAi = true;
+  bool _sendEducationToAi = true;
+  bool _sendSkillsToAi = true;
+  bool _isScrubbingPersonalInfo = false;
 
   @override
   void initState() {
@@ -48,6 +52,8 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
     _resumeController = TextEditingController();
     _optimizationPrompt = TextEditingController();
     _tabController = TabController(length: 2, vsync: this);
+
+    _resumeController.addListener(_scrubPersonalInfoIfNeeded);
 
     // Always start with a clean optimization state (new upload/new prompt).
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -73,7 +79,13 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
   void _populateFromExistingResume(ResumeFormState formState) {
     // Extract text from current resume for optimization
     final resumeText = _extractResumeText(formState);
-    _resumeController.text = resumeText;
+    _rawResumeText = resumeText;
+    _isScrubbingPersonalInfo = true;
+    try {
+      _resumeController.text = _sanitizeForDisplay(resumeText);
+    } finally {
+      _isScrubbingPersonalInfo = false;
+    }
     _tabController.animateTo(1); // Switch to paste tab
   }
 
@@ -133,6 +145,7 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
 
   @override
   void dispose() {
+    _resumeController.removeListener(_scrubPersonalInfoIfNeeded);
     _resumeController.dispose();
     _optimizationPrompt.dispose();
     _tabController.dispose();
@@ -155,7 +168,7 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
 
       final creditsAsync = ref.read(creditsAvailableProvider);
       if (creditsAsync.hasError) {
-        ErrorDialog.show(
+        DialogManager.showFailure(
           context,
           failure: ServerFailure(creditsAsync.error.toString()),
           title: 'Error Loading Credits',
@@ -171,15 +184,17 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
 
       final prompt = _optimizationPrompt.text.trim();
 
-      // Extract personal/contact details locally, then strip them before sending to AI.
-      _extractedContactDetails = _extractContactDetails(resumeText);
-      final sanitized = _stripContactDetailsFromText(resumeText);
+      final rawForAi = (_rawResumeText ?? _resumeController.text).trim();
+      final aiInput = _buildAiInput(
+        rawForAi,
+        includeContactDetails: true,
+      );
 
       ref
           .read(resumeOptimizationNotifierProvider.notifier)
-          .optimizeResume(sanitized, customPrompt: prompt);
+          .optimizeResume(aiInput, customPrompt: prompt);
     } catch (e) {
-      ErrorDialog.show(
+      DialogManager.showFailure(
         context,
         failure: ServerFailure(e.toString()),
         title: 'Error',
@@ -188,8 +203,13 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
   }
 
   void _handleFileUploaded(String extractedText) {
-    _resumeController.text = extractedText;
-    _extractedContactDetails = _extractContactDetails(extractedText);
+    _rawResumeText = extractedText;
+    _isScrubbingPersonalInfo = true;
+    try {
+      _resumeController.text = _sanitizeForDisplay(extractedText);
+    } finally {
+      _isScrubbingPersonalInfo = false;
+    }
     _tabController.animateTo(1); // Switch to paste tab
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Resume text extracted successfully!')),
@@ -222,7 +242,8 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
               else if (resumeState.hasValue && resumeState.value != null)
                 ResumeOptimizationResult(
                   originalResume: _resumeController.text,
-                  optimizedResume: resumeState.value!,
+                  optimizedResume:
+                      _sanitizeOptimizationResultForDisplay(resumeState.value!),
                   onOptimizeAnother: _resetForm,
                   onCreateResume: () =>
                       _handleImportToResume(resumeState.value!),
@@ -288,6 +309,19 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
     );
   }
 
+  String _sanitizeOptimizationResultForDisplay(String text) {
+    // Optimization result is JSON, which may include contact details.
+    // Keep them out of the UI for privacy/compliance.
+    try {
+      final decoded = jsonDecode(text);
+      if (decoded is Map<String, dynamic>) {
+        decoded.remove('contactDetails');
+        return const JsonEncoder.withIndent('  ').convert(decoded);
+      }
+    } catch (_) {}
+    return _stripContactDetailsFromText(text);
+  }
+
   Widget _buildOptimizationPromptInput() {
     const maxLength = 200;
     final currentLength = _optimizationPrompt.text.length;
@@ -334,6 +368,8 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
           ),
           onChanged: (_) => setState(() {}),
         ),
+        const SizedBox(height: 16),
+        _buildAiScopeToggle(),
         const SizedBox(height: 16),
         SizedBox(
           width: double.infinity,
@@ -478,7 +514,7 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
       if (userId == null || userId.isEmpty) {
         debugPrint('[ResumeOptimizer] ✗ User not authenticated');
         if (context.mounted) {
-          ErrorDialog.show(
+          DialogManager.showFailure(
             context,
             failure: const AuthFailure(
                 'User not authenticated. Please sign in again.'),
@@ -499,31 +535,6 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
         debugPrint(
             '[ResumeOptimizer] Creating NEW resume record (AI Optimize)');
         notifier.reset(userId: userId);
-
-        // Restore locally-extracted personal/contact details (never sent to AI).
-        final contact = _extractedContactDetails;
-        if (contact != null) {
-          final fullName = (contact.fullName ?? '').trim();
-          if (fullName.isNotEmpty) notifier.updateContactFullName(fullName);
-
-          final email = (contact.email ?? '').trim();
-          if (email.isNotEmpty) notifier.updateContactEmail(email);
-
-          final phone = (contact.phone ?? '').trim();
-          if (phone.isNotEmpty) notifier.updateContactPhone(phone);
-
-          final location = (contact.location ?? '').trim();
-          if (location.isNotEmpty) notifier.updateContactLocation(location);
-
-          final website = (contact.website ?? '').trim();
-          if (website.isNotEmpty) notifier.updateContactWebsite(website);
-
-          final linkedin = (contact.linkedin ?? '').trim();
-          if (linkedin.isNotEmpty) notifier.updateContactLinkedin(linkedin);
-
-          final github = (contact.github ?? '').trim();
-          if (github.isNotEmpty) notifier.updateContactGithub(github);
-        }
       }
 
       // Parse JSON and update each section directly
@@ -568,7 +579,7 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
         debugPrint('[ResumeOptimizer] ✗ Failed to save resume');
         if (mounted) {
           final formState = ref.read(resumeFormProvider);
-          ErrorDialog.show(
+          DialogManager.showFailure(
             context,
             failure: ServerFailure(
               formState.errorMessage ??
@@ -581,7 +592,7 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
     } catch (e) {
       debugPrint('[ResumeOptimizer] ✗ Error: $e');
       if (mounted) {
-        ErrorDialog.show(
+        DialogManager.showFailure(
           context,
           failure: ServerFailure('Failed to import resume: $e'),
           title: 'Import Error',
@@ -949,6 +960,32 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
       notifier.updateTitle(title);
       debugPrint('[ResumeOptimizer] ✓ Title: $title');
 
+      // Extract contact details from AI JSON. Keep out of text boxes, but do
+      // restore them into the resume form model.
+      final contact = data['contactDetails'];
+      if (contact is Map<String, dynamic>) {
+        void setIfNotEmpty(
+          String key,
+          void Function(String value) setter,
+        ) {
+          final value = contact[key];
+          if (value is! String) return;
+          final trimmed = value.trim();
+          if (trimmed.isEmpty) return;
+          setter(trimmed);
+        }
+
+        setIfNotEmpty('fullName', notifier.updateContactFullName);
+        setIfNotEmpty('email', notifier.updateContactEmail);
+        setIfNotEmpty('phone', notifier.updateContactPhone);
+        setIfNotEmpty('location', notifier.updateContactLocation);
+        setIfNotEmpty('website', notifier.updateContactWebsite);
+        setIfNotEmpty('linkedin', notifier.updateContactLinkedin);
+        setIfNotEmpty('github', notifier.updateContactGithub);
+        setIfNotEmpty('dateOfBirth', notifier.updateContactDateOfBirth);
+        setIfNotEmpty('nationality', notifier.updateContactNationality);
+      }
+
       // Extract personal summary
       final summary = data['personalSummary'] as String? ?? '';
       if (summary.isNotEmpty) {
@@ -1041,64 +1078,247 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
     _resumeController.clear();
     _optimizationPrompt.clear();
     _tabController.animateTo(0);
-    _extractedContactDetails = null;
+    _rawResumeText = null;
+    _sendSummaryToAi = true;
+    _sendExperienceToAi = true;
+    _sendEducationToAi = true;
+    _sendSkillsToAi = true;
     ref.invalidate(resumeOptimizationNotifierProvider);
   }
 
-  ContactDetails _extractContactDetails(String text) {
-    final raw = text.trim();
-    if (raw.isEmpty) return const ContactDetails();
-
-    final email = RegExp(
-      r'([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})',
-      caseSensitive: false,
-    ).firstMatch(raw)?.group(1);
-
-    final phone = RegExp(
-      r'(\+?\d[\d\s\-\(\)]{7,}\d)',
-    ).firstMatch(raw)?.group(1);
-
-    final linkedin = RegExp(
-      r'(https?://[^\s]*linkedin\.com/[^\s]+)',
-      caseSensitive: false,
-    ).firstMatch(raw)?.group(1);
-
-    final github = RegExp(
-      r'(https?://[^\s]*github\.com/[^\s]+)',
-      caseSensitive: false,
-    ).firstMatch(raw)?.group(1);
-
-    final urls = RegExp(r'(https?://\S+)', caseSensitive: false)
-        .allMatches(raw)
-        .map((m) => m.group(1))
-        .whereType<String>()
-        .toList();
-
-    final website = urls.firstWhere(
-      (u) =>
-          !u.toLowerCase().contains('linkedin.com') &&
-          !u.toLowerCase().contains('github.com'),
-      orElse: () => '',
-    );
-
-    String? fullName;
-    for (final line in raw.split('\n').map((l) => l.trim())) {
-      if (line.isEmpty) continue;
-      if (email != null && line.contains(email)) continue;
-      if (line.toLowerCase().contains('http')) continue;
-      if (line.length > 60) continue;
-      fullName = line;
-      break;
+  void _scrubPersonalInfoIfNeeded() {
+    if (_isScrubbingPersonalInfo) return;
+    final raw = _resumeController.text;
+    if (raw.trim().isEmpty) {
+      _rawResumeText = null;
+      return;
     }
 
-    return ContactDetails(
-      fullName: fullName,
-      email: email,
-      phone: phone,
-      website: website.isEmpty ? null : website,
-      linkedin: linkedin,
-      github: github,
+    final looksLikeHasPii =
+        _containsPersonalInfo(raw) || _looksLikeNameLine(raw);
+
+    // Preserve a raw version that may include contact details for the API call.
+    // Do not overwrite it with already-sanitized editor text.
+    if (_rawResumeText == null || looksLikeHasPii) {
+      _rawResumeText = raw;
+    }
+
+    if (!looksLikeHasPii) return;
+
+    _isScrubbingPersonalInfo = true;
+    try {
+      final sanitized = _sanitizeForDisplay(raw);
+      if (sanitized != raw) {
+        final selection = _resumeController.selection;
+        _resumeController.value = TextEditingValue(
+          text: sanitized,
+          selection: TextSelection.collapsed(
+            offset: selection.baseOffset.clamp(0, sanitized.length),
+          ),
+        );
+      }
+    } finally {
+      _isScrubbingPersonalInfo = false;
+    }
+  }
+
+  bool _containsPersonalInfo(String text) {
+    final emailRegex = RegExp(
+      r'[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}',
+      caseSensitive: false,
     );
+    final phoneRegex = RegExp(r'\+?\d[\d\s\-\(\)]{7,}\d');
+    final urlRegex = RegExp(r'https?://\S+', caseSensitive: false);
+    final domainRegex = RegExp(
+      r'\b[a-z0-9][a-z0-9\-]{0,62}\.(com|net|org|io|dev|app|me|co|ai|ae|uk|us|pk|in|edu|gov)\b',
+      caseSensitive: false,
+    );
+    final linkedInRegex = RegExp(r'linkedin\.com/\S+', caseSensitive: false);
+    final githubRegex = RegExp(r'github\.com/\S+', caseSensitive: false);
+    return emailRegex.hasMatch(text) ||
+        phoneRegex.hasMatch(text) ||
+        urlRegex.hasMatch(text) ||
+        domainRegex.hasMatch(text) ||
+        linkedInRegex.hasMatch(text) ||
+        githubRegex.hasMatch(text);
+  }
+
+  bool _looksLikeNameLine(String text) {
+    final firstLine = text
+        .split('\n')
+        .map((e) => e.trim())
+        .firstWhere((e) => e.isNotEmpty, orElse: () => '');
+    if (firstLine.isEmpty) return false;
+    if (firstLine.length > 50) return false;
+    if (RegExp(r'[@0-9]').hasMatch(firstLine)) return false;
+    // 2-4 word name-like
+    final words = firstLine.split(RegExp(r'\s+')).where((w) => w.isNotEmpty);
+    final count = words.length;
+    if (count < 2 || count > 4) return false;
+    // Avoid headers like "PROFESSIONAL SUMMARY"
+    if (firstLine.toUpperCase() == firstLine) return false;
+    return true;
+  }
+
+  String _sanitizeForDisplay(String text) {
+    // Remove obvious contact blocks and contact-like lines.
+    final stripped = _stripContactDetailsFromText(text);
+    // Also remove the first line if it looks like a name.
+    final lines = stripped.split('\n');
+    if (lines.isEmpty) return stripped.trim();
+    final firstNonEmptyIndex = lines.indexWhere((l) => l.trim().isNotEmpty);
+    if (firstNonEmptyIndex == -1) return stripped.trim();
+
+    final firstLine = lines[firstNonEmptyIndex];
+    if (_looksLikeNameLine(firstLine)) {
+      lines.removeAt(firstNonEmptyIndex);
+    }
+
+    return lines.join('\n').trim();
+  }
+
+  Widget _buildAiScopeToggle() {
+    Widget chip({
+      required String label,
+      required bool value,
+      required ValueChanged<bool> onChanged,
+    }) {
+      return FilterChip(
+        label: Text(label),
+        selected: value,
+        showCheckmark: false,
+        onSelected: onChanged,
+        selectedColor: AppColors.primarySoft,
+        backgroundColor: AppColors.secondarySurface,
+        side: BorderSide(
+          color: value ? AppColors.primaryLight : AppColors.border,
+        ),
+        labelStyle: TextStyle(
+          fontWeight: FontWeight.w600,
+          color: value ? AppColors.primary : AppColors.textSecondary,
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Data sent to AI',
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Choose which sections to include. Contact details are not shown in the editor.',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textSecondary,
+              ),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            chip(
+              label: 'Summary',
+              value: _sendSummaryToAi,
+              onChanged: (v) => setState(() => _sendSummaryToAi = v),
+            ),
+            chip(
+              label: 'Experience',
+              value: _sendExperienceToAi,
+              onChanged: (v) => setState(() => _sendExperienceToAi = v),
+            ),
+            chip(
+              label: 'Education',
+              value: _sendEducationToAi,
+              onChanged: (v) => setState(() => _sendEducationToAi = v),
+            ),
+            chip(
+              label: 'Skills',
+              value: _sendSkillsToAi,
+              onChanged: (v) => setState(() => _sendSkillsToAi = v),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  String _buildAiInput(
+    String resumeText, {
+    required bool includeContactDetails,
+  }) {
+    final base = includeContactDetails
+        ? resumeText.trim()
+        : _stripContactDetailsFromText(resumeText);
+
+    if (_sendSummaryToAi &&
+        _sendExperienceToAi &&
+        _sendEducationToAi &&
+        _sendSkillsToAi) {
+      return base;
+    }
+
+    final sections = _splitIntoSections(base);
+    if (sections.isEmpty) return base;
+
+    final buffer = StringBuffer();
+    if (_sendSummaryToAi && (sections['summary'] ?? '').trim().isNotEmpty) {
+      buffer.writeln('PROFESSIONAL SUMMARY');
+      buffer.writeln(sections['summary']!.trim());
+      buffer.writeln();
+    }
+    if (_sendExperienceToAi &&
+        (sections['experience'] ?? '').trim().isNotEmpty) {
+      buffer.writeln('WORK EXPERIENCE');
+      buffer.writeln(sections['experience']!.trim());
+      buffer.writeln();
+    }
+    if (_sendEducationToAi && (sections['education'] ?? '').trim().isNotEmpty) {
+      buffer.writeln('EDUCATION');
+      buffer.writeln(sections['education']!.trim());
+      buffer.writeln();
+    }
+    if (_sendSkillsToAi && (sections['skills'] ?? '').trim().isNotEmpty) {
+      buffer.writeln('SKILLS');
+      buffer.writeln(sections['skills']!.trim());
+    }
+
+    final built = buffer.toString().trim();
+    return built.isEmpty ? base : built;
+  }
+
+  bool _isSectionHeader(String line) {
+    final t = line.trim();
+    if (t.isEmpty) return false;
+    final upper = t.toUpperCase();
+    const known = {
+      'PROFESSIONAL SUMMARY',
+      'SUMMARY',
+      'WORK EXPERIENCE',
+      'EXPERIENCE',
+      'EDUCATION',
+      'SKILLS',
+      'PROJECTS',
+      'CERTIFICATIONS',
+      'LANGUAGES',
+      'INTERESTS',
+      'REFERENCES',
+      'ACHIEVEMENTS',
+      'AWARDS',
+      'PUBLICATIONS',
+      'OBJECTIVE',
+    };
+    if (known.contains(upper)) return true;
+    // Generic all-caps header (avoid false positives on normal lines).
+    if (t.length <= 32 && t == upper && RegExp(r'^[A-Z &/]+$').hasMatch(t)) {
+      return true;
+    }
+    return false;
   }
 
   String _stripContactDetailsFromText(String text) {
@@ -1108,14 +1328,51 @@ class _ResumeOptimizerScreenState extends ConsumerState<ResumeOptimizerScreen>
     );
     final phoneRegex = RegExp(r'\+?\d[\d\s\-\(\)]{7,}\d');
     final urlRegex = RegExp(r'https?://\S+', caseSensitive: false);
+    final domainRegex = RegExp(
+      r'\b[a-z0-9][a-z0-9\-]{0,62}\.(com|net|org|io|dev|app|me|co|ai|ae|uk|us|pk|in|edu|gov)\b',
+      caseSensitive: false,
+    );
+    final linkedInRegex = RegExp(r'linkedin\.com/\S+', caseSensitive: false);
+    final githubRegex = RegExp(r'github\.com/\S+', caseSensitive: false);
+    final contactHeaderRegex = RegExp(
+      r'^(contact|contact info|contact information|personal details|personal information)\b',
+      caseSensitive: false,
+    );
 
     final kept = <String>[];
+    var inContactBlock = false;
     for (final line in text.split('\n')) {
       final trimmed = line.trim();
-      if (trimmed.isEmpty) continue;
-      if (emailRegex.hasMatch(trimmed) ||
+      if (trimmed.isEmpty) {
+        if (inContactBlock) continue;
+        continue;
+      }
+
+      if (contactHeaderRegex.hasMatch(trimmed)) {
+        inContactBlock = true;
+        continue;
+      }
+
+      if (inContactBlock) {
+        if (_isSectionHeader(trimmed) &&
+            !contactHeaderRegex.hasMatch(trimmed)) {
+          inContactBlock = false;
+          kept.add(line);
+        }
+        continue;
+      }
+
+      final lower = trimmed.toLowerCase();
+      final looksLikeContactLine = emailRegex.hasMatch(trimmed) ||
           phoneRegex.hasMatch(trimmed) ||
-          urlRegex.hasMatch(trimmed)) {
+          urlRegex.hasMatch(trimmed) ||
+          domainRegex.hasMatch(trimmed) ||
+          linkedInRegex.hasMatch(trimmed) ||
+          githubRegex.hasMatch(trimmed) ||
+          lower.contains('linkedin') ||
+          lower.contains('github');
+
+      if (looksLikeContactLine) {
         continue;
       }
       kept.add(line);

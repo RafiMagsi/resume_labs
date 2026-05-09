@@ -30,7 +30,8 @@ abstract final class AppSizes {
   static const double screenPadding = 20;
   static const double sectionGap = 24;
   static const double cardRadius = radiusMd;
-  static const double dialogRadius = radiusLg;
+  static const double dialogRadius = radiusSm;
+  static const double sheetRadius = radiusMd;
 
   // Elevation
   static const double elevationSm = 2;

@@ -6,12 +6,12 @@ import '../../../core/utils/input_validators.dart';
 import '../../providers/auth/sign_in_provider.dart';
 import '../../widgets/shared/app_button.dart';
 import '../../widgets/shared/app_text_field.dart';
+import '../../widgets/shared/dialog_manager.dart';
 import '../../widgets/shared/loading_overlay.dart';
 import '../history/history_screen.dart';
 import 'password_reset_screen.dart';
 import 'register_screen.dart';
 import '../../../core/errors/failure.dart';
-import '../../widgets/shared/error_dialog.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 
@@ -78,7 +78,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         error: (error, _) async {
           if (!mounted) return;
 
-          await ErrorDialog.show(
+          await DialogManager.showFailure(
             context,
             failure: _mapProviderErrorToFailure(error),
             onRetry: _submit,
@@ -210,63 +210,64 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       key: _formKey,
                       child: Column(
                         children: [
-                      AppTextField(
-                        controller: _emailController,
-                        labelText: 'Email',
-                        hintText: 'Enter your email',
-                        keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction.next,
-                        validator: InputValidators.email,
-                        focusNode: _emailFocusNode,
-                        nextFocusNode: _passwordFocusNode,
-                        autofillHints: const [AutofillHints.email],
-                        prefixIcon: const Icon(Icons.email_outlined),
+                          AppTextField(
+                            controller: _emailController,
+                            labelText: 'Email',
+                            hintText: 'Enter your email',
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
+                            validator: InputValidators.email,
+                            focusNode: _emailFocusNode,
+                            nextFocusNode: _passwordFocusNode,
+                            autofillHints: const [AutofillHints.email],
+                            prefixIcon: const Icon(Icons.email_outlined),
+                          ),
+                          const SizedBox(height: 16),
+                          AppTextField(
+                            controller: _passwordController,
+                            labelText: 'Password',
+                            hintText: 'Enter your password',
+                            obscureText: true,
+                            textInputAction: TextInputAction.done,
+                            validator: InputValidators.password,
+                            focusNode: _passwordFocusNode,
+                            autofillHints: const [AutofillHints.password],
+                            prefixIcon: const Icon(Icons.lock_outline),
+                            onFieldSubmitted: (_) => _submit(),
+                          ),
+                          const SizedBox(height: 12),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: AppButton(
+                              text: 'Forgot Password?',
+                              variant: AppButtonVariant.text,
+                              expand: false,
+                              onPressed: signInState.isLoading
+                                  ? null
+                                  : () {
+                                      context
+                                          .push(PasswordResetScreen.routePath);
+                                    },
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          AppButton(
+                            text: 'Sign In',
+                            isLoading: signInState.isLoading,
+                            onPressed: _submit,
+                          ),
+                          const SizedBox(height: 12),
+                          AppButton(
+                            text: 'Create Account',
+                            variant: AppButtonVariant.secondary,
+                            onPressed: signInState.isLoading
+                                ? null
+                                : () {
+                                    context.push(RegisterScreen.routePath);
+                                  },
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      AppTextField(
-                        controller: _passwordController,
-                        labelText: 'Password',
-                        hintText: 'Enter your password',
-                        obscureText: true,
-                        textInputAction: TextInputAction.done,
-                        validator: InputValidators.password,
-                        focusNode: _passwordFocusNode,
-                        autofillHints: const [AutofillHints.password],
-                        prefixIcon: const Icon(Icons.lock_outline),
-                        onFieldSubmitted: (_) => _submit(),
-                      ),
-                      const SizedBox(height: 12),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: AppButton(
-                          text: 'Forgot Password?',
-                          variant: AppButtonVariant.text,
-                          expand: false,
-                          onPressed: signInState.isLoading
-                              ? null
-                              : () {
-                                  context.push(PasswordResetScreen.routePath);
-                                },
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      AppButton(
-                        text: 'Sign In',
-                        isLoading: signInState.isLoading,
-                        onPressed: _submit,
-                      ),
-                      const SizedBox(height: 12),
-                      AppButton(
-                        text: 'Create Account',
-                        variant: AppButtonVariant.secondary,
-                        onPressed: signInState.isLoading
-                            ? null
-                            : () {
-                                context.push(RegisterScreen.routePath);
-                              },
-                      ),
-                    ],
-                  ),
                     ),
                   ),
                 ),

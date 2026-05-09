@@ -48,7 +48,6 @@ class FirebasePdfService {
       };
 
       debugPrint('[FirebasePdfService] Requesting PDF generation from: $url');
-      debugPrint('[FirebasePdfService] Resume title: ${resumeData['title']}');
       debugPrint('[FirebasePdfService] Template: $template');
 
       final response = await http

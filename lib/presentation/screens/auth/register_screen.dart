@@ -6,11 +6,11 @@ import '../../../core/utils/input_validators.dart';
 import '../../providers/auth/sign_up_provider.dart';
 import '../../widgets/shared/app_button.dart';
 import '../../widgets/shared/app_text_field.dart';
+import '../../widgets/shared/dialog_manager.dart';
 import '../../widgets/shared/loading_overlay.dart';
 import '../../widgets/shared/password_strength_indicator.dart';
 import '../history/history_screen.dart';
 import '../../../core/errors/failure.dart';
-import '../../widgets/shared/error_dialog.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -85,7 +85,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         error: (error, _) async {
           if (!mounted) return;
 
-          await ErrorDialog.show(
+          await DialogManager.showFailure(
             context,
             failure: _mapProviderErrorToFailure(error),
             onRetry: _submit,

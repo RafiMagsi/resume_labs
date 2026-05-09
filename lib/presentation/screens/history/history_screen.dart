@@ -12,14 +12,15 @@ import '../../providers/resume/resume_list_provider.dart';
 import '../../providers/resume/resume_optimization_provider.dart';
 import '../../widgets/shared/app_button.dart';
 import '../../widgets/shared/app_loader.dart';
-import '../../widgets/resume/resume_card.dart';
 import '../resume_builder/builder_screen.dart';
 import '../resume_builder/preview_screen.dart';
 import '../resume_detail/resume_detail_screen.dart';
 import '../resume_optimizer/resume_optimizer_screen.dart';
-import '../../widgets/shared/error_dialog.dart';
+import '../../widgets/shared/dialog_manager.dart';
 import '../../widgets/shared/animated_ai_button.dart';
 import '../../widgets/shared/user_profile_sheet.dart' as uprofile;
+import 'widgets/history_hero_header.dart';
+import 'widgets/history_list.dart';
 
 class HistoryScreen extends ConsumerStatefulWidget {
   const HistoryScreen({super.key});
@@ -84,71 +85,85 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
                   return CustomScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     slivers: [
-                      _HeroHeader(resumeCount: resumes.length),
+                      HistoryHeroHeader(
+                        resumeCount: resumes.length,
+                        onProfilePressed: () =>
+                            uprofile.UserProfileSheet.show(context),
+                      ),
                       SliverFillRemaining(
+                        hasScrollBody: false,
                         child: Center(
-                          child: SingleChildScrollView(
-                            padding: const EdgeInsets.all(AppSizes.screenPadding),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                            const SizedBox(height: 60),
-                            Container(
-                              width: 88,
-                              height: 88,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [
-                                    AppColors.cardHeaderStart,
-                                    AppColors.cardHeaderEnd,
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(44),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppColors.cardHeaderStart
-                                        .withValues(alpha: 0.3),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 4),
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.all(AppSizes.screenPadding),
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 420),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 72,
+                                    height: 72,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [
+                                          AppColors.cardHeaderStart,
+                                          AppColors.cardHeaderEnd,
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(36),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppColors.cardHeaderStart
+                                              .withValues(alpha: 0.22),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
+                                    ),
+                                    child: const Icon(
+                                      Icons.description_outlined,
+                                      size: 34,
+                                      color: AppColors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  const Text(
+                                    'No resumes yet',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  const Text(
+                                    'Create your first resume and it will appear here.',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 13.5,
+                                      height: 1.4,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: AppButton(
+                                      text: 'Create New Resume',
+                                      icon: Icons.add_rounded,
+                                      onPressed: () {
+                                        ref
+                                            .read(resumeFormProvider.notifier)
+                                            .reset();
+                                        context.push(BuilderScreen.routePath);
+                                      },
+                                    ),
                                   ),
                                 ],
                               ),
-                              child: const Icon(
-                                Icons.description_outlined,
-                                size: 40,
-                                color: AppColors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            const Text(
-                              'No resumes yet',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            const Text(
-                              'Create your first resume and it will appear here.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                            const SizedBox(height: 32),
-                            AppButton(
-                              text: 'Create New Resume',
-                              icon: Icons.add_rounded,
-                              onPressed: () {
-                                ref.read(resumeFormProvider.notifier).reset();
-                                context.push(BuilderScreen.routePath);
-                              },
-                            ),
-                              ],
                             ),
                           ),
                         ),
@@ -160,9 +175,13 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
                 return CustomScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   slivers: [
-                    _HeroHeader(resumeCount: resumes.length),
+                    HistoryHeroHeader(
+                      resumeCount: resumes.length,
+                      onProfilePressed: () =>
+                          uprofile.UserProfileSheet.show(context),
+                    ),
                     SliverToBoxAdapter(
-                      child: _HistoryList(
+                      child: HistoryList(
                         resumes: resumes,
                         onTapResume: (resume) {
                           ref.read(resumeFormProvider.notifier).loadResume(
@@ -206,7 +225,11 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
               loading: () => CustomScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
-                  _HeroHeader(resumeCount: 0),
+                  HistoryHeroHeader(
+                    resumeCount: 0,
+                    onProfilePressed: () =>
+                        uprofile.UserProfileSheet.show(context),
+                  ),
                   SliverFillRemaining(
                     child: Center(
                       child: SingleChildScrollView(
@@ -226,7 +249,11 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
               error: (error, _) => CustomScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
-                  _HeroHeader(resumeCount: 0),
+                  HistoryHeroHeader(
+                    resumeCount: 0,
+                    onProfilePressed: () =>
+                        uprofile.UserProfileSheet.show(context),
+                  ),
                   SliverFillRemaining(
                     child: Center(
                       child: SingleChildScrollView(
@@ -351,322 +378,44 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
     BuildContext context, {
     required Resume resume,
     required WidgetRef ref,
-  }) {
-    return showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Delete Resume'),
-        content: Text(
-          'Are you sure you want to delete "${resume.title.isEmpty ? 'Untitled Resume' : resume.title}"?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              final deleteUseCase = ref.read(deleteResumeUseCaseProvider);
-              final result = await deleteUseCase(resume.id);
-
-              if (!context.mounted) return;
-
-              result.match(
-                (failure) async {
-                  Navigator.of(context).pop(false);
-                  await ErrorDialog.show(
-                    context,
-                    failure: failure,
-                    onRetry: () async {
-                      final deleteUseCase =
-                          ref.read(deleteResumeUseCaseProvider);
-                      await deleteUseCase(resume.id);
-                      ref.invalidate(resumeListProvider);
-                    },
-                    title: 'Delete Failed',
-                  );
-                },
-                (_) async {
-                  Navigator.of(context).pop(true);
-                  ref.invalidate(resumeListProvider);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Resume deleted successfully.'),
-                    ),
-                  );
-                },
-              );
-            },
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: AppColors.error),
-            ),
-          ),
-        ],
-      ),
+  }) async {
+    final title = resume.title.isEmpty ? 'Untitled Resume' : resume.title;
+    final confirmed = await DialogManager.confirm(
+      context,
+      title: 'Delete Resume',
+      message: 'Are you sure you want to delete "$title"?',
+      confirmText: 'Delete',
+      isDestructive: true,
     );
-  }
-}
 
-/// Hero header widget with gradient background for the resume list.
-class _HeroHeader extends StatelessWidget {
-  final int resumeCount;
+    if (!confirmed || !context.mounted) return false;
 
-  const _HeroHeader({required this.resumeCount});
+    final deleteUseCase = ref.read(deleteResumeUseCaseProvider);
+    final result = await deleteUseCase(resume.id);
 
-  @override
-  Widget build(BuildContext context) {
-    return SliverAppBar(
-      expandedHeight: 110,
-      floating: false,
-      pinned: true,
-      backgroundColor: Colors.transparent,
-      flexibleSpace: FlexibleSpaceBar(
-        background: Stack(
-          children: [
-            // Gradient background with accent line
-            DecoratedBox(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.heroBannerStart,
-                    AppColors.heroBannerEnd,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  stops: [0.0, 1.0],
-                ),
-              ),
-              child: Stack(
-                children: [
-                  // Shimmer accent line at top
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    child: Container(
-                      height: 3,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            AppColors.heroShimmerLine.withValues(alpha: 0),
-                            AppColors.heroShimmerLine,
-                            AppColors.heroShimmerLine.withValues(alpha: 0),
-                          ],
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Title at bottom
-            Positioned(
-              bottom: 16,
-              left: AppSizes.screenPadding,
-              right: AppSizes.screenPadding,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'My Resumes',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.white,
-                    ),
-                  ),
-                  // Resume count badge
-                  if (resumeCount > 0)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.heroBadgeSurface,
-                        border: Border.all(color: AppColors.heroBadgeBorder),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Text(
-                        '$resumeCount resume${resumeCount == 1 ? '' : 's'}',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.white,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.person_rounded, color: AppColors.white),
-          onPressed: () => uprofile.UserProfileSheet.show(context),
-          tooltip: 'Account',
-        ),
-      ],
-    );
-  }
-}
+    if (!context.mounted) return false;
 
-class _HistoryList extends StatefulWidget {
-  final List<Resume> resumes;
-  final ValueChanged<Resume> onTapResume;
-  final ValueChanged<Resume> onEditResume;
-  final ValueChanged<Resume> onExportResume;
-  final ValueChanged<Resume> onDeleteResume;
-  final Future<bool?> Function(Resume resume) confirmDismiss;
-
-  const _HistoryList({
-    required this.resumes,
-    required this.onTapResume,
-    required this.onEditResume,
-    required this.onExportResume,
-    required this.onDeleteResume,
-    required this.confirmDismiss,
-  });
-
-  @override
-  State<_HistoryList> createState() => _HistoryListState();
-}
-
-class _HistoryListState extends State<_HistoryList> {
-  final _searchController = TextEditingController();
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final query = _searchController.text.trim().toLowerCase();
-
-    final filtered = query.isEmpty
-        ? widget.resumes
-        : widget.resumes
-            .where(
-              (r) => r.title.trim().toLowerCase().contains(query),
-            )
-            .toList();
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSizes.lg,
-        AppSizes.lg,
-        AppSizes.lg,
-        120,
-      ),
-      child: Column(
-        children: [
-          _SearchBar(
-            controller: _searchController,
-            onChanged: (_) => setState(() {}),
-          ),
-          const SizedBox(height: 12),
-          ...List.generate(
-            filtered.length,
-            (index) {
-              final resume = filtered[index];
-              return Padding(
-                padding: EdgeInsets.only(
-                  bottom: index < filtered.length - 1 ? 12 : 0,
-                ),
-                child: Dismissible(
-                  key: ValueKey(resume.id),
-                  direction: DismissDirection.endToStart,
-                  confirmDismiss: (_) => widget.confirmDismiss(resume),
-                  background: Container(
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    decoration: BoxDecoration(
-                      color: AppColors.error,
-                      borderRadius: BorderRadius.circular(AppSizes.cardRadius),
-                    ),
-                    child: const Icon(
-                      Icons.delete_outline,
-                      color: AppColors.white,
-                    ),
-                  ),
-                  child: ResumeCard(
-                    resume: resume,
-                    onOpen: () => widget.onTapResume(resume),
-                    onEditSteps: () => widget.onEditResume(resume),
-                    onExport: () => widget.onExportResume(resume),
-                    onDelete: () => widget.onDeleteResume(resume),
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SearchBar extends StatelessWidget {
-  final TextEditingController controller;
-  final ValueChanged<String> onChanged;
-
-  const _SearchBar({
-    required this.controller,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 44,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: AppColors.secondarySurface,
-        borderRadius: BorderRadius.circular(AppSizes.radiusSm),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.search_rounded,
-            size: 20,
-            color: AppColors.textSecondary,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: TextField(
-              controller: controller,
-              onChanged: onChanged,
-              textInputAction: TextInputAction.search,
-              decoration: const InputDecoration(
-                isDense: true,
-                border: InputBorder.none,
-                hintText: 'Search resumes',
-              ),
-            ),
-          ),
-          if (controller.text.trim().isNotEmpty)
-            IconButton(
-              tooltip: 'Clear',
-              onPressed: () {
-                controller.clear();
-                onChanged('');
-              },
-              icon: const Icon(
-                Icons.close_rounded,
-                size: 18,
-                color: AppColors.textSecondary,
-              ),
-            ),
-        ],
-      ),
+    return result.match(
+      (failure) async {
+        await DialogManager.showFailure(
+          context,
+          failure: failure,
+          onRetry: () async {
+            final deleteUseCase = ref.read(deleteResumeUseCaseProvider);
+            await deleteUseCase(resume.id);
+            ref.invalidate(resumeListProvider);
+          },
+          title: 'Delete Failed',
+        );
+        return false;
+      },
+      (_) async {
+        ref.invalidate(resumeListProvider);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Resume deleted successfully.')),
+        );
+        return true;
+      },
     );
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_sizes.dart';
 import 'app_loader.dart';
 
 class PhotoPicker extends StatefulWidget {
@@ -56,7 +57,9 @@ class _PhotoPickerState extends State<PhotoPicker> {
     showModalBottomSheet<void>(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSizes.sheetRadius),
+        ),
       ),
       builder: (context) => Padding(
         padding: const EdgeInsets.all(16),

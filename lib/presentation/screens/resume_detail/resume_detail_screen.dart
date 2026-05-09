@@ -7,13 +7,12 @@ import 'package:printing/printing.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
-import '../../../core/constants/app_strings.dart';
 import '../../../core/errors/failure.dart';
 import '../../../domain/entities/resume_template.dart';
 import '../../../injection/injection_container.dart';
 import '../../providers/resume/resume_form_provider.dart';
 import '../../providers/resume/resume_list_provider.dart';
-import '../../widgets/shared/error_dialog.dart';
+import '../../widgets/shared/dialog_manager.dart';
 import '../../widgets/shared/loading_overlay.dart';
 import '../../widgets/resume/resume_pdf_preview.dart';
 import '../../widgets/resume/resume_template_picker_bar.dart';
@@ -92,7 +91,7 @@ class _ResumeDetailScreenState extends ConsumerState<ResumeDetailScreen> {
         );
       } catch (e) {
         if (mounted) {
-          ErrorDialog.show(
+          DialogManager.showFailure(
             context,
             failure: ServerFailure('Failed to share PDF: $e'),
             title: 'Share Error',
@@ -101,7 +100,7 @@ class _ResumeDetailScreenState extends ConsumerState<ResumeDetailScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ErrorDialog.show(
+        DialogManager.showFailure(
           context,
           failure: ServerFailure('Export failed: $e'),
           title: 'Export Error',
@@ -114,30 +113,16 @@ class _ResumeDetailScreenState extends ConsumerState<ResumeDetailScreen> {
 
   Future<void> _handleDelete() async {
     final formState = ref.read(resumeFormProvider);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Resume?'),
-        content: Text(
+    final confirmed = await DialogManager.confirm(
+      context,
+      title: 'Delete Resume?',
+      message:
           'Are you sure you want to delete "${formState.title}"?\n\nThis action cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text(AppStrings.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: AppColors.error),
-            ),
-          ),
-        ],
-      ),
+      confirmText: 'Delete',
+      isDestructive: true,
     );
 
-    if (confirmed != true || !mounted) return;
+    if (!confirmed || !mounted) return;
 
     final useCase = ref.read(deleteResumeUseCaseProvider);
     final result = await useCase(formState.resumeId!);
@@ -145,7 +130,7 @@ class _ResumeDetailScreenState extends ConsumerState<ResumeDetailScreen> {
     if (!mounted) return;
 
     result.fold(
-      (failure) => ErrorDialog.show(
+      (failure) => DialogManager.showFailure(
         context,
         failure: failure,
         title: 'Delete Failed',
@@ -223,7 +208,6 @@ class _ResumeDetailScreenState extends ConsumerState<ResumeDetailScreen> {
       bottomNavigationBar: _buildActionBar(),
     );
   }
-
 
   Future<void> _openTemplatePickerSheet(ResumeTemplate selectedTemplate) async {
     await showModalBottomSheet<void>(

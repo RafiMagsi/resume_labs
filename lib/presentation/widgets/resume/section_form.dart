@@ -636,7 +636,9 @@ Future<void> _showEducationSheet(
     isScrollControlled: true,
     backgroundColor: AppColors.screenSurface,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(AppSizes.sheetRadius),
+      ),
     ),
     builder: (context) {
       Future<void> pickDate() async {
@@ -765,7 +767,9 @@ Future<void> _showSkillSheet(
     isScrollControlled: true,
     backgroundColor: AppColors.screenSurface,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(AppSizes.sheetRadius),
+      ),
     ),
     builder: (context) {
       return Padding(

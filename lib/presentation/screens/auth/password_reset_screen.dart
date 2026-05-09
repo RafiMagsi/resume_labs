@@ -6,6 +6,7 @@ import '../../../core/utils/input_validators.dart';
 import '../../providers/auth/reset_password_provider.dart';
 import '../../widgets/shared/app_button.dart';
 import '../../widgets/shared/app_text_field.dart';
+import '../../widgets/shared/dialog_manager.dart';
 import '../../widgets/shared/loading_overlay.dart';
 
 class PasswordResetScreen extends ConsumerStatefulWidget {
@@ -76,18 +77,10 @@ class _PasswordResetScreenState extends ConsumerState<PasswordResetScreen> {
     required String title,
     required String message,
   }) {
-    return showDialog<void>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
+    return DialogManager.showMessage(
+      context,
+      title: title,
+      message: message,
     );
   }
 
