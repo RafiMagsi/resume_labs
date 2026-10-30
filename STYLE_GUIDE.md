@@ -1,6 +1,6 @@
-Resume Labs — Flutter Style Guide
+ResumePace — Flutter Style Guide
 
-Project: Resume Labs
+Project: ResumePace
 Platform: Flutter (iOS-first visual direction, Android-compatible)
 Design Reference: Apple iOS productivity apps as the primary reference, with Notion Calendar as the secondary product-quality reference.
 Theme Direction: Modern, calm, premium, minimal, light-first
@@ -11,7 +11,7 @@ Theme Direction: Modern, calm, premium, minimal, light-first
 
 1.1 Product feel
 
-Resume Labs should feel like a serious, polished productivity app.
+ResumePace should feel like a serious, polished productivity app.
 
 Core traits:
 
@@ -76,7 +76,7 @@ Used for:
 
 2.3 Product interpretation
 
-Resume Labs should look like:
+ResumePace should look like:
 Apple-first productivity UI with Notion-level polish
 
 ⸻
@@ -747,7 +747,7 @@ Do not
 
 18. Final Product Intent
 
-Resume Labs should visually communicate:
+ResumePace should visually communicate:
 
 * trust
 * clarity

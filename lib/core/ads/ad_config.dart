@@ -5,16 +5,23 @@ import 'package:flutter/foundation.dart';
 /// Central AdMob configuration.
 ///
 /// Test IDs are used by default so debug builds never request live ads.
-/// For a production build, pass:
+/// Release builds are ad-free until every production ID below is filled in,
+/// so Google's test units can never ship to the stores.
+///
+/// Production checklist (all four IDs — see `store_assets/README.md`):
+/// 1. Android app ID — `android/app/build.gradle.kts` `admobAppId`
+///    placeholder (or `-PadmobAppId=...` / `gradle.properties`), surfaced to
+///    the manifest via the `admobAppId` placeholder.
+/// 2. iOS app ID — `ios/Flutter/Release.xcconfig` `ADMOB_APP_ID`, read by
+///    `Info.plist` (`GADApplicationIdentifier`).
+/// 3. Android banner unit — `--dart-define=ADMOB_ANDROID_BANNER_ID=...`.
+/// 4. iOS banner unit — `--dart-define=ADMOB_IOS_BANNER_ID=...`.
 ///
 /// ```
-/// --dart-define=ADMOB_USE_TEST_ADS=false
-/// --dart-define=ADMOB_ANDROID_BANNER_ID=ca-app-pub-.../...
-/// --dart-define=ADMOB_IOS_BANNER_ID=ca-app-pub-.../...
+/// flutter build ipa --dart-define=ADMOB_USE_TEST_ADS=false \
+///   --dart-define=ADMOB_ANDROID_BANNER_ID=ca-app-pub-.../... \
+///   --dart-define=ADMOB_IOS_BANNER_ID=ca-app-pub-.../...
 /// ```
-///
-/// The AdMob app IDs live in `AndroidManifest.xml` / `Info.plist` and must be
-/// replaced separately before release.
 abstract final class AdConfig {
   static const bool adsEnabled = !bool.fromEnvironment('DISABLE_ADS');
 

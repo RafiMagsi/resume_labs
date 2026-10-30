@@ -298,6 +298,116 @@ def make_feature_graphic(master: Image.Image) -> None:
     print("Feature graphic 1024x500")
 
 
+def make_hero_header(master: Image.Image) -> None:
+    """1200x630 social / link-preview header (App Store & Play listing share)."""
+    width, height = 1200, 630
+    bg = gradient_background(1600).resize((width, height), Image.LANCZOS)
+    canvas = bg.convert("RGBA")
+
+    decor = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    dd = ImageDraw.Draw(decor)
+    dd.rounded_rectangle((892, 66, 1150, 566), radius=34, fill=(255, 255, 255, 18))
+    dd.rounded_rectangle((950, 104, 1164, 532), radius=30, fill=(255, 255, 255, 26))
+    canvas.alpha_composite(decor)
+
+    icon = rounded_icon(master, 300, 0.23)
+    canvas.alpha_composite(icon, (78, 165))
+
+    draw = ImageDraw.Draw(canvas)
+    x = 430
+    draw.text((x, 176), "ResumePace", font=font(FONT_BOLD, 92), fill=(255, 255, 255))
+    draw.text(
+        (x, 300),
+        "AI Resume Builder & CV Maker",
+        font=font(FONT_SEMIBOLD, 40),
+        fill=(226, 220, 255),
+    )
+    draw.text(
+        (x, 372),
+        "ATS-friendly templates, AI optimization, PDF export.",
+        font=font(FONT_REGULAR, 28),
+        fill=(226, 220, 255),
+    )
+
+    chip_font = font(FONT_MEDIUM, 24)
+    chip_x = x
+    chip_y = 448
+    chip_layer = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    chip_draw = ImageDraw.Draw(chip_layer)
+    chip_text = []
+    for chip in ["ATS templates", "AI optimization", "PDF export"]:
+        w = text_width(draw, chip, chip_font)
+        chip_draw.rounded_rectangle(
+            (chip_x, chip_y, chip_x + w + 44, chip_y + 52),
+            radius=26,
+            fill=(255, 255, 255, 34),
+            outline=(255, 255, 255, 90),
+            width=1,
+        )
+        chip_text.append((chip_x + 22, chip_y + 12, chip))
+        chip_x += w + 64
+    canvas.alpha_composite(chip_layer)
+    draw = ImageDraw.Draw(canvas)
+    for tx, ty, chip in chip_text:
+        draw.text((tx, ty), chip, font=chip_font, fill=(255, 255, 255))
+
+    ASSETS.mkdir(exist_ok=True)
+    canvas.convert("RGB").save(ASSETS / "hero_header_1200x630.png", optimize=True)
+    print("Hero header 1200x630")
+
+
+def make_store_banner(master: Image.Image) -> None:
+    """1500x500 wide banner (store promo header / social banner)."""
+    width, height = 1500, 500
+    bg = gradient_background(1900).resize((width, height), Image.LANCZOS)
+    canvas = bg.convert("RGBA")
+
+    decor = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    dd = ImageDraw.Draw(decor)
+    dd.rounded_rectangle((1120, 48, 1440, 452), radius=34, fill=(255, 255, 255, 18))
+    dd.rounded_rectangle((1180, 84, 1454, 424), radius=30, fill=(255, 255, 255, 26))
+    canvas.alpha_composite(decor)
+
+    icon = rounded_icon(master, 276, 0.23)
+    canvas.alpha_composite(icon, (84, 112))
+
+    draw = ImageDraw.Draw(canvas)
+    x = 420
+    draw.text((x, 118), "ResumePace", font=font(FONT_BOLD, 86), fill=(255, 255, 255))
+    draw.text(
+        (x, 238),
+        "Build a polished, interview-ready resume in minutes.",
+        font=font(FONT_SEMIBOLD, 34),
+        fill=(226, 220, 255),
+    )
+
+    chip_font = font(FONT_MEDIUM, 22)
+    chip_x = x
+    chip_y = 318
+    chip_layer = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    chip_draw = ImageDraw.Draw(chip_layer)
+    chip_text = []
+    for chip in ["ATS templates", "AI optimization", "PDF export"]:
+        w = text_width(draw, chip, chip_font)
+        chip_draw.rounded_rectangle(
+            (chip_x, chip_y, chip_x + w + 40, chip_y + 48),
+            radius=24,
+            fill=(255, 255, 255, 34),
+            outline=(255, 255, 255, 90),
+            width=1,
+        )
+        chip_text.append((chip_x + 20, chip_y + 11, chip))
+        chip_x += w + 58
+    canvas.alpha_composite(chip_layer)
+    draw = ImageDraw.Draw(canvas)
+    for tx, ty, chip in chip_text:
+        draw.text((tx, ty), chip, font=chip_font, fill=(255, 255, 255))
+
+    ASSETS.mkdir(exist_ok=True)
+    canvas.convert("RGB").save(ASSETS / "store_banner_1500x500.png", optimize=True)
+    print("Store banner 1500x500")
+
+
 def main() -> None:
     master = make_icon()
     ASSETS.mkdir(exist_ok=True)
@@ -305,10 +415,15 @@ def main() -> None:
     master.resize((1024, 1024), Image.LANCZOS).save(
         ASSETS / "app_icon_1024.png", optimize=True
     )
+    master.resize((512, 512), Image.LANCZOS).save(
+        ASSETS / "app_icon_512.png", optimize=True
+    )
     save_ios_icons(master)
     save_android_icons(master)
     save_adaptive_background()
     make_feature_graphic(master)
+    make_hero_header(master)
+    make_store_banner(master)
     print(f"\nWrote brand assets to {ASSETS}")
 
 

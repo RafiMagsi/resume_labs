@@ -112,7 +112,9 @@ class ResumeFormNotifier extends Notifier<ResumeFormState> {
       _pendingTemplate = null;
 
       final current = state;
-      if (!current.isEditing || current.resumeId == null || current.userId == null) {
+      if (!current.isEditing ||
+          current.resumeId == null ||
+          current.userId == null) {
         return;
       }
 

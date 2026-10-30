@@ -1,4 +1,4 @@
-# AGENTS.md — AI Resume Builder
+# AGENTS.md — ResumePace (AI Resume Builder)
 
 > Instructions for OpenAI Codex and compatible coding agents working on this project.
 > Read this entire file before writing or modifying any code.
@@ -7,7 +7,7 @@
 
 ## Project Overview
 
-**App Name:** AI Resume Builder
+**App Name:** ResumePace
 **Platform:** Flutter (iOS + Android — mobile only)
 **Language:** Dart 3.3+
 **Architecture:** Clean Architecture (Domain → Data → Presentation)

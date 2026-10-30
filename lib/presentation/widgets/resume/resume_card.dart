@@ -55,264 +55,268 @@ class ResumeCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (resume.photoUrl != null && resume.photoUrl!.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 12),
-                      child: ClipOval(
-                        child: Container(
-                          width: 60,
-                          height: 60,
-                          color: AppColors.secondarySurface,
-                          child: resume.photoUrl!.startsWith('http')
-                              ? Image.network(
-                                  resume.photoUrl!,
-                                  fit: BoxFit.cover,
-                                  loadingBuilder:
-                                      (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Shimmer.fromColors(
-                                      baseColor: AppColors.border,
-                                      highlightColor:
-                                          AppColors.secondarySurface,
-                                      child: Container(
-                                        width: 60,
-                                        height: 60,
-                                        color: AppColors.secondarySurface,
-                                      ),
-                                    );
-                                  },
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Center(
-                                      child: Icon(
-                                        Icons.person_outline,
-                                        size: 32,
-                                        color: AppColors.textTertiary,
-                                      ),
-                                    );
-                                  },
-                                )
-                              : Icon(
-                                  Icons.person_outline,
-                                  size: 32,
-                                  color: AppColors.textTertiary,
-                                ),
-                        ),
-                      ),
-                    ),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          resume.title.isEmpty
-                              ? 'Untitled Resume'
-                              : resume.title,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (resume.photoUrl != null &&
+                          resume.photoUrl!.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 12),
+                          child: ClipOval(
+                            child: Container(
+                              width: 60,
+                              height: 60,
+                              color: AppColors.secondarySurface,
+                              child: resume.photoUrl!.startsWith('http')
+                                  ? Image.network(
+                                      resume.photoUrl!,
+                                      fit: BoxFit.cover,
+                                      loadingBuilder:
+                                          (context, child, loadingProgress) {
+                                        if (loadingProgress == null) {
+                                          return child;
+                                        }
+                                        return Shimmer.fromColors(
+                                          baseColor: AppColors.border,
+                                          highlightColor:
+                                              AppColors.secondarySurface,
+                                          child: Container(
+                                            width: 60,
+                                            height: 60,
+                                            color: AppColors.secondarySurface,
+                                          ),
+                                        );
+                                      },
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        return Center(
+                                          child: Icon(
+                                            Icons.person_outline,
+                                            size: 32,
+                                            color: AppColors.textTertiary,
+                                          ),
+                                        );
+                                      },
+                                    )
+                                  : Icon(
+                                      Icons.person_outline,
+                                      size: 32,
+                                      color: AppColors.textTertiary,
+                                    ),
+                            ),
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 8),
-                        Row(
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _TemplateTag(template: resume.template),
-                            const SizedBox(width: 8),
                             Text(
-                              'Updated ${_formatDate(resume.updatedAt)}',
+                              resume.title.isEmpty
+                                  ? 'Untitled Resume'
+                                  : resume.title,
                               style: const TextStyle(
-                                fontSize: 12,
-                                color: AppColors.textTertiary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  PopupMenuButton<String>(
-                    onSelected: (value) {
-                      switch (value) {
-                        case 'edit':
-                          onEditSteps();
-                        case 'export':
-                          onExport();
-                        case 'delete':
-                          onDelete();
-                      }
-                    },
-                    itemBuilder: (BuildContext context) => [
-                      const PopupMenuItem(
-                        value: 'edit',
-                        child: Row(
-                          children: [
-                            Icon(Icons.edit_outlined, size: 18),
-                            SizedBox(width: 8),
-                            Text('Edit'),
-                          ],
-                        ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'export',
-                        child: Row(
-                          children: [
-                            Icon(Icons.download_outlined, size: 18),
-                            SizedBox(width: 8),
-                            Text('Export'),
-                          ],
-                        ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.delete_outline,
-                              size: 18,
-                              color: AppColors.error,
-                            ),
-                            SizedBox(width: 8),
-                            Text(
-                              'Delete',
-                              style: TextStyle(color: AppColors.error),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                    child: const Icon(Icons.more_vert,
-                        color: AppColors.textSecondary),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.secondarySurface,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.border, width: 0.5),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (resume.personalSummary.isNotEmpty) ...[
-                      Text(
-                        resume.personalSummary,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: AppColors.textSecondary,
-                          height: 1.4,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 8),
-                    ],
-                    if (resume.workExperiences.isNotEmpty) ...[
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.work_outline,
-                            size: 13,
-                            color: AppColors.textTertiary,
-                          ),
-                          const SizedBox(width: 5),
-                          Expanded(
-                            child: Text(
-                              '${resume.workExperiences.first.role} at ${resume.workExperiences.first.company}',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.textSecondary,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                _TemplateTag(template: resume.template),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Updated ${_formatDate(resume.updatedAt)}',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.textTertiary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      PopupMenuButton<String>(
+                        onSelected: (value) {
+                          switch (value) {
+                            case 'edit':
+                              onEditSteps();
+                            case 'export':
+                              onExport();
+                            case 'delete':
+                              onDelete();
+                          }
+                        },
+                        itemBuilder: (BuildContext context) => [
+                          const PopupMenuItem(
+                            value: 'edit',
+                            child: Row(
+                              children: [
+                                Icon(Icons.edit_outlined, size: 18),
+                                SizedBox(width: 8),
+                                Text('Edit'),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuItem(
+                            value: 'export',
+                            child: Row(
+                              children: [
+                                Icon(Icons.download_outlined, size: 18),
+                                SizedBox(width: 8),
+                                Text('Export'),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuItem(
+                            value: 'delete',
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.delete_outline,
+                                  size: 18,
+                                  color: AppColors.error,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Delete',
+                                  style: TextStyle(color: AppColors.error),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
+                        child: const Icon(Icons.more_vert,
+                            color: AppColors.textSecondary),
                       ),
-                      const SizedBox(height: 6),
                     ],
-                    if (resume.skills.isNotEmpty) ...[
-                      Wrap(
-                        spacing: 4,
-                        runSpacing: 3,
-                        children: [
-                          ...resume.skills.take(3).map((skill) {
-                            return Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryLight,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                skill.name,
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColors.primaryDark,
-                                ),
-                              ),
-                            );
-                          }),
-                          if (resume.skills.length > 3)
-                            Text(
-                              '+${resume.skills.length - 3}',
-                              style: const TextStyle(
-                                fontSize: 10,
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.secondarySurface,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AppColors.border, width: 0.5),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (resume.personalSummary.isNotEmpty) ...[
+                          Text(
+                            resume.personalSummary,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: AppColors.textSecondary,
+                              height: 1.4,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                        if (resume.workExperiences.isNotEmpty) ...[
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.work_outline,
+                                size: 13,
                                 color: AppColors.textTertiary,
                               ),
-                            ),
+                              const SizedBox(width: 5),
+                              Expanded(
+                                child: Text(
+                                  '${resume.workExperiences.first.role} at ${resume.workExperiences.first.company}',
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
                         ],
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Created ${_formatDate(resume.createdAt)}',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textTertiary,
+                        if (resume.skills.isNotEmpty) ...[
+                          Wrap(
+                            spacing: 4,
+                            runSpacing: 3,
+                            children: [
+                              ...resume.skills.take(3).map((skill) {
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primaryLight,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    skill.name,
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.primaryDark,
+                                    ),
+                                  ),
+                                );
+                              }),
+                              if (resume.skills.length > 3)
+                                Text(
+                                  '+${resume.skills.length - 3}',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: AppColors.textTertiary,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ],
                     ),
                   ),
+                  const SizedBox(height: 12),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Icon(
-                        Icons.description,
-                        size: 16,
-                        color: AppColors.textTertiary,
-                      ),
-                      const SizedBox(width: 4),
                       Text(
-                        '${resume.workExperiences.length} roles',
+                        'Created ${_formatDate(resume.createdAt)}',
                         style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.textTertiary,
                         ),
                       ),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.description,
+                            size: 16,
+                            color: AppColors.textTertiary,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${resume.workExperiences.length} roles',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textTertiary,
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
         ],
       ),
     );

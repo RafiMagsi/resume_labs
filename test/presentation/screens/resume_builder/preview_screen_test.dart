@@ -56,6 +56,7 @@ void main() {
     expect(find.byType(PreviewScreen), findsOneWidget);
     expect(find.text('Template'), findsWidgets);
     expect(find.text('Export PDF'), findsOneWidget);
-    expect(find.text('Export DOCX'), findsOneWidget);
+    // DOCX export was removed; PDF is the only export path left.
+    expect(find.text('Export DOCX'), findsNothing);
   });
 }

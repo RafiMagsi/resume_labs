@@ -1,5 +1,7 @@
 #include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"
 #include "Generated.xcconfig"
 
-// Test AdMob app ID. Replace in Release.xcconfig before shipping live ads.
+// PLACEHOLDER — Google's sample AdMob app ID, used for debug builds only.
+// Replace together with Release.xcconfig when the production ID exists.
+// See store_assets/README.md for the full AdMob release checklist.
 ADMOB_APP_ID=ca-app-pub-3940256099942544~1458002511

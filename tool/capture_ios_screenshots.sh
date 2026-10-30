@@ -55,3 +55,21 @@ while kill -0 "$TEST_PID" 2>/dev/null; do
 done
 
 wait "$TEST_PID"
+
+# App Store Connect rejects screenshots that contain an alpha channel, so
+# flatten every captured PNG to opaque RGB before it is used as a store asset.
+python3 - "$OUT_DIR" <<'PY'
+import pathlib
+import sys
+
+from PIL import Image
+
+for path in sorted(pathlib.Path(sys.argv[1]).glob("*.png")):
+    image = Image.open(path)
+    if image.mode == "RGB":
+        continue
+    flat = Image.new("RGB", image.size, (255, 255, 255))
+    flat.paste(image, mask=image.split()[-1] if image.mode == "RGBA" else None)
+    flat.save(path, optimize=True)
+    print(f"Flattened {path.name} -> RGB")
+PY

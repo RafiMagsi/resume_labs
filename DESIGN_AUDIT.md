@@ -36,8 +36,8 @@
 
 #### 1.2 Splash Screen Enhancement
 - **Status:** ⚠️ Partial (missing logo)
-- **Current:** Shows text "Resume Labs" + progress bar
-- **Reference:** Shows logo + "Resume Labs" + "Build. Enhance. Succeed."
+- **Current:** Shows text "ResumePace" + progress bar
+- **Reference:** Shows logo + "ResumePace" + "Build. Enhance. Succeed."
 - **Fix:** Add logo display above/instead of text
 
 ---

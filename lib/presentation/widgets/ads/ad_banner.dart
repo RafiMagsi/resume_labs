@@ -79,22 +79,29 @@ class _AdBannerState extends State<AdBanner> {
     }
 
     final ad = _bannerAd;
+    // Scaffold lays a bottom navigation bar out with bounded height. An
+    // unconstrained Center would expand to the full screen height and collapse
+    // the screen body to zero, so the bar reserves exactly the banner height.
+    final height = (ad == null ? 50 : ad.size.height).toDouble();
 
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: AppColors.screenSurface,
-        border: Border(top: BorderSide(color: AppColors.divider)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Center(
-          child: ad == null
-              ? const SizedBox(height: 50)
-              : SizedBox(
-                  width: ad.size.width.toDouble(),
-                  height: ad.size.height.toDouble(),
-                  child: AdWidget(ad: ad),
-                ),
+    return SizedBox(
+      height: height,
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          color: AppColors.screenSurface,
+          border: Border(top: BorderSide(color: AppColors.divider)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Center(
+            child: ad == null
+                ? const SizedBox(height: 50)
+                : SizedBox(
+                    width: ad.size.width.toDouble(),
+                    height: ad.size.height.toDouble(),
+                    child: AdWidget(ad: ad),
+                  ),
+          ),
         ),
       ),
     );

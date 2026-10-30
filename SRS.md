@@ -1,4 +1,4 @@
-# ResumeAI — Software Requirements Specification (SRS)
+# ResumePace — Software Requirements Specification (SRS)
 
 **Version:** 1.0  
 **Status:** MVP  
@@ -9,7 +9,7 @@
 
 ## 1. Executive Summary
 
-**ResumeAI** is a Flutter mobile application that generates, edits, and exports professional resumes using OpenAI's GPT-4o. Users input career details through an intuitive form, receive AI-powered suggestions and content generation, and export polished PDFs in three template styles.
+**ResumePace** is a Flutter mobile application that generates, edits, and exports professional resumes using OpenAI's GPT-4o. Users input career details through an intuitive form, receive AI-powered suggestions and content generation, and export polished PDFs in three template styles.
 
 **Target Users:** Job seekers, career changers, students, professionals updating resumes  
 **Platforms:** iOS (14+), Android (API 21+)  

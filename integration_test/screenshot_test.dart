@@ -290,7 +290,16 @@ void main() {
     await Future<void>.delayed(const Duration(seconds: 8));
     await _hold(tester, 'ios_preview');
 
-    await tester.tap(find.text('Change'));
+    // Phone layout opens the template sheet via the "Change" button; the wide
+    // (iPad) layout keeps templates in the sidebar dropdown instead.
+    final changeButton = find.text('Change');
+    if (changeButton.evaluate().isNotEmpty) {
+      await tester.tap(changeButton);
+    } else {
+      await tester.tap(
+        find.byType(DropdownButtonFormField<ResumeTemplate>).first,
+      );
+    }
     await _hold(tester, 'ios_templates');
 
     Navigator.of(tester.element(find.byType(PreviewScreen))).pop();

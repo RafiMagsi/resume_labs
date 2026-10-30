@@ -35,8 +35,11 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
 
-        // Test AdMob app ID by default. Override with
-        // -PadmobAppId=ca-app-pub-xxxxxxxx~yyyyyyyy or a gradle.properties entry.
+        // PLACEHOLDER — Google's sample AdMob app ID, not a production ID.
+        // Replace with the production AdMob Android app ID before enabling live
+        // ads: set `admobAppId=ca-app-pub-xxxxxxxx~yyyyyyyy` in gradle.properties
+        // or pass -PadmobAppId=... Release builds request no ads until the
+        // banner unit IDs are supplied (see store_assets/README.md).
         manifestPlaceholders["admobAppId"] = (project.findProperty("admobAppId") as String?)
             ?: "ca-app-pub-3940256099942544~3347511713"
     }

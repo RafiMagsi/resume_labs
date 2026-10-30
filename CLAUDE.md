@@ -1,4 +1,4 @@
-# CLAUDE.md — AI Resume Builder
+# CLAUDE.md — ResumePace (AI Resume Builder)
 
 > Instructions for Claude (Claude Code / Anthropic agent) working on this project.
 > Read this file fully before making any changes to the codebase.
@@ -7,7 +7,7 @@
 
 ## Project Overview
 
-**App Name:** AI Resume Builder
+**App Name:** ResumePace
 **Platform:** Flutter (iOS + Android — mobile only)
 **Language:** Dart 3.3+
 **Architecture:** Clean Architecture (Domain → Data → Presentation)

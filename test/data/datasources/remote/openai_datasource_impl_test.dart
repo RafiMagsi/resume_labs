@@ -7,6 +7,7 @@ import 'package:resume_labs/data/datasources/remote/openai_datasource_impl.dart'
 import 'package:resume_labs/data/datasources/remote/system_settings_datasource.dart';
 
 class _MockHttpClient extends Mock implements http.Client {}
+
 class _MockSystemSettings extends Mock implements SystemSettingsDatasource {}
 
 void main() {

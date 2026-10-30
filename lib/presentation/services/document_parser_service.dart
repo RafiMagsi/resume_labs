@@ -11,7 +11,8 @@ class DocumentParserService {
       final bytes = file.readAsBytesSync();
 
       if (bytes.isEmpty) {
-        throw Exception('The file is empty. Please upload a valid resume document.');
+        throw Exception(
+            'The file is empty. Please upload a valid resume document.');
       }
 
       final archive = ZipDecoder().decodeBytes(bytes);
@@ -26,7 +27,8 @@ class DocumentParserService {
       }
 
       if (documentFile == null) {
-        throw Exception('This does not appear to be a valid DOCX file. Please upload a valid resume document.');
+        throw Exception(
+            'This does not appear to be a valid DOCX file. Please upload a valid resume document.');
       }
 
       // Extract and parse the XML
@@ -44,14 +46,16 @@ class DocumentParserService {
       final extractedText = buffer.toString().trim();
 
       if (extractedText.isEmpty) {
-        throw Exception('The document contains no readable text. Please upload a valid resume with content.');
+        throw Exception(
+            'The document contains no readable text. Please upload a valid resume with content.');
       }
 
       return extractedText;
     } on Exception {
       rethrow;
     } catch (e) {
-      throw Exception('Failed to parse DOCX: The file may be corrupted. Please upload a valid resume document.');
+      throw Exception(
+          'Failed to parse DOCX: The file may be corrupted. Please upload a valid resume document.');
     }
   }
 
@@ -61,14 +65,16 @@ class DocumentParserService {
       final bytes = file.readAsBytesSync();
 
       if (bytes.isEmpty) {
-        throw Exception('The file is empty. Please upload a valid resume document.');
+        throw Exception(
+            'The file is empty. Please upload a valid resume document.');
       }
 
       final PdfDocument document = PdfDocument(inputBytes: bytes);
 
       if (document.pages.count == 0) {
         document.dispose();
-        throw Exception('The PDF file contains no pages. Please upload a valid resume document.');
+        throw Exception(
+            'The PDF file contains no pages. Please upload a valid resume document.');
       }
 
       final buffer = StringBuffer();
@@ -89,14 +95,16 @@ class DocumentParserService {
       final extractedText = buffer.toString().trim();
 
       if (extractedText.isEmpty) {
-        throw Exception('The PDF contains no readable text. This may be a scanned image or protected PDF. Please upload a valid resume document with extractable text.');
+        throw Exception(
+            'The PDF contains no readable text. This may be a scanned image or protected PDF. Please upload a valid resume document with extractable text.');
       }
 
       return extractedText;
     } on Exception {
       rethrow;
     } catch (e) {
-      throw Exception('Failed to extract text from PDF: The file may be corrupted or invalid. Please upload a valid resume document.');
+      throw Exception(
+          'Failed to extract text from PDF: The file may be corrupted or invalid. Please upload a valid resume document.');
     }
   }
 

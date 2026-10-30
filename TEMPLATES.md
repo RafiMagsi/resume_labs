@@ -1,6 +1,6 @@
-Resume Labs — Template Layout Guidelines
+ResumePace — Template Layout Guidelines
 
-This document defines the resume template layout system for Resume Labs.
+This document defines the resume template layout system for ResumePace.
 
 It does not cover app UI screens.
 It covers the document layouts that should be implemented for resume templates.
@@ -93,7 +93,7 @@ Do not allow:
 
 2. Template System Strategy
 
-Resume Labs should not have random templates.
+ResumePace should not have random templates.
 Each template should belong to a clear layout family.
 
 Recommended families:
@@ -533,7 +533,7 @@ Good for users who want a more graphic resume without going full creative portfo
 
 9. Cover Letter Layout Guidelines
 
-Resume Labs should eventually support cover letter layouts that visually pair with resume templates.
+ResumePace should eventually support cover letter layouts that visually pair with resume templates.
 
 9.1 Cover letter structure
 
@@ -698,7 +698,7 @@ Shared helpers reduce:
 
 ⸻
 
-14. Recommended Final Template Set for Resume Labs
+14. Recommended Final Template Set for ResumePace
 
 Phase 1 templates
 
@@ -744,7 +744,7 @@ A template is only acceptable if:
 
 16. Final Recommendation
 
-For Resume Labs, the template strategy should be:
+For ResumePace, the template strategy should be:
 
 * Classic for safety
 * Modern Clean for default modern use

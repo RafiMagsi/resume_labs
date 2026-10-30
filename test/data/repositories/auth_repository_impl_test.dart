@@ -15,7 +15,8 @@ class MockFirebaseAuthDataSource extends Mock
 class MockFirestoreUserDatasource extends Mock
     implements FirestoreUserDatasource {}
 
-class MockAccountCleanupDatasource extends Mock implements AccountCleanupDatasource {}
+class MockAccountCleanupDatasource extends Mock
+    implements AccountCleanupDatasource {}
 
 void main() {
   late FirebaseAuthDataSource dataSource;

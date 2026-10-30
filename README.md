@@ -1,4 +1,4 @@
-# Resume Labs AI (AI Resume Builder)
+# ResumePace — AI Resume Builder
 
 Flutter (iOS + Android) app for building resumes, saving to Firebase, and exporting PDFs.
 

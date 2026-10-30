@@ -257,44 +257,44 @@ class _MobilePreviewLayout extends StatelessWidget {
     required this.onExportPdf,
   });
 
-String _getTemplateName(ResumeTemplate template) => template.displayName;
+  String _getTemplateName(ResumeTemplate template) => template.displayName;
 
-Color _getTemplateColor(ResumeTemplate template) {
-  switch (template.name) {
-    case 'classic':
-      return const Color(0xFF0066CC);
-    case 'modern':
-      return const Color(0xFF2563EB);
-    case 'modernClean':
-      return const Color(0xFF1A1A1A);
-    case 'minimal':
-      return const Color(0xFF6B7280);
-    case 'executive':
-      return const Color(0xFF1E3A8A);
-    case 'modernSidebar':
-      return const Color(0xFF2C3E50);
-    case 'datascience':
-      return const Color(0xFF0EA5E9);
-    case 'sales':
-      return const Color(0xFFDC2626);
-    case 'marketing':
-      return const Color(0xFF7C3AED);
-    case 'finance':
-      return const Color(0xFFB8860B);
-    case 'creative':
-      return const Color(0xFFD946EF);
-    case 'academic':
-      return const Color(0xFF0369A1);
-    case 'healthcare':
-      return const Color(0xFF059669);
-    case 'startup':
-      return const Color(0xFFF97316);
-    default:
-      return AppColors.primary;
+  Color _getTemplateColor(ResumeTemplate template) {
+    switch (template.name) {
+      case 'classic':
+        return const Color(0xFF0066CC);
+      case 'modern':
+        return const Color(0xFF2563EB);
+      case 'modernClean':
+        return const Color(0xFF1A1A1A);
+      case 'minimal':
+        return const Color(0xFF6B7280);
+      case 'executive':
+        return const Color(0xFF1E3A8A);
+      case 'modernSidebar':
+        return const Color(0xFF2C3E50);
+      case 'datascience':
+        return const Color(0xFF0EA5E9);
+      case 'sales':
+        return const Color(0xFFDC2626);
+      case 'marketing':
+        return const Color(0xFF7C3AED);
+      case 'finance':
+        return const Color(0xFFB8860B);
+      case 'creative':
+        return const Color(0xFFD946EF);
+      case 'academic':
+        return const Color(0xFF0369A1);
+      case 'healthcare':
+        return const Color(0xFF059669);
+      case 'startup':
+        return const Color(0xFFF97316);
+      default:
+        return AppColors.primary;
+    }
   }
-}
 
-Widget _buildTemplateSection({
+  Widget _buildTemplateSection({
     required BuildContext context,
     required String title,
     required List<ResumeTemplate> templates,
@@ -376,86 +376,86 @@ Widget _buildTemplateSection({
       ],
     );
   }
-  
-Future<void> _openTemplatePickerSheet(
-  BuildContext context,
-  ResumeTemplate selectedTemplate,
-) async {
-  await showModalBottomSheet<void>(
-    context: context,
-    showDragHandle: true,
-    isScrollControlled: true,
-    backgroundColor: AppColors.screenSurface,
-    builder: (context) {
-      return SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSizes.screenPadding,
-            AppSizes.sm,
-            AppSizes.screenPadding,
-            AppSizes.screenPadding,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                _buildTemplateSection(
-                  context: context,
-                  title: 'Tech & IT',
-                  templates: [
-                    ResumeTemplate.modernClean,
-                    ResumeTemplate.modern,
-                    ResumeTemplate.minimal,
-                  ],
-                  selectedTemplate: selectedTemplate,
-                  onSelected: () => Navigator.of(context).pop(),
-                ),
-                const SizedBox(height: AppSizes.md),
-                _buildTemplateSection(
-                  context: context,
-                  title: 'Business & Management',
-                  templates: [
-                    ResumeTemplate.executive,
-                    ResumeTemplate.modernSidebar,
-                    ResumeTemplate.classic,
-                  ],
-                  selectedTemplate: selectedTemplate,
-                  onSelected: () => Navigator.of(context).pop(),
-                ),
-                const SizedBox(height: AppSizes.md),
-                _buildTemplateSection(
-                  context: context,
-                  title: 'Sales & Marketing',
-                  templates: [
-                    ResumeTemplate.sales,
-                    ResumeTemplate.marketing,
-                  ],
-                  selectedTemplate: selectedTemplate,
-                  onSelected: () => Navigator.of(context).pop(),
-                ),
-                const SizedBox(height: AppSizes.md),
-                _buildTemplateSection(
-                  context: context,
-                  title: 'Specialized',
-                  templates: [
-                    ResumeTemplate.datascience,
-                    ResumeTemplate.finance,
-                    ResumeTemplate.creative,
-                    ResumeTemplate.academic,
-                    ResumeTemplate.healthcare,
-                    ResumeTemplate.startup,
-                  ],
-                  selectedTemplate: selectedTemplate,
-                  onSelected: () => Navigator.of(context).pop(),
-                ),
-              ],
+
+  Future<void> _openTemplatePickerSheet(
+    BuildContext context,
+    ResumeTemplate selectedTemplate,
+  ) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      backgroundColor: AppColors.screenSurface,
+      builder: (context) {
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSizes.screenPadding,
+              AppSizes.sm,
+              AppSizes.screenPadding,
+              AppSizes.screenPadding,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  _buildTemplateSection(
+                    context: context,
+                    title: 'Tech & IT',
+                    templates: [
+                      ResumeTemplate.modernClean,
+                      ResumeTemplate.modern,
+                      ResumeTemplate.minimal,
+                    ],
+                    selectedTemplate: selectedTemplate,
+                    onSelected: () => Navigator.of(context).pop(),
+                  ),
+                  const SizedBox(height: AppSizes.md),
+                  _buildTemplateSection(
+                    context: context,
+                    title: 'Business & Management',
+                    templates: [
+                      ResumeTemplate.executive,
+                      ResumeTemplate.modernSidebar,
+                      ResumeTemplate.classic,
+                    ],
+                    selectedTemplate: selectedTemplate,
+                    onSelected: () => Navigator.of(context).pop(),
+                  ),
+                  const SizedBox(height: AppSizes.md),
+                  _buildTemplateSection(
+                    context: context,
+                    title: 'Sales & Marketing',
+                    templates: [
+                      ResumeTemplate.sales,
+                      ResumeTemplate.marketing,
+                    ],
+                    selectedTemplate: selectedTemplate,
+                    onSelected: () => Navigator.of(context).pop(),
+                  ),
+                  const SizedBox(height: AppSizes.md),
+                  _buildTemplateSection(
+                    context: context,
+                    title: 'Specialized',
+                    templates: [
+                      ResumeTemplate.datascience,
+                      ResumeTemplate.finance,
+                      ResumeTemplate.creative,
+                      ResumeTemplate.academic,
+                      ResumeTemplate.healthcare,
+                      ResumeTemplate.startup,
+                    ],
+                    selectedTemplate: selectedTemplate,
+                    onSelected: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      );
-    },
-  );
-}  
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
