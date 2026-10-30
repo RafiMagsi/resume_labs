@@ -44,7 +44,7 @@ class _AiResumeDisclosureDialog extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'To optimize your resume, Resume Labs will send the selected resume content to OpenAI for AI processing.\n',
+              'To optimize your resume, ResumePace will send the selected resume content to OpenAI for AI processing.\n',
             ),
             const Text('This may include:\n'),
             const _Bullet('Professional summary'),

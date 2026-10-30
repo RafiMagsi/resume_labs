@@ -19,7 +19,7 @@ class DocxService {
   }) {
     final document = Document(
       title: resume.title.isEmpty ? 'Resume' : resume.title,
-      author: 'Resume Labs AI',
+      author: 'ResumePace',
     );
 
     switch (template) {

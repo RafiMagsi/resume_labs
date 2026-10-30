@@ -32,7 +32,7 @@ class ExecutiveTemplate extends BaseResumeTemplate {
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
                     pw.Text(
-                      resume.title.isEmpty ? 'Untitled Resume' : resume.title,
+                      personName(resume),
                       style: pw.TextStyle(
                         font: boldFont,
                         fontSize: 24,
@@ -40,6 +40,25 @@ class ExecutiveTemplate extends BaseResumeTemplate {
                         letterSpacing: -0.2,
                       ),
                     ),
+                    if (personHeadline(resume).isNotEmpty) ...[
+                      pw.SizedBox(height: 3),
+                      pw.Text(
+                        personHeadline(resume),
+                        style: pw.TextStyle(
+                          font: mediumFont,
+                          fontSize: 11.5,
+                          color: PdfColors.grey700,
+                        ),
+                      ),
+                    ],
+                    if (contactParts(resume).isNotEmpty) ...[
+                      pw.SizedBox(height: 6),
+                      contactLine(
+                        resume,
+                        regularFont,
+                        color: PdfColors.grey600,
+                      ),
+                    ],
                     pw.SizedBox(height: 8),
                     pw.Container(height: 1.2, color: PdfColors.grey300),
                   ],

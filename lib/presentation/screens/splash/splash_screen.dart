@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:resume_labs/core/constants/app_colors.dart';
+import 'package:resume_labs/core/constants/app_strings.dart';
 import 'package:resume_labs/core/constants/app_text_sizes.dart';
 
 import '../auth/login_screen.dart';
@@ -43,7 +44,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 _buildLogo(),
                 const SizedBox(height: 32),
                 const Text(
-                  'Resume Labs',
+                  AppStrings.appName,
                   style: TextStyle(
                     fontSize: 36,
                     fontWeight: FontWeight.w800,

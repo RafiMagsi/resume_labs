@@ -28,13 +28,37 @@ class MinimalTemplate extends BaseResumeTemplate {
                 pw.SizedBox(width: 16),
               ],
               pw.Expanded(
-                child: pw.Text(
-                  resume.title.isEmpty ? 'Untitled Resume' : resume.title,
-                  style: pw.TextStyle(
-                    font: boldFont,
-                    fontSize: 22,
-                    color: PdfColors.grey900,
-                  ),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(
+                      personName(resume),
+                      style: pw.TextStyle(
+                        font: boldFont,
+                        fontSize: 22,
+                        color: PdfColors.grey900,
+                      ),
+                    ),
+                    if (personHeadline(resume).isNotEmpty) ...[
+                      pw.SizedBox(height: 3),
+                      pw.Text(
+                        personHeadline(resume),
+                        style: pw.TextStyle(
+                          font: mediumFont,
+                          fontSize: 11.5,
+                          color: PdfColors.grey700,
+                        ),
+                      ),
+                    ],
+                    if (contactParts(resume).isNotEmpty) ...[
+                      pw.SizedBox(height: 6),
+                      contactLine(
+                        resume,
+                        regularFont,
+                        color: PdfColors.grey600,
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ],

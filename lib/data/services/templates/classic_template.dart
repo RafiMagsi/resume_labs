@@ -38,7 +38,7 @@ class ClassicTemplate extends BaseResumeTemplate {
               regularFont,
             ),
           ),
-          pw.SizedBox(height: 18),
+          pw.SizedBox(height: 14),
           _section(
             title: 'Work Experience',
             titleFont: semiBoldFont,
@@ -69,7 +69,7 @@ class ClassicTemplate extends BaseResumeTemplate {
                     ],
                   ),
           ),
-          pw.SizedBox(height: 18),
+          pw.SizedBox(height: 14),
           _section(
             title: 'Education',
             titleFont: semiBoldFont,
@@ -97,7 +97,7 @@ class ClassicTemplate extends BaseResumeTemplate {
                     ],
                   ),
           ),
-          pw.SizedBox(height: 18),
+          pw.SizedBox(height: 14),
           _section(
             title: 'Skills',
             titleFont: semiBoldFont,
@@ -146,23 +146,33 @@ class ClassicTemplate extends BaseResumeTemplate {
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 pw.Text(
-                  resume.title.isEmpty ? 'Untitled Resume' : resume.title,
+                  personName(resume),
                   style: pw.TextStyle(
                     font: boldFont,
                     fontSize: 26,
                     color: PdfColors.black,
                   ),
                 ),
-                pw.SizedBox(height: 4),
-                pw.Text(
-                  'Professional Resume',
-                  style: pw.TextStyle(
-                    font: mediumFont,
-                    fontSize: 10.5,
-                    color: PdfColors.grey700,
-                    letterSpacing: 0.4,
+                if (personHeadline(resume).isNotEmpty) ...[
+                  pw.SizedBox(height: 4),
+                  pw.Text(
+                    personHeadline(resume),
+                    style: pw.TextStyle(
+                      font: mediumFont,
+                      fontSize: 12,
+                      color: PdfColors.grey700,
+                      letterSpacing: 0.2,
+                    ),
                   ),
-                ),
+                ],
+                if (contactParts(resume).isNotEmpty) ...[
+                  pw.SizedBox(height: 6),
+                  contactLine(
+                    resume,
+                    regularFont,
+                    color: PdfColors.grey700,
+                  ),
+                ],
               ],
             ),
           ),
@@ -176,27 +186,29 @@ class ClassicTemplate extends BaseResumeTemplate {
     required pw.Font titleFont,
     required pw.Widget child,
   }) {
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      children: [
-        pw.Text(
-          title.toUpperCase(),
-          style: pw.TextStyle(
-            font: titleFont,
-            fontSize: 11,
-            color: PdfColors.grey800,
-            letterSpacing: 1.2,
+    return pw.Inseparable(
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            title.toUpperCase(),
+            style: pw.TextStyle(
+              font: titleFont,
+              fontSize: 11,
+              color: PdfColors.grey800,
+              letterSpacing: 1.2,
+            ),
           ),
-        ),
-        pw.SizedBox(height: 6),
-        pw.Container(
-          width: double.infinity,
-          height: 1,
-          color: const PdfColor.fromInt(0xFFE2E8F0),
-        ),
-        pw.SizedBox(height: 10),
-        child,
-      ],
+          pw.SizedBox(height: 6),
+          pw.Container(
+            width: double.infinity,
+            height: 1,
+            color: const PdfColor.fromInt(0xFFE2E8F0),
+          ),
+          pw.SizedBox(height: 10),
+          child,
+        ],
+      ),
     );
   }
 }

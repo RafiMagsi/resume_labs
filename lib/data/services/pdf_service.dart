@@ -60,7 +60,7 @@ class PdfService {
 
       final pdf = pw.Document(
         title: resume.title,
-        author: 'Resume Labs AI',
+        author: 'ResumePace',
         theme: theme,
       );
 

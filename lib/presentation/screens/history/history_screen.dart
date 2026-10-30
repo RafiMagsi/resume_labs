@@ -18,6 +18,7 @@ import '../resume_detail/resume_detail_screen.dart';
 import '../resume_optimizer/resume_optimizer_screen.dart';
 import '../../widgets/shared/dialog_manager.dart';
 import '../../widgets/shared/animated_ai_button.dart';
+import '../../widgets/ads/ad_banner.dart';
 import '../../widgets/shared/user_profile_sheet.dart' as uprofile;
 import 'widgets/history_hero_header.dart';
 import 'widgets/history_list.dart';
@@ -72,6 +73,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
     final resumeListState = ref.watch(resumeListProvider);
 
     return Scaffold(
+      bottomNavigationBar: const AdBanner(),
       body: Stack(
         children: [
           RefreshIndicator(

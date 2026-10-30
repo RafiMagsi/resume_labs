@@ -20,8 +20,8 @@ class ModernTemplate extends BaseResumeTemplate {
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.symmetric(horizontal: 28, vertical: 30),
         build: (context) => [
-          _header(resume, boldFont, photoImage),
-          pw.SizedBox(height: 20),
+          _header(resume, boldFont, regularFont, photoImage),
+          pw.SizedBox(height: 14),
           _section(
             title: 'Summary',
             content: [
@@ -34,7 +34,7 @@ class ModernTemplate extends BaseResumeTemplate {
             ],
             titleFont: semiBoldFont,
           ),
-          pw.SizedBox(height: 16),
+          pw.SizedBox(height: 12),
           _section(
             title: 'Experience',
             content: resume.workExperiences.isEmpty
@@ -51,7 +51,7 @@ class ModernTemplate extends BaseResumeTemplate {
                     .toList(),
             titleFont: semiBoldFont,
           ),
-          pw.SizedBox(height: 16),
+          pw.SizedBox(height: 12),
           _section(
             title: 'Education',
             content: resume.educations.isEmpty
@@ -61,7 +61,7 @@ class ModernTemplate extends BaseResumeTemplate {
                     .toList(),
             titleFont: semiBoldFont,
           ),
-          pw.SizedBox(height: 16),
+          pw.SizedBox(height: 12),
           _section(
             title: 'Skills',
             content: [
@@ -86,11 +86,12 @@ class ModernTemplate extends BaseResumeTemplate {
   pw.Widget _header(
     Resume resume,
     pw.Font boldFont,
+    pw.Font regularFont,
     pw.ImageProvider? photoImage,
   ) {
     return pw.Container(
       width: double.infinity,
-      padding: const pw.EdgeInsets.all(20),
+      padding: const pw.EdgeInsets.all(16),
       decoration: pw.BoxDecoration(
         borderRadius: pw.BorderRadius.circular(14),
         gradient: const pw.LinearGradient(
@@ -118,13 +119,38 @@ class ModernTemplate extends BaseResumeTemplate {
             pw.SizedBox(width: 16),
           ],
           pw.Expanded(
-            child: pw.Text(
-              resume.title.isEmpty ? 'Untitled Resume' : resume.title,
-              style: pw.TextStyle(
-                font: boldFont,
-                fontSize: 24,
-                color: PdfColors.white,
-              ),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(
+                  personName(resume),
+                  style: pw.TextStyle(
+                    font: boldFont,
+                    fontSize: 24,
+                    color: PdfColors.white,
+                  ),
+                ),
+                if (personHeadline(resume).isNotEmpty) ...[
+                  pw.SizedBox(height: 3),
+                  pw.Text(
+                    personHeadline(resume),
+                    style: pw.TextStyle(
+                      font: regularFont,
+                      fontSize: 11.5,
+                      color: const PdfColor.fromInt(0xE6FFFFFF),
+                    ),
+                  ),
+                ],
+                if (contactParts(resume).isNotEmpty) ...[
+                  pw.SizedBox(height: 8),
+                  contactLine(
+                    resume,
+                    regularFont,
+                    color: const PdfColor.fromInt(0xD9FFFFFF),
+                    fontSize: 9,
+                  ),
+                ],
+              ],
             ),
           ),
         ],
@@ -137,28 +163,30 @@ class ModernTemplate extends BaseResumeTemplate {
     required List<pw.Widget> content,
     required pw.Font titleFont,
   }) {
-    return pw.Container(
-      width: double.infinity,
-      padding: const pw.EdgeInsets.all(16),
-      decoration: pw.BoxDecoration(
-        color: const PdfColor.fromInt(0xFFF8FAFC),
-        borderRadius: pw.BorderRadius.circular(12),
-        border: pw.Border.all(color: const PdfColor.fromInt(0xFFE2E8F0)),
-      ),
-      child: pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
-        children: [
-          pw.Text(
-            title,
-            style: pw.TextStyle(
-              font: titleFont,
-              fontSize: 13,
-              color: const PdfColor.fromInt(0xFF6D5EF8),
+    return pw.Inseparable(
+      child: pw.Container(
+        width: double.infinity,
+        padding: const pw.EdgeInsets.all(14),
+        decoration: pw.BoxDecoration(
+          color: const PdfColor.fromInt(0xFFF8FAFC),
+          borderRadius: pw.BorderRadius.circular(12),
+          border: pw.Border.all(color: const PdfColor.fromInt(0xFFE2E8F0)),
+        ),
+        child: pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text(
+              title,
+              style: pw.TextStyle(
+                font: titleFont,
+                fontSize: 13,
+                color: const PdfColor.fromInt(0xFF6D5EF8),
+              ),
             ),
-          ),
-          pw.SizedBox(height: 10),
-          ...content,
-        ],
+            pw.SizedBox(height: 10),
+            ...content,
+          ],
+        ),
       ),
     );
   }

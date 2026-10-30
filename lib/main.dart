@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:resume_labs/core/ads/admob_service.dart';
 import 'package:resume_labs/core/errors/error_handler.dart';
 import 'app/app.dart';
 import 'firebase_options.dart';
@@ -54,6 +57,8 @@ Future<void> main() async {
   // final firestore = FirebaseFirestore.instance;
 
   ErrorHandler.initialize();
+
+  unawaited(AdMobService.instance.ensureInitialized());
 
   runApp(
     const ProviderScope(

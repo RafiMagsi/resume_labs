@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/constants/app_colors.dart';
+import '../core/constants/app_strings.dart';
 import '../core/constants/app_sizes.dart';
 import '../core/constants/app_text_sizes.dart';
 import 'router/app_router.dart';
@@ -14,7 +16,7 @@ class App extends ConsumerWidget {
     final router = ref.watch(appRouterProvider);
 
     return MaterialApp.router(
-      title: 'Resume Labs AI',
+      title: AppStrings.appName,
       debugShowCheckedModeBanner: false,
       routerConfig: router,
       theme: ThemeData(
@@ -148,6 +150,7 @@ class App extends ConsumerWidget {
           ),
         ),
         appBarTheme: AppBarTheme(
+          systemOverlayStyle: SystemUiOverlayStyle.dark,
           backgroundColor: AppColors.appBackground,
           foregroundColor: AppColors.textPrimary,
           elevation: 0,

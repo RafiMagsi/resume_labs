@@ -17,6 +17,54 @@ abstract class BaseResumeTemplate {
     required pw.Font boldFont,
   });
 
+  String personName(Resume resume) {
+    final name = resume.contactDetails.fullName?.trim() ?? '';
+    if (name.isNotEmpty) return name;
+    final title = resume.title.trim();
+    return title.isEmpty ? 'Untitled Resume' : title;
+  }
+
+  String personHeadline(Resume resume) {
+    final name = resume.contactDetails.fullName?.trim() ?? '';
+    return name.isEmpty ? '' : resume.title.trim();
+  }
+
+  List<String> contactParts(Resume resume) {
+    final contact = resume.contactDetails;
+    return [
+      contact.email,
+      contact.phone,
+      contact.location,
+      contact.website,
+      contact.linkedin,
+      contact.github,
+    ]
+        .map((value) => value?.trim() ?? '')
+        .where((value) => value.isNotEmpty)
+        .toList();
+  }
+
+  pw.Widget contactLine(
+    Resume resume,
+    pw.Font font, {
+    required PdfColor color,
+    double fontSize = 9.5,
+    pw.TextAlign textAlign = pw.TextAlign.left,
+  }) {
+    final parts = contactParts(resume);
+    if (parts.isEmpty) return pw.SizedBox();
+    return pw.Text(
+      parts.join('  •  '),
+      textAlign: textAlign,
+      style: pw.TextStyle(
+        font: font,
+        fontSize: fontSize,
+        color: color,
+        lineSpacing: 2,
+      ),
+    );
+  }
+
   pw.Widget bodyText(String text, pw.Font font) {
     return pw.Text(
       text,
@@ -115,27 +163,68 @@ abstract class BaseResumeTemplate {
     required PdfColor background,
     required PdfColor borderColor,
   }) {
-    return pw.Wrap(
-      spacing: 6,
-      runSpacing: 6,
-      children: skills.map((skill) {
-        return pw.Container(
-          padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: pw.BoxDecoration(
-            color: background,
-            borderRadius: pw.BorderRadius.circular(20),
-            border: pw.Border.all(color: borderColor),
-          ),
-          child: pw.Text(
-            '${skill.name} - ${skill.category}',
-            style: pw.TextStyle(
-              font: font,
-              fontSize: 10,
-              color: textColor,
+    final rows = <pw.Widget>[];
+    for (var index = 0; index < skills.length; index += 2) {
+      final first = skills[index];
+      final second = index + 1 < skills.length ? skills[index + 1] : null;
+      rows.add(
+        pw.Row(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Expanded(
+              child: _skillChip(
+                first,
+                font: font,
+                textColor: textColor,
+                background: background,
+                borderColor: borderColor,
+              ),
             ),
-          ),
-        );
-      }).toList(),
+            pw.SizedBox(width: 6),
+            pw.Expanded(
+              child: second == null
+                  ? pw.SizedBox()
+                  : _skillChip(
+                      second,
+                      font: font,
+                      textColor: textColor,
+                      background: background,
+                      borderColor: borderColor,
+                    ),
+            ),
+          ],
+        ),
+      );
+      if (index + 2 < skills.length) {
+        rows.add(pw.SizedBox(height: 6));
+      }
+    }
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: rows,
+    );
+  }
+
+  pw.Widget _skillChip(
+    Skill skill, {
+    required pw.Font font,
+    required PdfColor textColor,
+    required PdfColor background,
+    required PdfColor borderColor,
+  }) {
+    return pw.Container(
+      padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      decoration: pw.BoxDecoration(
+        color: background,
+        borderRadius: pw.BorderRadius.circular(6),
+        border: pw.Border.all(color: borderColor, width: 0.5),
+      ),
+      child: pw.Text(
+        skill.category.isEmpty
+            ? skill.name
+            : '${skill.name} · ${skill.category}',
+        style: pw.TextStyle(font: font, fontSize: 9.5, color: textColor),
+      ),
     );
   }
 

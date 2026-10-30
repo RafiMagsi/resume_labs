@@ -34,6 +34,11 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // Test AdMob app ID by default. Override with
+        // -PadmobAppId=ca-app-pub-xxxxxxxx~yyyyyyyy or a gradle.properties entry.
+        manifestPlaceholders["admobAppId"] = (project.findProperty("admobAppId") as String?)
+            ?: "ca-app-pub-3940256099942544~3347511713"
     }
 
     val keystoreProperties = Properties()

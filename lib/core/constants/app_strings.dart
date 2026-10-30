@@ -1,5 +1,5 @@
 abstract final class AppStrings {
-  static const String appName = 'Resume Labs AI';
+  static const String appName = 'ResumePace';
 
   // Firestore collections
   static const String usersCollection = 'users';

@@ -74,7 +74,7 @@ class ModernSidebarTemplate extends BaseResumeTemplate {
             pw.SizedBox(height: 12),
           ],
           pw.Text(
-            resume.title.isEmpty ? 'Untitled Resume' : resume.title,
+            personName(resume),
             style: pw.TextStyle(
               font: boldFont,
               fontSize: 18,
@@ -82,6 +82,28 @@ class ModernSidebarTemplate extends BaseResumeTemplate {
             ),
             textAlign: pw.TextAlign.center,
           ),
+          if (personHeadline(resume).isNotEmpty) ...[
+            pw.SizedBox(height: 3),
+            pw.Text(
+              personHeadline(resume),
+              style: pw.TextStyle(
+                font: regularFont,
+                fontSize: 10.5,
+                color: PdfColors.grey700,
+              ),
+              textAlign: pw.TextAlign.center,
+            ),
+          ],
+          if (contactParts(resume).isNotEmpty) ...[
+            pw.SizedBox(height: 6),
+            contactLine(
+              resume,
+              regularFont,
+              color: PdfColors.grey600,
+              fontSize: 8.5,
+              textAlign: pw.TextAlign.center,
+            ),
+          ],
           pw.SizedBox(height: 10),
           pw.Container(
             height: 2,
