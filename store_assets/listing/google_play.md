@@ -1,7 +1,7 @@
 # Google Play Console — Listing Metadata (ASO-optimized)
 
 Paste-ready copy for Play Console → **Main store listing** + **Store presence**.
-Package: `com.nextfiction.resumelabs.ai` · Version: `1.0.2` (versionCode `13`)
+Package: `com.nextfiction.resumelabs.ai` · Version: `1.0.2` (versionCode `14`)
 
 > Package name and on-device label (`ResumePace`) are unchanged. Only the
 > **store listing** changed, for search ranking.

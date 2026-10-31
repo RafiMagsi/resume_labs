@@ -1,5 +1,5 @@
 Google Play — paste/upload order (Main store listing)
-Package: com.nextfiction.resumelabs.ai   AAB: ../../build/app/outputs/bundle/release/app-release.aab (1.0.2, code 13)
+Package: com.nextfiction.resumelabs.ai   AAB: ../../build/app/outputs/bundle/release/app-release.aab (1.0.2, code 14, Play Billing 8.0.0)
 
 1. App name          -> 1_title.txt            (29/30)
 2. Short description -> 2_short_description.txt (75/80)
