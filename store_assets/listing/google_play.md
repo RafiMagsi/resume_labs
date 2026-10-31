@@ -1,108 +1,111 @@
-# Google Play Console — Listing Metadata
+# Google Play Console — Listing Metadata (ASO-optimized)
 
 Paste-ready copy for Play Console → **Main store listing** + **Store presence**.
 Package: `com.nextfiction.resumelabs.ai` · Version: `1.0.2` (versionCode `13`)
 
-> URLs and contact email are filled in. Publish `store_assets/PRIVACY_POLICY.md`
-> first, then use the URL below in the Play data-safety and store listing forms.
+> Package name and on-device label (`ResumePace`) are unchanged. Only the
+> **store listing** changed, for search ranking.
 
 ---
 
 ## Main store listing
 
-| Field | Value | Limit |
+| Field | Value | Chars / Limit |
 |---|---|---|
-| App name | `ResumePace: AI Resume Builder` (29 chars) | 30 |
-| Short description | `Build ATS-friendly resumes with AI. Pro templates, PDF export & CV optimization.` (80 chars) | 80 |
-| Full description | see below | 4000 |
-| App icon | `store_assets/app_icon_512.png` (or `android/app/src/main/res/playstore-icon.png`) | 512×512 PNG |
+| App name | `ResumePace: AI Resume Builder` | 29 / 30 |
+| Short description | `AI resume builder & CV maker with 14 ATS-friendly templates and PDF export.` | 75 / 80 |
+| Full description | see below | <4000 |
+| App icon | `store_assets/app_icon_512.png` | 512×512 PNG |
 | Feature graphic | `store_assets/google_play_feature_graphic_1024x500.png` | 1024×500 |
 | App category | Productivity | — |
+| Tags | Productivity, Career, Business (pick what Play offers) | — |
 | Contact email | `support@nextfictiongames.com` | — |
 | Contact website | `https://nextfictiongames.com/` | — |
-| Contact phone | optional | — |
 | Privacy policy URL | `https://nextfictiongames.com/resume-labs-privacy-policy/` | — |
 
-### Full description (max 4000 chars)
+### ASO rationale
+
+Play indexes title, short description **and the full description**. Title and
+short description carry the head terms ("resume builder", "AI", "CV maker",
+"ATS", "templates", "PDF"); the full description repeats the head terms 4–5
+times naturally and covers long-tail phrases (resume optimizer, CV writer, job
+application, career-specific templates). No emoji spam, no "best/#1/free"
+claims, no unrelated keywords (Play metadata policy).
+
+### Full description
 
 ```
-ResumePace is the AI resume builder that turns your experience into a polished,
-ATS-friendly resume in minutes — no formatting fights, no blank pages.
+Build a professional, ATS-friendly resume in minutes. ResumePace is the AI resume builder and CV maker that turns your experience into a polished, interview-ready resume — no formatting fights, no blank pages.
 
-BUILD A RESUME THAT GETS READ
-Choose from professionally designed templates built to pass applicant tracking
-systems. Every template is typeset by real designers, so your resume looks
-polished on screen and on paper.
+WHY RESUMEPACE
+• 14 professionally designed resume templates for tech, business, sales, marketing, finance, healthcare, academic, creative and startup careers
+• AI resume optimization that rewrites your summary and experience bullets into clear, achievement-focused language
+• Live resume preview, so you see exactly what recruiters will see
+• One-tap PDF export, ready to share or attach to any job application
+• Photo or no photo — every template supports both
 
-AI THAT WRITES WITH YOU
-ResumePace drafts your professional summary, strengthens your bullet points, and
-suggests skills recruiters search for. The AI optimization analyzes your resume
-against the way modern hiring software reads it, then rewrites weak sections
-into clear, measurable achievements.
+OPTIMIZE YOUR RESUME WITH AI
+Paste or upload your current resume and tap Optimize. ResumePace analyzes it the way modern applicant tracking systems (ATS) read it, then suggests a sharper professional summary, stronger bullet points and relevant skills — while keeping your own voice. A faster way to write a resume that gets noticed.
 
-OPTIMIZE WITH ONE TAP
-Short on time? Run "Optimize with AI" and get a rewritten summary, sharper
-experience bullets, and skill suggestions — while keeping your own voice.
+A RESUME BUILDER THAT STAYS OUT OF YOUR WAY
+• Personal details, summary, work experience, education, skills, projects, achievements, languages, interests and references
+• Add custom sections for certifications, volunteering or publications
+• Create multiple CVs — one tailored to every job you apply for
+• Edit anytime, then switch resume templates without retyping a word
+• Cloud sync keeps your resumes safe and available across devices
 
-WORKS THE WAY YOU DO
-- Edit every section with a fast, focused builder
-- Live PDF preview with pixel-accurate formatting
-- Multiple resumes for every role you apply to
-- Cloud sync, so your work follows you across devices
-- Export a clean, shareable PDF in seconds
+TEMPLATES FOR EVERY CAREER
+Classic, Modern, Modern Clean, Sidebar, Minimal, Executive, Data Science, Sales, Marketing, Finance, Creative, Academic, Healthcare and Startup. Clean typography, clear hierarchy and ATS-aware layouts keep your CV easy to scan for both recruiters and software.
+
+SIMPLE PRICING
+Create and export resumes with no subscription. AI optimizations are sold as an optional credit pack, so you only pay when you want an extra polish. The app contains ads.
 
 PRIVACY FIRST
-Your resumes belong to you. ResumePace never sells your data, and your resume
-content is used only to provide the features you ask for.
+Your resume belongs to you. ResumePace never sells your data, and your resume content is used only to provide the features you ask for.
 
-Download ResumePace and ship a resume you are proud to send.
+Whether you are writing your first CV, changing careers or applying for a promotion, download ResumePace — the AI CV maker and resume generator — and build a resume you are proud to send.
+
+Support: support@nextfictiongames.com
 ```
 
 ---
 
 ## Assets to upload (paths in this repo)
 
-| Asset | File | Spec |
+| Slot | File | Spec |
 |---|---|---|
-| Phone screenshots (5) | `store_assets/screenshots/android_phone/*.png` | ≥1080 px shortest side |
+| App icon | `store_assets/app_icon_512.png` | 512×512 |
 | Feature graphic | `store_assets/google_play_feature_graphic_1024x500.png` | 1024×500 |
-| High-res icon | `store_assets/app_icon_1024.png` | 512×512 required, 1024 available |
-| Tablet screenshots (optional) | `store_assets/screenshots/android_tablet/` | — |
-| Header / promo banner | `store_assets/hero_header_1200x630.png`, `store_assets/store_banner_1500x500.png` | not an upload slot — use for the promo URL, Play badges, social |
+| Phone screenshots (5) | `store_assets/marketing/android_phone/*.png` | 1080×2400 |
+
+Order: Hero → AI optimizer → Templates → Live preview → Guided builder.
 
 ---
 
 ## Declarations checklist
 
-- **Contains ads:** Yes — AdMob banner. (Until real unit IDs are wired, release
-  builds request no ads; keep the declaration as "contains ads" anyway, since
-  the capability ships.)
+- **Contains ads:** Yes — AdMob banner.
 - **In-app purchases:** Yes.
 - **In-app product to create** (Monetise → Products → In-app products):
 
   | Field | Value |
   |---|---|
   | Product ID | `resume_labs_credits_10` |
-  | Type | **Managed / consumable** (grant 10 credits on purchase) |
+  | Type | **Managed / consumable** |
+  | Name | `10 AI Resume Optimizations` |
   | Price | USD 5.99 |
-  | Status | Activate for the internal testing track first |
+  | Status | Activate for internal testing first |
 
-  Same ID as App Store Connect — the app queries one constant.
-
-- **Data safety form:** mirror `store_assets/listing/app_store_connect.md`
-  → App Privacy table: email (collected, linked), resume content (collected,
-  linked), device identifiers for ads (collected, not linked), crash logs.
-- **Content rating questionnaire:** Everyone · no violence, no mature content,
-  **yes to "contains ads"**, **yes to "in-app purchases"**.
-- **Target audience:** 13+ (or all ages) — product is a productivity tool.
-- **App signing:** Play App Signing recommended; upload key is generated at
-  `android/upload-keystore.jks` (see `android/key.properties`).
+- **Data safety form:** mirror `listing/app_store_connect.md` → App Privacy.
+- **Content rating questionnaire:** Everyone · contains ads · in-app purchases.
+- **Target audience:** 18+ / 13+ (productivity tool; not designed for children).
+- **App signing:** Play App Signing; upload key `android/upload-keystore.jks`.
 
 ---
 
 ## Release path
 
-1. Build: `flutter build appbundle --release` → `build/app/outputs/bundle/release/app-release.aab`
+1. `flutter build appbundle --release` → `build/app/outputs/bundle/release/app-release.aab`
 2. Play Console → **Testing → Internal testing** → create release → upload `.aab`
-3. Add tester emails → share the opt-in link → validate IAP on a real account
-4. After QA: **Production → Create new release** → roll out (or staged 10/50/100%)
+3. Validate IAP on a real tester account
+4. **Production → Create new release** → roll out (or staged 10/50/100%)

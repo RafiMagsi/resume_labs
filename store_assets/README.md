@@ -53,6 +53,26 @@ presentation; the Android captures keep the device status bar.
 
 ---
 
+## 2b. Marketing (ASO) assets
+
+Captioned, store-ready creatives built from the raw captures above (status bar
+cropped, brand gradient, headline). Order matters: the first three show in search.
+
+| Slot | Path | Size |
+|---|---|---|
+| App Store header | `marketing/app_store_header_3840x1646.png` | 3840×1646 |
+| App Store search results | `marketing/app_store_search_results_3840x2560.png` | 3840×2560 |
+| iPhone 6.3" screenshots | `marketing/ios_iphone_6_3/` | 1206×2622 |
+| iPhone 6.9" screenshots | `marketing/ios_iphone_6_9/` | 1320×2868 |
+| iPad 13" screenshots | `marketing/ios_ipad_13/` | 2064×2752 |
+| Play phone screenshots | `marketing/android_phone/` | 1080×2400 |
+| Play paste-ready bundle | `play_console_package/` | titles, descriptions, graphics |
+
+```bash
+python3 tool/generate_marketing_screenshots.py   # screenshots
+python3 tool/generate_store_header.py            # header + search results
+```
+
 ## 3. Listing copy
 
 - `listing/app_store_connect.md` — name, subtitle, keywords, description,
@@ -62,8 +82,8 @@ presentation; the Android captures keep the device status bar.
 - `PRIVACY_POLICY.md` — publish this file, then put its URL in both listings.
 
 Both listings' text length limits were verified programmatically
-(name 10/30, subtitle 28/30, keywords 100/100, Play title 29/30,
-short description 80/80).
+(App Store name 29/30, subtitle 29/30, keywords 99/100, Play title 29/30,
+short description 75/80).
 
 ---
 
